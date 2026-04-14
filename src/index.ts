@@ -3,7 +3,7 @@ import { runAdd } from "./commands/add";
 import { runInit } from "./commands/init";
 
 const argv = minimist(process.argv.slice(2), {
-  string: ["spec", "collection", "host", "realm", "client-id", "output"],
+  string: ["spec", "collection", "name", "host", "realm", "client-id", "output"],
   alias: {
     s: "spec",
     c: "collection",
@@ -16,9 +16,10 @@ const command = argv._[0];
 async function main(): Promise<void> {
   if (command === "init") {
     await runInit({
+      name: argv["name"] as string | undefined,
       host: argv["host"] as string | undefined,
       realm: argv["realm"] as string | undefined,
-      clientId: argv["client-id"] as string | undefined,
+      clientId: (argv["client-id"] ?? argv["clientId"]) as string | undefined,
       output: argv["output"] as string | undefined,
     });
     return;

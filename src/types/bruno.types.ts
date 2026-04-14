@@ -1,3 +1,8 @@
+export interface BrunoScript {
+  type: "before-request" | "after-response" | "tests";
+  code: string;
+}
+
 export interface BrunoCollection {
   opencollection: "1.0.0";
   info: {
@@ -5,13 +10,11 @@ export interface BrunoCollection {
   };
   bundled: false;
   auth?: {
-    mode: "bearer";
-    bearer: {
-      token: string;
-    };
+    type: "bearer";
+    token: string;
   };
-  script?: {
-    req?: string;
+  runtime?: {
+    scripts: BrunoScript[];
   };
   extensions: {
     bruno: {
@@ -42,12 +45,9 @@ export interface BrunoRequest {
     body?: BrunoBody;
   };
   headers?: BrunoHeader[];
-  script?: {
-    pre?: string;
-    res?: string;
-  };
   runtime?: {
-    variables: BrunoVariable[];
+    scripts?: BrunoScript[];
+    variables?: BrunoVariable[];
   };
   settings: BrunoRequestSettings;
 }

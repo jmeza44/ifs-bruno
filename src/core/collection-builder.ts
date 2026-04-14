@@ -53,13 +53,16 @@ export function buildCollectionManifest(name: string): BrunoCollection {
     info: { name },
     bundled: false,
     auth: {
-      mode: "bearer",
-      bearer: {
-        token: "{{accessToken}}",
-      },
+      type: "bearer",
+      token: "{{accessToken}}",
     },
-    script: {
-      req: COLLECTION_PRE_REQUEST_SCRIPT,
+    runtime: {
+      scripts: [
+        {
+          type: "before-request",
+          code: COLLECTION_PRE_REQUEST_SCRIPT,
+        },
+      ],
     },
     extensions: {
       bruno: {
@@ -104,8 +107,13 @@ export function buildAuthRequest(): BrunoRequest {
         ],
       },
     },
-    script: {
-      res: "const data = res.getBody();\nbru.setEnvVar(\"accessToken\", data.access_token);",
+    runtime: {
+      scripts: [
+        {
+          type: "after-response",
+          code: "bru.setEnvVar(\"accessToken\", res.body.access_token);",
+        },
+      ],
     },
     settings: {
       encodeUrl: true,
