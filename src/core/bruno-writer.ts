@@ -92,7 +92,8 @@ export function upsertRequests(
 
   for (const request of requests) {
     const operationId = (request.info as Record<string, unknown>)["operationId"] as string | undefined;
-    const filePath = path.join(folderPath, `${request.info.name}.yml`);
+    const fileName = operationId || request.info.name;
+    const filePath = path.join(folderPath, `${fileName}.yml`);
 
     // Upsert: check if a file with same operationId already exists
     const existingFile = operationId ? findFileByOperationId(folderPath, operationId) : undefined;

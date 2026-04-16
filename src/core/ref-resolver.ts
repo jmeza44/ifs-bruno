@@ -1,4 +1,4 @@
-import type { SwaggerSpec, SchemaObject, ParameterObject, RefObject } from "../types/spec.types";
+import type { SwaggerSpec, SchemaObject, ParameterObject, RefObject, ResponseObject } from "../types/spec.types";
 
 const SKIP_KEYS = new Set(["luname", "keyref", "objstate", "objkey", "@odata.etag"]);
 
@@ -33,6 +33,13 @@ export class RefResolver {
       return this.resolveRef(schemaOrRef.$ref) as SchemaObject;
     }
     return schemaOrRef as SchemaObject;
+  }
+
+  resolveResponse(responseOrRef: ResponseObject | RefObject): ResponseObject {
+    if ("$ref" in responseOrRef && responseOrRef.$ref !== undefined) {
+      return this.resolveRef(responseOrRef.$ref) as ResponseObject;
+    }
+    return responseOrRef as ResponseObject;
   }
 
   buildExampleBody(schema: SchemaObject): Record<string, unknown> {

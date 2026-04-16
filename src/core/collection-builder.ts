@@ -51,12 +51,11 @@ export function buildCollectionManifest(name: string): BrunoCollection {
   return {
     opencollection: "1.0.0",
     info: { name },
-    bundled: false,
-    auth: {
-      type: "bearer",
-      token: "{{accessToken}}",
-    },
-    runtime: {
+    request: {
+      auth: {
+        type: "bearer",
+        token: "{{accessToken}}",
+      },
       scripts: [
         {
           type: "before-request",
@@ -64,6 +63,7 @@ export function buildCollectionManifest(name: string): BrunoCollection {
         },
       ],
     },
+    bundled: false,
     extensions: {
       bruno: {
         ignore: ["node_modules", ".git"],
@@ -81,7 +81,7 @@ export function buildEnvironment(options: InitOptions): BrunoEnvironment {
       { name: "clientId", value: options.clientId },
       { name: "clientSecret", secret: true as const },
       { name: "keycloakBasePath", value: "/auth" },
-      { name: "accessToken", value: "" },
+      { name: "accessToken", secret: true as const },
     ],
   };
 }
