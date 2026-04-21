@@ -1,8 +1,7 @@
 import type { SwaggerSpec, Operation, ParameterObject } from "../types/spec.types";
 import type { BrunoRequest, BrunoHeader, BrunoBody, BrunoParam, BrunoVariable } from "../types/bruno.types";
 import { RefResolver } from "./ref-resolver";
-
-const HAS_BODY_METHODS = new Set(["post", "put", "patch"]);
+import { HAS_BODY_METHODS, NEEDS_XSRF_METHODS } from "./constants";
 
 function extractPathParams(pathTemplate: string): string[] {
   const matches = pathTemplate.match(/\{([^}]+)\}/g) ?? [];
@@ -95,6 +94,14 @@ export class RequestBuilder {
       headers.push({
         name: param.name,
         value: isIfMatch && isWriteMethod ? "{{ifMatch}}" : "",
+        enabled: true,
+      });
+    }
+
+    if (NEEDS_XSRF_METHODS.has(m)) {
+      headers.push({
+        name: "X-XSRF-TOKEN",
+        value: "{{xsrfToken}}",
         enabled: true,
       });
     }

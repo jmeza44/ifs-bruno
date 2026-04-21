@@ -1,6 +1,5 @@
 import type { SwaggerSpec, SchemaObject, ParameterObject, RefObject, ResponseObject } from "../types/spec.types";
-
-const SKIP_KEYS = new Set(["luname", "keyref", "objstate", "objkey", "@odata.etag"]);
+import { SKIP_KEYS } from "./constants";
 
 export class RefResolver {
   constructor(private spec: SwaggerSpec) {}

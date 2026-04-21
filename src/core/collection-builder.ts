@@ -43,6 +43,7 @@ await bru.sendRequest(
   (err, res) => {
     if (err) throw new Error("Auto-auth failed: " + err.message);
     bru.setEnvVar("accessToken", res.data.access_token);
+    bru.setEnvVar("xsrfToken", res.data.session_state);
   }
 );
 `.trim();
@@ -82,6 +83,7 @@ export function buildEnvironment(options: InitOptions): BrunoEnvironment {
       { name: "clientSecret", secret: true as const },
       { name: "keycloakBasePath", value: "/auth" },
       { name: "accessToken", secret: true as const },
+      { name: "xsrfToken", value: "" },
     ],
   };
 }
@@ -111,7 +113,7 @@ export function buildAuthRequest(): BrunoRequest {
       scripts: [
         {
           type: "after-response",
-          code: "bru.setEnvVar(\"accessToken\", res.body.access_token);",
+          code: "bru.setEnvVar(\"accessToken\", res.body.access_token);\nbru.setEnvVar(\"xsrfToken\", res.body.session_state);",
         },
       ],
     },

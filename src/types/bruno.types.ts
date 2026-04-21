@@ -9,12 +9,12 @@ export interface BrunoCollection {
     name: string;
   };
   bundled: false;
-  auth?: {
-    type: "bearer";
-    token: string;
-  };
-  runtime?: {
-    scripts: BrunoScript[];
+  request?: {
+    auth?: {
+      type: "bearer";
+      token: string;
+    };
+    scripts?: BrunoScript[];
   };
   extensions: {
     bruno: {
@@ -42,6 +42,8 @@ export interface BrunoRequest {
     method: string;
     url: string;
     auth?: "bearer" | "inherit" | "none";
+    headers?: BrunoHeader[];
+    params?: BrunoParam[];
     body?: BrunoBody;
   };
   headers?: BrunoHeader[];
@@ -65,6 +67,12 @@ export type BrunoBody =
 export interface BrunoFormParam {
   name: string;
   value: string;
+}
+
+export interface BrunoParam {
+  name: string;
+  value: string;
+  type: "query";
 }
 
 export interface BrunoRequestSettings {
