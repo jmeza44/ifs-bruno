@@ -1,9 +1,21 @@
 {
-  "name": "ifs-insomnia",
+  "name": "ifs-bruno",
   "version": "1.0.0",
   "description": "Import IFS OpenAPI endpoints into Bruno collections",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmeza44/ifs-bruno.git"
+  },
+  "homepage": "https://github.com/jmeza44/ifs-bruno#readme",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
-    "ifs-insomnia": "./dist/index.js"
+    "ifs-bruno": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",

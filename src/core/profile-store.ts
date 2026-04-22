@@ -14,7 +14,7 @@ interface ConfigFile {
   profiles: Record<string, IfsProfile>;
 }
 
-const CONFIG_DIR = path.join(os.homedir(), ".ifs-insomnia");
+const CONFIG_DIR = path.join(os.homedir(), ".ifs-bruno");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
 function readConfig(): ConfigFile {

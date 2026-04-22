@@ -4,7 +4,7 @@ import { saveProfile, getProfile, listProfiles, deleteProfile } from "../core/pr
 import type { IfsProfile } from "../core/profile-store";
 
 export async function runProfileAdd(nameArg?: string): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" ifs-insomnia profile add ")));
+  p.intro(pc.bgCyan(pc.black(" ifs-bruno profile add ")));
 
   const name = nameArg ?? await promptText("Nombre del perfil", "my-env");
   const existing = getProfile(name);
@@ -39,7 +39,7 @@ export async function runProfileAdd(nameArg?: string): Promise<void> {
 
   saveProfile(name, profile);
 
-  p.outro(pc.green(`Perfil "${name}" guardado.`) + `\n  ${pc.dim("~/.ifs-insomnia/config.json")}`);
+  p.outro(pc.green(`Perfil "${name}" guardado.`) + `\n  ${pc.dim("~/.ifs-bruno/config.json")}`);
 }
 
 export function runProfileList(): void {
@@ -47,7 +47,7 @@ export function runProfileList(): void {
 
   if (profiles.length === 0) {
     console.log(pc.yellow("No hay perfiles configurados."));
-    console.log(pc.dim("  Ejecutá: ifs-insomnia profile add"));
+    console.log(pc.dim("  Ejecutá: ifs-bruno profile add"));
     return;
   }
 

@@ -13,7 +13,7 @@ export interface InitArgs {
 }
 
 export async function runInit(args: InitArgs): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" ifs-insomnia init ")));
+  p.intro(pc.bgCyan(pc.black(" ifs-bruno init ")));
 
   const name = args.name ?? await promptText("Nombre de la colección", "IFS");
   const host = args.host ?? await promptText("Host de IFS", "https://your-env.ifs.cloud");
@@ -45,7 +45,7 @@ export async function runInit(args: InitArgs): Promise<void> {
     `\n  1. Abrí la carpeta ${pc.cyan(output)} en Bruno` +
     `\n  2. ${pc.yellow("⚠")}  Configurá ${pc.cyan("clientSecret")} en el ambiente ${pc.cyan("default")} desde la UI de Bruno` +
     `\n  3. Ejecutá ${pc.cyan("Auth")} para obtener el access token` +
-    `\n  4. Usa ${pc.cyan("ifs-insomnia add")} para agregar endpoints de specs IFS`
+    `\n  4. Usa ${pc.cyan("ifs-bruno add")} para agregar endpoints de specs IFS`
   );
 }
 

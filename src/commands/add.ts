@@ -10,7 +10,7 @@ import { fetchProjections, fetchOpenApiSpec } from "../core/ifs-client";
 import type { Operation, SwaggerSpec } from "../types/spec.types";
 
 export async function runAdd(specPath: string | undefined, collectionPath: string, profileName?: string): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" ifs-insomnia ")));
+  p.intro(pc.bgCyan(pc.black(" ifs-bruno ")));
 
   const specSpinner = p.spinner();
   let spec: SwaggerSpec;
@@ -18,7 +18,7 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
   if (profileName) {
     const profile = getProfile(profileName);
     if (!profile) {
-      p.cancel(`Perfil "${profileName}" no encontrado. Ejecutá: ifs-insomnia profile add`);
+      p.cancel(`Perfil "${profileName}" no encontrado. Ejecutá: ifs-bruno profile add`);
       process.exit(1);
     }
 

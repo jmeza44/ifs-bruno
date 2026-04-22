@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     if (subcommand === "delete" || subcommand === "remove") {
       const name = argv._[2];
       if (!name) {
-        console.error("Uso: ifs-insomnia profile delete <nombre>");
+        console.error("Uso: ifs-bruno profile delete <nombre>");
         process.exit(1);
       }
       runProfileDelete(name);
@@ -55,12 +55,12 @@ async function main(): Promise<void> {
     const { spec, collection, profile } = argv;
     if (!collection) {
       console.error("Uso:");
-      console.error("  ifs-insomnia init     [--host <url>] [--realm <realm>] [--client-id <id>] [--output <folder>]");
-      console.error("  ifs-insomnia add      --spec <path.json> --collection <folder>");
-      console.error("  ifs-insomnia add      --profile <nombre> --collection <folder>");
-      console.error("  ifs-insomnia profile  add [<nombre>]");
-      console.error("  ifs-insomnia profile  list");
-      console.error("  ifs-insomnia profile  delete <nombre>");
+      console.error("  ifs-bruno init     [--host <url>] [--realm <realm>] [--client-id <id>] [--output <folder>]");
+      console.error("  ifs-bruno add      --spec <path.json> --collection <folder>");
+      console.error("  ifs-bruno add      --profile <nombre> --collection <folder>");
+      console.error("  ifs-bruno profile  add [<nombre>]");
+      console.error("  ifs-bruno profile  list");
+      console.error("  ifs-bruno profile  delete <nombre>");
       process.exit(1);
     }
     await runAdd(spec as string | undefined, collection as string, profile as string | undefined);
