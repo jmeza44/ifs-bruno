@@ -20,7 +20,7 @@ export async function runInit(args: InitArgs): Promise<void> {
   const host = args.host ?? await promptText(t("init.prompt_host"), "https://your-env.ifs.cloud");
   const realm = args.realm ?? await promptText(t("init.prompt_realm"), "your-realm");
   const clientId = args.clientId ?? await promptText(t("init.prompt_client_id"), "IFS_postman");
-  const output = args.output ?? await promptText(t("init.prompt_output_folder"), name);
+  const output = args.output ?? name;
 
   const options: InitOptions = { host, realm, clientId, name };
   const outputPath = path.resolve(output);
