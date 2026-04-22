@@ -36,6 +36,7 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
         return { value: tag, label: `${tag}  (${count})` };
       }),
     ],
+    maxItems: 12,
   });
 
   if (p.isCancel(selectedTag)) {
@@ -92,6 +93,7 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
       label: e.displayLabel,
       hint: e.operationId,
     })),
+    maxItems: 12,
     required: true,
   });
 
