@@ -1,14 +1,15 @@
 import * as p from "@clack/prompts";
+import { t } from "../i18n";
 import type { IfsProjection } from "../core/ifs-client";
 
 export async function selectProjection(projections: IfsProjection[]): Promise<IfsProjection> {
   const searchTerm = await p.text({
-    message: `Buscar projection  (${projections.length} disponibles):`,
-    placeholder: "e.g. WorkTask, PurchaseOrder",
+    message: t("projection_selector.search", { count: projections.length }),
+    placeholder: t("projection_selector.search_placeholder"),
   });
 
   if (p.isCancel(searchTerm)) {
-    p.cancel("Cancelado.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 
@@ -24,12 +25,15 @@ export async function selectProjection(projections: IfsProjection[]): Promise<If
   }
 
   if (filtered.length === 0) {
-    p.cancel("Ninguna projection coincide con la búsqueda.");
+    p.cancel(t("projection_selector.no_match"));
     process.exit(0);
   }
 
   const selected = await p.select<IfsProjection>({
-    message: `Seleccioná una projection  (${filtered.length} resultado${filtered.length === 1 ? "" : "s"}):`,
+    message: t("projection_selector.select", {
+      count: filtered.length,
+      plural: filtered.length === 1 ? "" : "s",
+    }),
     options: filtered.map((proj) => ({
       value: proj,
       label: proj.ProjectionName,
@@ -38,7 +42,7 @@ export async function selectProjection(projections: IfsProjection[]): Promise<If
   });
 
   if (p.isCancel(selected)) {
-    p.cancel("Cancelado.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 

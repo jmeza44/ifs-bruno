@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import { t } from "../i18n";
 import type { SwaggerSpec, PathItem, Operation } from "../types/spec.types";
 import type { EndpointEntry } from "../types/tool.types";
 
@@ -28,9 +29,9 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
   const tags = [...new Set(entries.map((e) => e.tag))].sort();
 
   const selectedTag = await p.select({
-    message: `Select a tag  (${tags.length} tags, ${entries.length} total endpoints):`,
+    message: t("endpoint_selector.select_tag", { tags: tags.length, total: entries.length }),
     options: [
-      { value: "__ALL__", label: `All endpoints (${entries.length})` },
+      { value: "__ALL__", label: t("endpoint_selector.all_endpoints", { count: entries.length }) },
       ...tags.map((tag) => {
         const count = entries.filter((e) => e.tag === tag).length;
         return { value: tag, label: `${tag}  (${count})` };
@@ -40,7 +41,7 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
   });
 
   if (p.isCancel(selectedTag)) {
-    p.cancel("Cancelled.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 
@@ -48,26 +49,26 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
     selectedTag === "__ALL__" ? entries : entries.filter((e) => e.tag === selectedTag);
 
   const selectedMethods = await p.multiselect<string>({
-    message: "Filter by HTTP method  (space = toggle, enter = confirm):",
+    message: t("endpoint_selector.filter_method"),
     options: HTTP_METHODS.map((m) => ({ value: m, label: m.toUpperCase() })),
     initialValues: [...HTTP_METHODS],
     required: true,
   });
 
   if (p.isCancel(selectedMethods)) {
-    p.cancel("Cancelled.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 
   filtered = filtered.filter((e) => (selectedMethods as string[]).includes(e.method));
 
   const searchTerm = await p.text({
-    message: "Filter endpoints by keyword  (leave empty to show all):",
-    placeholder: "e.g. task, create, seq",
+    message: t("endpoint_selector.filter_keyword"),
+    placeholder: t("endpoint_selector.filter_placeholder"),
   });
 
   if (p.isCancel(searchTerm)) {
-    p.cancel("Cancelled.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 
@@ -82,12 +83,15 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
   }
 
   if (filtered.length === 0) {
-    p.cancel("No endpoints match the selected filters.");
+    p.cancel(t("endpoint_selector.no_match"));
     process.exit(0);
   }
 
   const selected = await p.multiselect<EndpointEntry>({
-    message: `Select endpoints  (${filtered.length} match${filtered.length === 1 ? "" : "es"}, space = toggle, enter = confirm):`,
+    message: t("endpoint_selector.select_endpoints", {
+      count: filtered.length,
+      plural: filtered.length === 1 ? "" : "s",
+    }),
     options: filtered.map((e) => ({
       value: e,
       label: e.displayLabel,
@@ -98,7 +102,7 @@ export async function selectEndpoints(entries: EndpointEntry[]): Promise<Endpoin
   });
 
   if (p.isCancel(selected)) {
-    p.cancel("Cancelled.");
+    p.cancel(t("common.cancelled"));
     process.exit(0);
   }
 

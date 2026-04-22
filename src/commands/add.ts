@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { t } from "../i18n";
 import { loadSpec } from "../core/spec-loader";
 import { RequestBuilder } from "../core/request-builder";
 import { loadCollection, upsertRequests } from "../core/bruno-writer";
@@ -10,7 +11,7 @@ import { fetchProjections, fetchOpenApiSpec } from "../core/ifs-client";
 import type { Operation, SwaggerSpec } from "../types/spec.types";
 
 export async function runAdd(specPath: string | undefined, collectionPath: string, profileName?: string): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" ifs-bruno ")));
+  p.intro(pc.bgCyan(pc.black(t("add.intro"))));
 
   const specSpinner = p.spinner();
   let spec: SwaggerSpec;
@@ -18,48 +19,48 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
   if (profileName) {
     const profile = getProfile(profileName);
     if (!profile) {
-      p.cancel(`Perfil "${profileName}" no encontrado. Ejecutá: ifs-bruno profile add`);
+      p.cancel(t("add.profile_not_found", { name: profileName }));
       process.exit(1);
     }
 
-    specSpinner.start(`Conectando a ${profile.host}...`);
+    specSpinner.start(t("add.connecting", { host: profile.host }));
     let projections;
     try {
       projections = await fetchProjections(profile);
-      specSpinner.stop(`${projections.length} projections disponibles`);
+      specSpinner.stop(t("add.projections_available", { count: projections.length }));
     } catch (err) {
-      specSpinner.stop("Error al conectar con IFS");
+      specSpinner.stop(t("add.connect_error"));
       p.cancel((err as Error).message);
       process.exit(1);
     }
 
     const projection = await selectProjection(projections);
 
-    specSpinner.start(`Cargando spec de ${projection.ProjectionName}...`);
+    specSpinner.start(t("add.loading_spec", { name: projection.ProjectionName }));
     try {
       spec = await fetchOpenApiSpec(profile, projection.ProjectionName);
       specSpinner.stop(
-        `Cargado ${pc.bold(spec.info.title)}  —  ${Object.keys(spec.paths).length} paths`
+        t("add.spec_loaded", { title: pc.bold(spec.info.title), count: Object.keys(spec.paths).length })
       );
     } catch (err) {
-      specSpinner.stop("Error al cargar la spec");
+      specSpinner.stop(t("add.spec_load_error"));
       p.cancel((err as Error).message);
       process.exit(1);
     }
   } else {
     if (!specPath) {
-      p.cancel("Necesitás pasar --spec <path> o --profile <nombre>");
+      p.cancel(t("add.need_spec_or_profile"));
       process.exit(1);
     }
 
-    specSpinner.start("Loading spec...");
+    specSpinner.start(t("add.loading_spec_file"));
     try {
       spec = loadSpec(specPath);
       specSpinner.stop(
-        `Loaded ${pc.bold(spec.info.title)}  —  ${Object.keys(spec.paths).length} paths`
+        t("add.spec_file_loaded", { title: pc.bold(spec.info.title), count: Object.keys(spec.paths).length })
       );
     } catch (err) {
-      specSpinner.stop("Failed to load spec");
+      specSpinner.stop(t("add.spec_file_error"));
       p.cancel((err as Error).message);
       process.exit(1);
     }
@@ -81,12 +82,12 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
   );
 
   const confirmed = await p.confirm({
-    message: "Add these endpoints to the collection?",
+    message: t("add.confirm_add"),
     initialValue: true,
   });
 
   if (p.isCancel(confirmed) || !confirmed) {
-    p.cancel("Aborted.");
+    p.cancel(t("common.aborted"));
     process.exit(0);
   }
 
@@ -101,12 +102,12 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
   try {
     result = upsertRequests(collectionPath, spec!.info.title, builtRequests);
   } catch (err) {
-    p.cancel(`Failed to write requests: ${(err as Error).message}`);
+    p.cancel(t("add.write_error", { message: (err as Error).message }));
     process.exit(1);
   }
 
   p.outro(
-    pc.green(`Done!  ${result.created} created, ${result.updated} updated`) +
+    pc.green(t("add.outro_done", { created: result.created, updated: result.updated })) +
     `\n  ${pc.dim(collectionPath)}/${spec!.info.title}/`
   );
 }

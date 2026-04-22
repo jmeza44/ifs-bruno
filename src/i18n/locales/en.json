@@ -1,0 +1,84 @@
+{
+  "common": {
+    "cancelled": "Cancelled.",
+    "aborted": "Aborted."
+  },
+  "init": {
+    "intro": " ifs-bruno init ",
+    "prompt_collection_name": "Collection name",
+    "prompt_host": "IFS host",
+    "prompt_realm": "Keycloak realm name",
+    "prompt_client_id": "Client ID",
+    "prompt_output_folder": "Output folder",
+    "confirm_overwrite": "{{output}} already exists. Continue anyway?",
+    "outro_collection_created": "Collection created.",
+    "outro_next_steps": "Next steps:",
+    "outro_step1": "Open the {{output}} folder in Bruno",
+    "outro_step2": "Set {{clientSecret}} in the {{env}} environment via Bruno's UI",
+    "outro_step3": "Run {{auth}} to get the access token",
+    "outro_step4": "Use {{cmd}} to add endpoints from IFS specs"
+  },
+  "add": {
+    "intro": " ifs-bruno ",
+    "profile_not_found": "Profile \"{{name}}\" not found. Run: ifs-bruno profile add",
+    "connecting": "Connecting to {{host}}...",
+    "projections_available": "{{count}} projections available",
+    "connect_error": "Error connecting to IFS",
+    "loading_spec": "Loading spec from {{name}}...",
+    "spec_loaded": "Loaded {{title}}  —  {{count}} paths",
+    "spec_load_error": "Error loading spec",
+    "need_spec_or_profile": "You need to pass --spec <path> or --profile <name>",
+    "loading_spec_file": "Loading spec...",
+    "spec_file_loaded": "Loaded {{title}}  —  {{count}} paths",
+    "spec_file_error": "Failed to load spec",
+    "confirm_add": "Add these endpoints to the collection?",
+    "write_error": "Failed to write requests: {{message}}",
+    "outro_done": "Done!  {{created}} created, {{updated}} updated"
+  },
+  "profile": {
+    "add_intro": " ifs-bruno profile add ",
+    "prompt_name": "Profile name",
+    "confirm_overwrite": "Profile \"{{name}}\" already exists. Overwrite?",
+    "prompt_host": "IFS host",
+    "prompt_realm": "Keycloak realm",
+    "prompt_client_id": "Client ID",
+    "prompt_client_secret": "Client Secret",
+    "prompt_keycloak_base_path": "Keycloak base path",
+    "saved": "Profile \"{{name}}\" saved.",
+    "no_profiles": "No profiles configured.",
+    "no_profiles_hint": "  Run: ifs-bruno profile add",
+    "profiles_title": "\nConfigured profiles:\n",
+    "deleted": "Profile \"{{name}}\" deleted.",
+    "not_found": "Profile \"{{name}}\" not found."
+  },
+  "endpoint_selector": {
+    "select_tag": "Select a tag  ({{tags}} tags, {{total}} total endpoints):",
+    "all_endpoints": "All endpoints ({{count}})",
+    "filter_method": "Filter by HTTP method  (space = toggle, enter = confirm):",
+    "filter_keyword": "Filter endpoints by keyword  (leave empty to show all):",
+    "filter_placeholder": "e.g. task, create, seq",
+    "no_match": "No endpoints match the selected filters.",
+    "select_endpoints": "Select endpoints  ({{count}} match{{plural}}, space = toggle, enter = confirm):"
+  },
+  "projection_selector": {
+    "search": "Search projection  ({{count}} available):",
+    "search_placeholder": "e.g. WorkTask, PurchaseOrder",
+    "no_match": "No projection matches the search.",
+    "select": "Select a projection  ({{count}} result{{plural}}):"
+  },
+  "cli": {
+    "usage": "Usage:",
+    "usage_init": "  ifs-bruno init     [--host <url>] [--realm <realm>] [--client-id <id>] [--output <folder>]",
+    "usage_add_spec": "  ifs-bruno add      --spec <path.json> --collection <folder>",
+    "usage_add_profile": "  ifs-bruno add      --profile <name> --collection <folder>",
+    "usage_profile_add": "  ifs-bruno profile  add [<name>]",
+    "usage_profile_list": "  ifs-bruno profile  list",
+    "usage_profile_delete": "  ifs-bruno profile  delete <name>",
+    "unknown_subcommand": "Unknown subcommand: profile {{subcommand}}",
+    "available_subcommands": "Available subcommands: add, list, delete",
+    "unknown_command": "Unknown command: {{command}}",
+    "available_commands": "Available commands: init, add, profile",
+    "unexpected_error": "Unexpected error:",
+    "profile_delete_missing_name": "Usage: ifs-bruno profile delete <name>"
+  }
+}

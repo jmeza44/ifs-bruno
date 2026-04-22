@@ -1,0 +1,84 @@
+{
+  "common": {
+    "cancelled": "Cancelado.",
+    "aborted": "Abortado."
+  },
+  "init": {
+    "intro": " ifs-bruno init ",
+    "prompt_collection_name": "Nombre de la colección",
+    "prompt_host": "Host de IFS",
+    "prompt_realm": "Nombre del realm de Keycloak",
+    "prompt_client_id": "Client ID",
+    "prompt_output_folder": "Carpeta de destino",
+    "confirm_overwrite": "{{output}} ya existe. ¿Continuar de todas formas?",
+    "outro_collection_created": "Colección creada.",
+    "outro_next_steps": "Próximos pasos:",
+    "outro_step1": "Abrí la carpeta {{output}} en Bruno",
+    "outro_step2": "Configurá {{clientSecret}} en el ambiente {{env}} desde la UI de Bruno",
+    "outro_step3": "Ejecutá {{auth}} para obtener el access token",
+    "outro_step4": "Usá {{cmd}} para agregar endpoints de specs IFS"
+  },
+  "add": {
+    "intro": " ifs-bruno ",
+    "profile_not_found": "Perfil \"{{name}}\" no encontrado. Ejecutá: ifs-bruno profile add",
+    "connecting": "Conectando a {{host}}...",
+    "projections_available": "{{count}} projections disponibles",
+    "connect_error": "Error al conectar con IFS",
+    "loading_spec": "Cargando spec de {{name}}...",
+    "spec_loaded": "Cargado {{title}}  —  {{count}} paths",
+    "spec_load_error": "Error al cargar la spec",
+    "need_spec_or_profile": "Necesitás pasar --spec <path> o --profile <nombre>",
+    "loading_spec_file": "Cargando spec...",
+    "spec_file_loaded": "Cargado {{title}}  —  {{count}} paths",
+    "spec_file_error": "Error al cargar la spec",
+    "confirm_add": "¿Agregar estos endpoints a la colección?",
+    "write_error": "Error al escribir los requests: {{message}}",
+    "outro_done": "¡Listo!  {{created}} creados, {{updated}} actualizados"
+  },
+  "profile": {
+    "add_intro": " ifs-bruno profile add ",
+    "prompt_name": "Nombre del perfil",
+    "confirm_overwrite": "El perfil \"{{name}}\" ya existe. ¿Sobreescribir?",
+    "prompt_host": "Host de IFS",
+    "prompt_realm": "Realm de Keycloak",
+    "prompt_client_id": "Client ID",
+    "prompt_client_secret": "Client Secret",
+    "prompt_keycloak_base_path": "Keycloak base path",
+    "saved": "Perfil \"{{name}}\" guardado.",
+    "no_profiles": "No hay perfiles configurados.",
+    "no_profiles_hint": "  Ejecutá: ifs-bruno profile add",
+    "profiles_title": "\nPerfiles configurados:\n",
+    "deleted": "Perfil \"{{name}}\" eliminado.",
+    "not_found": "Perfil \"{{name}}\" no encontrado."
+  },
+  "endpoint_selector": {
+    "select_tag": "Seleccioná un tag  ({{tags}} tags, {{total}} endpoints en total):",
+    "all_endpoints": "Todos los endpoints ({{count}})",
+    "filter_method": "Filtrar por método HTTP  (espacio = toggle, enter = confirmar):",
+    "filter_keyword": "Filtrar endpoints por palabra clave  (dejá vacío para mostrar todos):",
+    "filter_placeholder": "ej. task, create, seq",
+    "no_match": "Ningún endpoint coincide con los filtros seleccionados.",
+    "select_endpoints": "Seleccioná endpoints  ({{count}} coincidencia{{plural}}, espacio = toggle, enter = confirmar):"
+  },
+  "projection_selector": {
+    "search": "Buscar projection  ({{count}} disponibles):",
+    "search_placeholder": "ej. WorkTask, PurchaseOrder",
+    "no_match": "Ninguna projection coincide con la búsqueda.",
+    "select": "Seleccioná una projection  ({{count}} resultado{{plural}}):"
+  },
+  "cli": {
+    "usage": "Uso:",
+    "usage_init": "  ifs-bruno init     [--host <url>] [--realm <realm>] [--client-id <id>] [--output <carpeta>]",
+    "usage_add_spec": "  ifs-bruno add      --spec <path.json> --collection <carpeta>",
+    "usage_add_profile": "  ifs-bruno add      --profile <nombre> --collection <carpeta>",
+    "usage_profile_add": "  ifs-bruno profile  add [<nombre>]",
+    "usage_profile_list": "  ifs-bruno profile  list",
+    "usage_profile_delete": "  ifs-bruno profile  delete <nombre>",
+    "unknown_subcommand": "Subcomando desconocido: profile {{subcommand}}",
+    "available_subcommands": "Subcomandos disponibles: add, list, delete",
+    "unknown_command": "Comando desconocido: {{command}}",
+    "available_commands": "Comandos disponibles: init, add, profile",
+    "unexpected_error": "Error inesperado:",
+    "profile_delete_missing_name": "Uso: ifs-bruno profile delete <nombre>"
+  }
+}
