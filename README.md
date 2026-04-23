@@ -106,18 +106,6 @@ ifs-bruno profile list
 ifs-bruno profile delete <name>
 ```
 
-## Development
+## Contributing
 
-To work on the tool itself, use `tsx` to run from source — no build step needed:
-
-```bash
-pnpm dev -- init
-pnpm dev -- add --spec ./path/to/spec.json --collection ./my-collection
-```
-
-To build and link globally:
-
-```bash
-pnpm build
-pnpm link --global
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
