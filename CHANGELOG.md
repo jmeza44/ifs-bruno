@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-04-22
+
+### Added
+- `add` command now remembers previously used collections in `~/.ifs-bruno/config.json`
+- When `--collection` is omitted, shows an interactive list of saved collections ordered by last used date
+- Each collection option displays its last used date/time in the system locale
+- "Other..." option available to enter a new path manually
+- Collections are validated against disk before being shown (must have `opencollection.yml`)
+- New collection paths are saved automatically after a successful `add`
+
 ## [1.2.0] - 2026-04-22
 
 ### Changed

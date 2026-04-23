@@ -56,17 +56,7 @@ async function main(): Promise<void> {
 
   if (command === "add" || !command) {
     const { spec, collection, profile } = argv;
-    if (!collection) {
-      console.error(t("cli.usage"));
-      console.error(t("cli.usage_init"));
-      console.error(t("cli.usage_add_spec"));
-      console.error(t("cli.usage_add_profile"));
-      console.error(t("cli.usage_profile_add"));
-      console.error(t("cli.usage_profile_list"));
-      console.error(t("cli.usage_profile_delete"));
-      process.exit(1);
-    }
-    await runAdd(spec as string | undefined, collection as string, profile as string | undefined);
+    await runAdd(spec as string | undefined, collection as string | undefined, profile as string | undefined);
     return;
   }
 

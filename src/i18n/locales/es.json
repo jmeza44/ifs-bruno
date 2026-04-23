@@ -31,6 +31,9 @@
     "loading_spec_file": "Cargando spec...",
     "spec_file_loaded": "Cargado {{title}}  —  {{count}} paths",
     "spec_file_error": "Error al cargar la spec",
+    "prompt_select_collection": "Seleccioná una colección",
+    "prompt_collection_path": "Ruta de la carpeta de la colección",
+    "collection_other": "Otra (ingresar ruta manualmente)...",
     "confirm_add": "¿Agregar estos endpoints a la colección?",
     "write_error": "Error al escribir los requests: {{message}}",
     "outro_done": "¡Listo!  {{created}} creados, {{updated}} actualizados"

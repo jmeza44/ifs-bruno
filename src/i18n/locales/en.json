@@ -31,6 +31,9 @@
     "loading_spec_file": "Loading spec...",
     "spec_file_loaded": "Loaded {{title}}  —  {{count}} paths",
     "spec_file_error": "Failed to load spec",
+    "prompt_select_collection": "Select a collection",
+    "prompt_collection_path": "Collection folder path",
+    "collection_other": "Other (enter path manually)...",
     "confirm_add": "Add these endpoints to the collection?",
     "write_error": "Failed to write requests: {{message}}",
     "outro_done": "Done!  {{created}} created, {{updated}} updated"

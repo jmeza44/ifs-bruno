@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { t } from "../i18n";
@@ -6,12 +8,53 @@ import { RequestBuilder } from "../core/request-builder";
 import { loadCollection, upsertRequests } from "../core/bruno-writer";
 import { buildEndpointList, selectEndpoints } from "../tui/endpoint-selector";
 import { selectProjection } from "../tui/projection-selector";
-import { getProfile } from "../core/profile-store";
+import { getProfile, listCollections, saveCollection, type CollectionEntry } from "../core/profile-store";
 import { fetchProjections, fetchOpenApiSpec } from "../core/ifs-client";
 import type { Operation, SwaggerSpec } from "../types/spec.types";
 
-export async function runAdd(specPath: string | undefined, collectionPath: string, profileName?: string): Promise<void> {
+const OTHER_OPTION = "__other__";
+
+function formatLastUsed(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(iso));
+}
+
+async function promptCollectionPath(): Promise<string> {
+  const input = await p.text({ message: t("add.prompt_collection_path"), placeholder: "collections/TEST-AUTH" });
+  if (p.isCancel(input)) { p.cancel(t("common.cancelled")); process.exit(0); }
+  return path.resolve((input as string).trim());
+}
+
+async function resolveCollectionPath(collectionPath: string | undefined): Promise<string> {
+  if (collectionPath) return collectionPath;
+
+  const saved = listCollections().filter((c) => fs.existsSync(path.join(c.path, "opencollection.yml")));
+
+  if (saved.length === 0) return promptCollectionPath();
+
+  const options = [
+    ...saved.map((c: CollectionEntry) => ({
+      value: c.path,
+      label: c.path,
+      hint: formatLastUsed(c.lastUsed),
+    })),
+    { value: OTHER_OPTION, label: t("add.collection_other") },
+  ];
+
+  const selected = await p.select({ message: t("add.prompt_select_collection"), options });
+  if (p.isCancel(selected)) { p.cancel(t("common.cancelled")); process.exit(0); }
+
+  if (selected === OTHER_OPTION) return promptCollectionPath();
+
+  return selected as string;
+}
+
+export async function runAdd(specPath: string | undefined, collectionPath: string | undefined, profileName?: string): Promise<void> {
   p.intro(pc.bgCyan(pc.black(t("add.intro"))));
+
+  const resolvedCollection = await resolveCollectionPath(collectionPath);
 
   const specSpinner = p.spinner();
   let spec: SwaggerSpec;
@@ -67,7 +110,7 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
   }
 
   try {
-    loadCollection(collectionPath);
+    loadCollection(resolvedCollection);
   } catch (err) {
     p.cancel((err as Error).message);
     process.exit(1);
@@ -100,14 +143,16 @@ export async function runAdd(specPath: string | undefined, collectionPath: strin
 
   let result;
   try {
-    result = upsertRequests(collectionPath, spec!.info.title, builtRequests);
+    result = upsertRequests(resolvedCollection, spec!.info.title, builtRequests);
   } catch (err) {
     p.cancel(t("add.write_error", { message: (err as Error).message }));
     process.exit(1);
   }
 
+  saveCollection(resolvedCollection);
+
   p.outro(
     pc.green(t("add.outro_done", { created: result.created, updated: result.updated })) +
-    `\n  ${pc.dim(collectionPath)}/${spec!.info.title}/`
+    `\n  ${pc.dim(resolvedCollection)}/${spec!.info.title}/`
   );
 }

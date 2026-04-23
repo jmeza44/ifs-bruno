@@ -10,8 +10,14 @@ export interface IfsProfile {
   keycloakBasePath?: string;
 }
 
+export interface CollectionEntry {
+  path: string;
+  lastUsed: string;
+}
+
 interface ConfigFile {
   profiles: Record<string, IfsProfile>;
+  collections?: CollectionEntry[];
 }
 
 const CONFIG_DIR = path.join(os.homedir(), ".ifs-bruno");
@@ -51,4 +57,18 @@ export function deleteProfile(name: string): boolean {
   delete config.profiles[name];
   writeConfig(config);
   return true;
+}
+
+export function saveCollection(collectionPath: string): void {
+  const abs = path.resolve(collectionPath);
+  const now = new Date().toISOString();
+  const config = readConfig();
+  const existing = config.collections ?? [];
+  const others = existing.filter((c) => c.path !== abs);
+  config.collections = [{ path: abs, lastUsed: now }, ...others];
+  writeConfig(config);
+}
+
+export function listCollections(): CollectionEntry[] {
+  return readConfig().collections ?? [];
 }
