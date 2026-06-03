@@ -11,6 +11,7 @@
   "files": [
     "dist"
   ],
+  "type": "module",
   "engines": {
     "node": ">=18"
   },
@@ -27,15 +28,19 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.9.1",
+    "@inkjs/ui": "^2.0.0",
     "i18next": "^26.0.6",
+    "ink": "^7.0.1",
     "js-yaml": "^4.1.0",
     "minimist": "^1.2.8",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "react": "^19.2.5"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/minimist": "^1.2.5",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
     "tsup": "^8.3.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"

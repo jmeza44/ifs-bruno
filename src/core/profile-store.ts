@@ -17,7 +17,7 @@ export interface CollectionEntry {
 
 interface ConfigFile {
   profiles: Record<string, IfsProfile>;
-  collections?: CollectionEntry[];
+  collections?: Array<CollectionEntry | string>;
 }
 
 const CONFIG_DIR = path.join(os.homedir(), ".ifs-bruno");
@@ -59,16 +59,29 @@ export function deleteProfile(name: string): boolean {
   return true;
 }
 
+function normalizeCollections(raw: Array<CollectionEntry | string>): CollectionEntry[] {
+  const seen = new Set<string>();
+  const result: CollectionEntry[] = [];
+  for (const c of raw) {
+    const entry = typeof c === "string" ? { path: c, lastUsed: new Date(0).toISOString() } : c;
+    if (!seen.has(entry.path)) {
+      seen.add(entry.path);
+      result.push(entry);
+    }
+  }
+  return result;
+}
+
 export function saveCollection(collectionPath: string): void {
   const abs = path.resolve(collectionPath);
   const now = new Date().toISOString();
   const config = readConfig();
-  const existing = config.collections ?? [];
+  const existing = normalizeCollections(config.collections ?? []);
   const others = existing.filter((c) => c.path !== abs);
   config.collections = [{ path: abs, lastUsed: now }, ...others];
   writeConfig(config);
 }
 
 export function listCollections(): CollectionEntry[] {
-  return readConfig().collections ?? [];
+  return normalizeCollections(readConfig().collections ?? []);
 }

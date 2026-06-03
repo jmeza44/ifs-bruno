@@ -6,19 +6,36 @@ import { runProfileAdd, runProfileList, runProfileDelete } from "./commands/prof
 
 const argv = minimist(process.argv.slice(2), {
   string: ["spec", "collection", "name", "host", "realm", "client-id", "output", "profile"],
+  boolean: ["help"],
   alias: {
     s: "spec",
     c: "collection",
     o: "output",
     p: "profile",
+    h: "help",
   },
 });
 
 const command = argv._[0];
 const subcommand = argv._[1];
 
+function printHelp(): void {
+  console.log(t("cli.usage"));
+  console.log(t("cli.usage_init"));
+  console.log(t("cli.usage_add_spec"));
+  console.log(t("cli.usage_add_profile"));
+  console.log(t("cli.usage_profile_add"));
+  console.log(t("cli.usage_profile_list"));
+  console.log(t("cli.usage_profile_delete"));
+}
+
 async function main(): Promise<void> {
   await initI18n();
+
+  if (argv.help) {
+    printHelp();
+    return;
+  }
 
   if (command === "init") {
     await runInit({
