@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text, useInput, useApp } from "ink";
+import { Box, Text, useInput, useApp, useStdout } from "ink";
 import fs from "fs";
 import path from "path";
 import { t } from "../i18n";
@@ -20,9 +20,9 @@ type Phase =
   | { id: "collection-input" }
   | { id: "loading-projections"; collection: string }
   | { id: "select-projection"; collection: string; projections: IfsProjection[] }
-  | { id: "loading-spec"; collection: string; projection: string }
+  | { id: "loading-spec"; collection: string; projection: string; projections: IfsProjection[] }
   | { id: "loading-spec-file"; collection: string; specPath: string }
-  | { id: "select-endpoints"; collection: string; spec: SwaggerSpec; entries: EndpointEntry[] }
+  | { id: "select-endpoints"; collection: string; spec: SwaggerSpec; entries: EndpointEntry[]; prev: Phase }
   | { id: "confirm"; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
   | { id: "writing"; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
   | { id: "done"; collection: string; spec: SwaggerSpec; created: number; updated: number }
@@ -36,15 +36,6 @@ export interface AddFlowProps {
 }
 
 // ─── Small reusable components ───────────────────────────────────────────────
-
-function StatusLine({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <Box gap={1}>
-      <Text dimColor>{label}</Text>
-      <Text color={color}>{value}</Text>
-    </Box>
-  );
-}
 
 function Spinner({ label }: { label: string }) {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
@@ -115,8 +106,7 @@ function CollectionInput({ onSubmit }: { onSubmit: (p: string) => void }) {
       <Text bold>{t("add.prompt_collection_path")}</Text>
       <Box gap={1}>
         <Text dimColor>›</Text>
-        <Text>{value || <Text dimColor>collections/TEST-AUTH</Text>}</Text>
-        <Text>█</Text>
+        <Text>{value || <Text dimColor>collections/TEST-AUTH</Text>}█</Text>
       </Box>
     </Box>
   );
@@ -128,6 +118,10 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState<"search" | "select">("search");
   const [cursor, setCursor] = useState(0);
+  const { stdout } = useStdout();
+  // header(1) + gap(1) + search(1) + gap(1) + select-label(1) + pagination(1) + paddingY(2) = 8 fixed lines
+  const visibleCount = Math.max(2, Math.floor(((stdout?.rows ?? 24) - 8) / 2));
+
 
   const filtered = projections.filter((p) => {
     if (!search.trim()) return true;
@@ -155,14 +149,12 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
       </Box>
       <Box gap={1}>
         <Text dimColor>{mode === "search" ? "›" : " "}</Text>
-        <Text>{search || <Text dimColor>{t("projection_selector.search_placeholder")}</Text>}</Text>
-        {mode === "search" && <Text>█</Text>}
+        <Text>{search || <Text dimColor>{t("projection_selector.search_placeholder")}</Text>}{mode === "search" ? "█" : ""}</Text>
       </Box>
       {mode === "select" && (
         <Box flexDirection="column" marginTop={1}>
           <Text dimColor>{t("projection_selector.select", { count: filtered.length, plural: filtered.length === 1 ? "" : "s" })}</Text>
           {(() => {
-            const visibleCount = 12;
             const offset = Math.max(0, cursor - Math.floor(visibleCount / 2));
             const visible = filtered.slice(offset, offset + visibleCount);
             return (
@@ -171,10 +163,16 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
                   const absIdx = offset + i;
                   const isCursor = absIdx === cursor;
                   return (
-                    <Box key={proj.ProjectionName} gap={1}>
-                      <Text color={isCursor ? "cyan" : "gray"}>{isCursor ? "›" : " "}</Text>
-                      <Text color={isCursor ? "white" : undefined}>{proj.ProjectionName}</Text>
-                      {proj.Description && <Text dimColor>{proj.Description}</Text>}
+                    <Box key={proj.ProjectionName} flexDirection="column">
+                      <Box gap={1}>
+                        <Text color={isCursor ? "cyan" : "gray"}>{isCursor ? "›" : " "}</Text>
+                        <Text color={isCursor ? "white" : undefined} bold={isCursor}>{proj.ProjectionName}</Text>
+                      </Box>
+                      {proj.Description && (
+                        <Box paddingLeft={2}>
+                          <Text dimColor wrap="wrap">{proj.Description.replace(/\s+/g, " ").trim()}</Text>
+                        </Box>
+                      )}
                     </Box>
                   );
                 })}
@@ -243,28 +241,34 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
   // Side effects triggered by phase transitions
   useEffect(() => {
     if (phase.id === "loading-projections") {
+      let cancelled = false;
       const profile = getProfile(profileName!);
       if (!profile) { setPhase({ id: "error", message: t("add.profile_not_found", { name: profileName }) }); return; }
       addLog(t("add.connecting", { host: profile.host }));
       fetchProjections(profile)
         .then((projections) => {
+          if (cancelled) return;
           addLog(t("add.projections_available", { count: projections.length }));
           setPhase({ id: "select-projection", collection: phase.collection, projections });
         })
-        .catch((err: Error) => setPhase({ id: "error", message: err.message }));
+        .catch((err: Error) => { if (!cancelled) setPhase({ id: "error", message: err.message }); });
+      return () => { cancelled = true; };
     }
 
     if (phase.id === "loading-spec") {
+      let cancelled = false;
       const profile = getProfile(profileName!);
       if (!profile) { setPhase({ id: "error", message: t("add.profile_not_found", { name: profileName }) }); return; }
       addLog(t("add.loading_spec", { name: phase.projection }));
       fetchOpenApiSpec(profile, phase.projection)
         .then((spec) => {
-          addLog(t("add.spec_loaded", { title: spec.info.title, count: Object.keys(spec.paths).length }));
+          if (cancelled) return;
           const entries = buildEndpointList(spec);
-          setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries });
+          setLog([]);
+          setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries, prev: { id: "select-projection", collection: phase.collection, projections: phase.projections } });
         })
-        .catch((err: Error) => setPhase({ id: "error", message: err.message }));
+        .catch((err: Error) => { if (!cancelled) setPhase({ id: "error", message: err.message }); });
+      return () => { cancelled = true; };
     }
 
     if (phase.id === "loading-spec-file") {
@@ -273,7 +277,8 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
         const spec = loadSpec(phase.specPath);
         addLog(t("add.spec_file_loaded", { title: spec.info.title, count: Object.keys(spec.paths).length }));
         const entries = buildEndpointList(spec);
-        setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries });
+        setLog([]);
+        setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries, prev: { id: "collection" } });
       } catch (err) {
         setPhase({ id: "error", message: (err as Error).message });
       }
@@ -353,16 +358,21 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       {phase.id === "select-projection" && (
         <ProjectionSelect
           projections={phase.projections}
-          onSelect={(proj) => setPhase({ id: "loading-spec", collection: phase.collection, projection: proj.ProjectionName })}
+          onSelect={(proj) => setPhase({ id: "loading-spec", collection: phase.collection, projection: proj.ProjectionName, projections: phase.projections })}
         />
       )}
 
+      {/* Known limitation: navigating back to select-projection and selecting any projection
+          causes EndpointSelector to freeze (input stops responding). Root cause is an Ink
+          bug where useInput's setRawMode cleanup fires after the new mount's setup when the
+          parent re-renders during the phase transition, leaving raw mode disabled.
+          Workaround: press Enter to unfreeze. */}
       {phase.id === "select-endpoints" && (
         <EndpointSelector
           entries={phase.entries}
           spec={phase.spec}
           onSubmit={(selected) => setPhase({ id: "confirm", collection: phase.collection, spec: phase.spec, selected })}
-          onCancel={() => setPhase({ id: "cancelled" })}
+          onCancel={() => setPhase(phase.prev)}
         />
       )}
 

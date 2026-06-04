@@ -42,6 +42,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(new Set(HTTP_METHODS));
   const [mode, setMode] = useState<"list" | "search">("list");
 
+
   const filtered = useMemo(() => {
     const term = keyword.toLowerCase();
     return entries.filter((e) => {
@@ -67,7 +68,13 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
 
   useInput((input, key) => {
     if (mode === "search") {
-      if (key.escape || key.return) {
+      if (key.escape) {
+        if (!keyword) { onCancel(); return; }
+        setMode("list");
+        setCursor(0);
+        return;
+      }
+      if (key.return) {
         setMode("list");
         setCursor(0);
         return;
@@ -149,8 +156,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
       {/* search bar */}
       <Box paddingX={1} marginBottom={1}>
         <Text dimColor>{mode === "search" ? "▶ " : "/ "}</Text>
-        <Text>{keyword || (mode === "search" ? "" : "type / to search...")}</Text>
-        {mode === "search" && <Text>█</Text>}
+        <Text>{keyword || (mode === "search" ? "" : "type / to search...")}{mode === "search" ? "█" : ""}</Text>
       </Box>
 
       {/* main panels */}
@@ -229,7 +235,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
         <Text dimColor>/ search</Text>
         <Text dimColor>g/p/u/c/d toggle method</Text>
         <Text dimColor>enter confirm</Text>
-        <Text dimColor>esc cancel</Text>
+        <Text dimColor>esc go back</Text>
       </Box>
     </Box>
   );
