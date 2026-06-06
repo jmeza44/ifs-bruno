@@ -26,11 +26,18 @@ async function fetchToken(profile: IfsProfile): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
+  }).catch((err: Error) => {
+    throw new Error(`Cannot reach IFS host (${profile.host}): ${err.message}. Check your network connection and VPN.`);
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Auth failed (${res.status}): ${text}`);
+    const body = await res.text().catch(() => "");
+    let detail = body;
+    try {
+      const json = JSON.parse(body) as { error_description?: string; error?: string };
+      detail = json.error_description ?? json.error ?? body;
+    } catch { /* not JSON — use raw body */ }
+    throw new Error(`Auth failed (${res.status}): ${detail}`);
   }
 
   const data = await res.json() as { access_token?: string };

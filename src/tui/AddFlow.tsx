@@ -20,6 +20,7 @@ type Phase =
   | { id: "collection-input" }
   | { id: "loading-projections"; collection: string }
   | { id: "select-projection"; collection: string; projections: IfsProjection[] }
+  | { id: "restoring-input"; next: Phase }
   | { id: "loading-spec"; collection: string; projection: string; projections: IfsProjection[] }
   | { id: "loading-spec-file"; collection: string; specPath: string }
   | { id: "select-endpoints"; collection: string; spec: SwaggerSpec; entries: EndpointEntry[]; prev: Phase }
@@ -301,6 +302,13 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       }
     }
 
+    if (phase.id === "restoring-input") {
+      // One-frame buffer: lets the unmounting component's useInput cleanup (setRawMode false)
+      // finish before the next phase mounts its own useInput, preventing a frozen input state.
+      const id = setTimeout(() => setPhase(phase.next), 32);
+      return () => clearTimeout(id);
+    }
+
     if (phase.id === "done" || phase.id === "error" || phase.id === "cancelled") {
       setTimeout(exit, 100);
     }
@@ -316,8 +324,13 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
   }
 
   function advanceFromCollection(collection: string) {
-    if (profileName) setPhase({ id: "loading-projections", collection });
-    else if (specPath) setPhase({ id: "loading-spec-file", collection, specPath });
+    const resolvedPath = path.resolve(collection);
+    if (!fs.existsSync(resolvedPath)) {
+      setPhase({ id: "error", message: t("add.collection_not_found", { path: resolvedPath }) });
+      return;
+    }
+    if (profileName) setPhase({ id: "loading-projections", collection: resolvedPath });
+    else if (specPath) setPhase({ id: "loading-spec-file", collection: resolvedPath, specPath });
     else setPhase({ id: "error", message: t("add.need_spec_or_profile") });
   }
 
@@ -363,17 +376,12 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
         />
       )}
 
-      {/* Known limitation: navigating back to select-projection and selecting any projection
-          causes EndpointSelector to freeze (input stops responding). Root cause is an Ink
-          bug where useInput's setRawMode cleanup fires after the new mount's setup when the
-          parent re-renders during the phase transition, leaving raw mode disabled.
-          Workaround: press Enter to unfreeze. */}
       {phase.id === "select-endpoints" && (
         <EndpointSelector
           entries={phase.entries}
           spec={phase.spec}
           onSubmit={(selected) => setPhase({ id: "confirm", collection: phase.collection, spec: phase.spec, selected })}
-          onCancel={() => setPhase(phase.prev)}
+          onCancel={() => setPhase({ id: "restoring-input", next: phase.prev })}
         />
       )}
 

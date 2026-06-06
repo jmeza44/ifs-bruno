@@ -32,6 +32,7 @@
     "spec_loaded": "Cargado {{title}}  —  {{count}} paths",
     "spec_load_error": "Error al cargar la spec",
     "need_spec_or_profile": "Necesitás pasar --spec <path> o --profile <nombre>",
+    "collection_not_found": "Carpeta de colección no encontrada: {{path}}\n  Ejecutá: ifs-bruno init    para crear una nueva colección",
     "need_setup": "No hay perfiles configurados y no se pasó --spec.\n  Ejecutá: ifs-bruno profile add    para configurar una conexión IFS\n  O bien:  ifs-bruno add --spec <path.json> --collection <carpeta>    para usar una spec local",
     "loading_spec_file": "Cargando spec...",
     "spec_file_loaded": "Cargado {{title}}  —  {{count}} paths",

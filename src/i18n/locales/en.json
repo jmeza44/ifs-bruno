@@ -32,6 +32,7 @@
     "spec_loaded": "Loaded {{title}}  —  {{count}} paths",
     "spec_load_error": "Error loading spec",
     "need_spec_or_profile": "You need to pass --spec <path> or --profile <name>",
+    "collection_not_found": "Collection folder not found: {{path}}\n  Run: ifs-bruno init    to create a new collection",
     "need_setup": "No profiles configured and no --spec provided.\n  Run: ifs-bruno profile add    to set up an IFS connection\n  Or:  ifs-bruno add --spec <path.json> --collection <folder>    to use a local spec",
     "loading_spec_file": "Loading spec...",
     "spec_file_loaded": "Loaded {{title}}  —  {{count}} paths",
