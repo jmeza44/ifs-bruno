@@ -7,7 +7,7 @@ import type { IfsProfile } from "../core/profile-store";
 export async function runProfileAdd(nameArg?: string): Promise<void> {
   p.intro(pc.bgCyan(pc.black(t("profile.add_intro"))));
 
-  const name = nameArg ?? await promptText(t("profile.prompt_name"), "my-env");
+  const name = nameArg ?? await promptText(t("profile.prompt_name"), "my-env", t("profile.hint_name"));
   const existing = getProfile(name);
 
   if (existing) {
@@ -21,14 +21,14 @@ export async function runProfileAdd(nameArg?: string): Promise<void> {
     }
   }
 
-  const host = await promptText(t("profile.prompt_host"), "https://your-env.ifs.cloud");
-  const realm = await promptText(t("profile.prompt_realm"), "your-realm");
-  const clientId = await promptText(t("profile.prompt_client_id"), "IFS_postman");
+  const host = await promptText(t("profile.prompt_host"), "https://your-env.ifs.cloud", t("profile.hint_host"));
+  const realm = await promptText(t("profile.prompt_realm"), "your-realm", t("profile.hint_realm"));
+  const clientId = await promptText(t("profile.prompt_client_id"), "IFS_postman", t("profile.hint_client_id"));
 
-  const clientSecret = await p.password({ message: t("profile.prompt_client_secret") });
+  const clientSecret = await p.password({ message: `${t("profile.prompt_client_secret")}\n${pc.dim(t("profile.hint_client_secret"))}` });
   if (p.isCancel(clientSecret)) { p.cancel(t("common.cancelled")); process.exit(0); }
 
-  const keycloakBasePath = await promptText(t("profile.prompt_keycloak_base_path"), "/auth");
+  const keycloakBasePath = await promptText(t("profile.prompt_keycloak_base_path"), "/auth", t("profile.hint_keycloak_base_path"));
 
   const profile: IfsProfile = {
     host: host.replace(/\/$/, ""),
@@ -73,8 +73,9 @@ export function runProfileDelete(name: string): void {
   }
 }
 
-async function promptText(message: string, placeholder: string): Promise<string> {
-  const value = await p.text({ message, placeholder });
+async function promptText(message: string, placeholder: string, hint?: string): Promise<string> {
+  const label = hint ? `${message}\n${pc.dim(hint)}` : message;
+  const value = await p.text({ message: label, placeholder });
   if (p.isCancel(value)) { p.cancel(t("common.cancelled")); process.exit(0); }
   return (value as string).trim() || placeholder;
 }

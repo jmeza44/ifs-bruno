@@ -16,3 +16,9 @@ Thumbs.db
 
 # Test collections
 collections/
+
+# Internal Docs
+ifs-docs/
+
+# Agent tooling
+.atl/

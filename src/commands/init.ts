@@ -16,10 +16,10 @@ export interface InitArgs {
 export async function runInit(args: InitArgs): Promise<void> {
   p.intro(pc.bgCyan(pc.black(t("init.intro"))));
 
-  const name = args.name ?? await promptText(t("init.prompt_collection_name"), "IFS");
-  const host = args.host ?? await promptText(t("init.prompt_host"), "https://your-env.ifs.cloud");
-  const realm = args.realm ?? await promptText(t("init.prompt_realm"), "your-realm");
-  const clientId = args.clientId ?? await promptText(t("init.prompt_client_id"), "IFS_postman");
+  const name = args.name ?? await promptText(t("init.prompt_collection_name"), "IFS", t("init.hint_collection_name"));
+  const host = args.host ?? await promptText(t("init.prompt_host"), "https://your-env.ifs.cloud", t("init.hint_host"));
+  const realm = args.realm ?? await promptText(t("init.prompt_realm"), "your-realm", t("init.hint_realm"));
+  const clientId = args.clientId ?? await promptText(t("init.prompt_client_id"), "IFS_postman", t("init.hint_client_id"));
   const output = args.output ?? name;
 
   const options: InitOptions = { host, realm, clientId, name };
@@ -50,8 +50,9 @@ export async function runInit(args: InitArgs): Promise<void> {
   );
 }
 
-async function promptText(message: string, placeholder: string): Promise<string> {
-  const value = await p.text({ message, placeholder });
+async function promptText(message: string, placeholder: string, hint?: string): Promise<string> {
+  const label = hint ? `${message}\n${pc.dim(hint)}` : message;
+  const value = await p.text({ message: label, placeholder });
   if (p.isCancel(value)) { p.cancel(t("common.cancelled")); process.exit(0); }
   return (value as string).trim() || placeholder;
 }

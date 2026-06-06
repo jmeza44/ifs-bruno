@@ -1,9 +1,19 @@
 import React from "react";
 import process from "process";
 import { render } from "ink";
+import pc from "picocolors";
+import { t } from "../i18n";
+import { listProfiles } from "../core/profile-store";
 import { AddFlow } from "../tui/AddFlow";
 
 export async function runAdd(specPath: string | undefined, collectionPath: string | undefined, profileName?: string): Promise<void> {
+  if (!specPath && !profileName) {
+    const profiles = listProfiles();
+    const message = profiles.length === 0 ? t("add.need_setup") : t("add.need_spec_or_profile");
+    console.error(pc.red("✗") + " " + message);
+    process.exit(1);
+  }
+
   process.stdin.resume();
   process.stdin.setRawMode(true);
 

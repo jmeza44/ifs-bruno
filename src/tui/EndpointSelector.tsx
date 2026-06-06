@@ -130,6 +130,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
     }
 
     if (key.return) {
+      if (selected.size === 0) return;
       const result = entries.filter((e) => selected.has(entryKey(e)));
       onSubmit(result);
     }
@@ -233,9 +234,12 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
         <Text dimColor>space select</Text>
         <Text dimColor>a select all</Text>
         <Text dimColor>/ search</Text>
-        <Text dimColor>g/p/u/c/d toggle method</Text>
+        <Text dimColor>g=GET p=POST u=PUT c=PATCH d=DELETE toggle</Text>
         <Text dimColor>enter confirm</Text>
         <Text dimColor>esc go back</Text>
+        {selected.size === 0 && mode === "list" && (
+          <Text color="yellow">select at least one endpoint</Text>
+        )}
       </Box>
     </Box>
   );

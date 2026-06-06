@@ -146,6 +146,7 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Box gap={1}>
         <Text bold>{t("projection_selector.search", { count: projections.length })}</Text>
+        <Text dimColor>{t("projection_selector.search_hint")}</Text>
       </Box>
       <Box gap={1}>
         <Text dimColor>{mode === "search" ? "›" : " "}</Text>
