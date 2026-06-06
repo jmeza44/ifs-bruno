@@ -1,8 +1,11 @@
 import minimist from "minimist";
+import pc from "picocolors";
 import { initI18n, t } from "./i18n";
 import { runAdd } from "./commands/add";
 import { runInit } from "./commands/init";
 import { runProfileAdd, runProfileList, runProfileDelete } from "./commands/profile";
+import { getProfile } from "./core/profile-store";
+import { validateAddArgs, validateInitArgs, validateProfileAddArgs } from "./validate-args";
 
 const argv = minimist(process.argv.slice(2), {
   string: ["spec", "collection", "name", "host", "realm", "client-id", "client-secret", "keycloak-base-path", "output", "profile"],
@@ -38,20 +41,25 @@ async function main(): Promise<void> {
   }
 
   if (command === "init") {
+    const host = argv["host"] as string | undefined;
+    const output = argv["output"] as string | undefined;
+    validateInitArgs({ host, output });
     await runInit({
       name: argv["name"] as string | undefined,
-      host: argv["host"] as string | undefined,
+      host,
       realm: argv["realm"] as string | undefined,
       clientId: (argv["client-id"] ?? argv["clientId"]) as string | undefined,
-      output: argv["output"] as string | undefined,
+      output,
     });
     return;
   }
 
   if (command === "profile") {
     if (subcommand === "add") {
+      const host = argv["host"] as string | undefined;
+      validateProfileAddArgs({ host });
       await runProfileAdd(argv._[2], {
-        host: argv["host"] as string | undefined,
+        host,
         realm: argv["realm"] as string | undefined,
         clientId: (argv["client-id"] ?? argv["clientId"]) as string | undefined,
         clientSecret: (argv["client-secret"] ?? argv["clientSecret"]) as string | undefined,
@@ -69,6 +77,10 @@ async function main(): Promise<void> {
         console.error(t("cli.profile_delete_missing_name"));
         process.exit(1);
       }
+      if (!getProfile(name)) {
+        console.error(pc.red("✗") + " " + t("profile.not_found", { name }));
+        process.exit(1);
+      }
       runProfileDelete(name);
       return;
     }
@@ -78,8 +90,15 @@ async function main(): Promise<void> {
   }
 
   if (command === "add" || !command) {
-    const { spec, collection, profile } = argv;
-    await runAdd(spec as string | undefined, collection as string | undefined, profile as string | undefined);
+    const spec = argv["spec"] as string | undefined;
+    const collection = argv["collection"] as string | undefined;
+    const profile = argv["profile"] as string | undefined;
+    validateAddArgs({ spec, collection, profile });
+    if (profile && !getProfile(profile)) {
+      console.error(pc.red("✗") + " " + t("add.profile_not_found", { name: profile }));
+      process.exit(1);
+    }
+    await runAdd(spec, collection, profile);
     return;
   }
 

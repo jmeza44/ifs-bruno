@@ -7,7 +7,7 @@
   "init": {
     "intro": " ifs-bruno init ",
     "prompt_collection_name": "Collection name",
-    "hint_collection_name": "Local folder name for the Bruno collection (required)",
+    "hint_collection_name": "Required · Name or path for the collection folder (relative or absolute). A simple name like IFS creates ./IFS; a path like collections/IFS creates that subfolder.",
     "prompt_host": "IFS host",
     "hint_host": "Required · Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud",
     "prompt_realm": "Keycloak realm name",

@@ -83,5 +83,12 @@ export function saveCollection(collectionPath: string): void {
 }
 
 export function listCollections(): CollectionEntry[] {
-  return normalizeCollections(readConfig().collections ?? []);
+  const config = readConfig();
+  const all = normalizeCollections(config.collections ?? []);
+  const valid = all.filter((c) => fs.existsSync(path.join(c.path, "opencollection.yml")));
+  if (valid.length !== all.length) {
+    config.collections = valid;
+    writeConfig(config);
+  }
+  return valid;
 }

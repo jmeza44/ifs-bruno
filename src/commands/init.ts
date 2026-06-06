@@ -16,7 +16,7 @@ export interface InitArgs {
 export async function runInit(args: InitArgs): Promise<void> {
   p.intro(pc.bgCyan(pc.black(t("init.intro"))));
 
-  const name = args.name ?? await promptText(t("init.prompt_collection_name"), "IFS", t("init.hint_collection_name"));
+  const name = args.name ?? await promptText(t("init.prompt_collection_name"), "IFS", t("init.hint_collection_name"), false);
   const host = args.host ?? await promptText(t("init.prompt_host"), "https://your-env.ifs.cloud", t("init.hint_host"), true);
   const realm = args.realm ?? await promptText(t("init.prompt_realm"), "your-realm", t("init.hint_realm"), true);
   const clientId = args.clientId ?? await promptText(t("init.prompt_client_id"), "IFS_postman", t("init.hint_client_id"), true);
@@ -50,15 +50,22 @@ export async function runInit(args: InitArgs): Promise<void> {
   );
 }
 
-async function promptText(message: string, placeholder: string, hint?: string, warnIfPlaceholder = false, required = false): Promise<string> {
+async function promptText(
+  message: string,
+  placeholder: string,
+  hint?: string,
+  warnIfPlaceholder = false,
+  defaultValue?: string,
+): Promise<string> {
   const label = hint ? `${message}\n${pc.dim(hint)}` : message;
   const value = await p.text({
     message: label,
     placeholder,
-    validate: required ? (v) => (!v.trim() ? t("common.required") : undefined) : undefined,
+    defaultValue,
+    validate: !defaultValue ? (v) => (!(v ?? "").trim() ? t("common.required") : undefined) : undefined,
   });
   if (p.isCancel(value)) { p.cancel(t("common.cancelled")); process.exit(0); }
-  const result = (value as string).trim() || placeholder;
+  const result = ((value as string | undefined) ?? "").trim() || (defaultValue ?? "");
   if (warnIfPlaceholder && result === placeholder) {
     p.log.warn(t("init.warn_placeholder", { value: placeholder }));
   }

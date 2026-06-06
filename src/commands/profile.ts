@@ -29,9 +29,9 @@ export async function runProfileAdd(nameArg?: string, args: ProfileAddArgs = {})
     }
   }
 
-  const host = args.host ?? await promptText(t("profile.prompt_host"), "https://your-env.ifs.cloud", t("profile.hint_host"), true);
-  const realm = args.realm ?? await promptText(t("profile.prompt_realm"), "your-realm", t("profile.hint_realm"), true);
-  const clientId = args.clientId ?? await promptText(t("profile.prompt_client_id"), "IFS_postman", t("profile.hint_client_id"), true);
+  const host = args.host ?? await promptText(t("profile.prompt_host"), "https://your-env.ifs.cloud", t("profile.hint_host"));
+  const realm = args.realm ?? await promptText(t("profile.prompt_realm"), "your-realm", t("profile.hint_realm"));
+  const clientId = args.clientId ?? await promptText(t("profile.prompt_client_id"), "IFS_postman", t("profile.hint_client_id"));
 
   let clientSecret: string;
   if (args.clientSecret) {
@@ -45,7 +45,7 @@ export async function runProfileAdd(nameArg?: string, args: ProfileAddArgs = {})
     clientSecret = secret as string;
   }
 
-  const keycloakBasePath = args.keycloakBasePath ?? await promptText(t("profile.prompt_keycloak_base_path"), "/auth", t("profile.hint_keycloak_base_path"));
+  const keycloakBasePath = args.keycloakBasePath ?? await promptText(t("profile.prompt_keycloak_base_path"), "/auth", t("profile.hint_keycloak_base_path"), "/auth");
 
   const profile: IfsProfile = {
     host: host.replace(/\/$/, ""),
@@ -90,13 +90,14 @@ export function runProfileDelete(name: string): void {
   }
 }
 
-async function promptText(message: string, placeholder: string, hint?: string, required = false): Promise<string> {
+async function promptText(message: string, placeholder: string, hint?: string, defaultValue?: string): Promise<string> {
   const label = hint ? `${message}\n${pc.dim(hint)}` : message;
   const value = await p.text({
     message: label,
     placeholder,
-    validate: required ? (v) => (!v.trim() ? t("common.required") : undefined) : undefined,
+    defaultValue,
+    validate: !defaultValue ? (v) => (!(v ?? "").trim() ? t("common.required") : undefined) : undefined,
   });
   if (p.isCancel(value)) { p.cancel(t("common.cancelled")); process.exit(0); }
-  return (value as string).trim() || placeholder;
+  return ((value as string | undefined) ?? "").trim() || (defaultValue ?? "");
 }

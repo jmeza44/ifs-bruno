@@ -239,7 +239,6 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
           return builder.build(entry.path, entry.method, operation, index + 1);
         });
         const result = upsertRequests(phase.collection, phase.spec.info.title, builtRequests);
-        saveCollection(phase.collection);
         setPhase({ id: "done", collection: phase.collection, spec: phase.spec, created: result.created, updated: result.updated });
       } catch (err) {
         setPhase({ id: "error", message: (err as Error).message });
@@ -273,6 +272,7 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       setPhase({ id: "error", message: t("add.collection_not_found", { path: resolvedPath }) });
       return;
     }
+    saveCollection(resolvedPath);
     if (profileName) setPhase({ id: "loading-projections", collection: resolvedPath });
     else if (specPath) setPhase({ id: "loading-spec-file", collection: resolvedPath, specPath });
     else setPhase({ id: "error", message: t("add.need_spec_or_profile") });
