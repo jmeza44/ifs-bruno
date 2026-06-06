@@ -5,7 +5,7 @@ import { runInit } from "./commands/init";
 import { runProfileAdd, runProfileList, runProfileDelete } from "./commands/profile";
 
 const argv = minimist(process.argv.slice(2), {
-  string: ["spec", "collection", "name", "host", "realm", "client-id", "output", "profile"],
+  string: ["spec", "collection", "name", "host", "realm", "client-id", "client-secret", "keycloak-base-path", "output", "profile"],
   boolean: ["help"],
   alias: {
     s: "spec",
@@ -50,7 +50,13 @@ async function main(): Promise<void> {
 
   if (command === "profile") {
     if (subcommand === "add") {
-      await runProfileAdd(argv._[2]);
+      await runProfileAdd(argv._[2], {
+        host: argv["host"] as string | undefined,
+        realm: argv["realm"] as string | undefined,
+        clientId: (argv["client-id"] ?? argv["clientId"]) as string | undefined,
+        clientSecret: (argv["client-secret"] ?? argv["clientSecret"]) as string | undefined,
+        keycloakBasePath: (argv["keycloak-base-path"] ?? argv["keycloakBasePath"]) as string | undefined,
+      });
       return;
     }
     if (subcommand === "list" || !subcommand) {

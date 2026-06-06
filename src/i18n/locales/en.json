@@ -1,7 +1,8 @@
 {
   "common": {
     "cancelled": "Cancelled.",
-    "aborted": "Aborted."
+    "aborted": "Aborted.",
+    "required": "This field is required"
   },
   "init": {
     "intro": " ifs-bruno init ",
@@ -14,6 +15,7 @@
     "prompt_client_id": "Client ID",
     "hint_client_id": "Required · OAuth2 client configured for API access, e.g. IFS_postman",
     "prompt_output_folder": "Output folder",
+    "warn_placeholder": "Using example value \"{{value}}\" — make sure to update it before running Bruno",
     "confirm_overwrite": "{{output}} already exists. Continue anyway?",
     "outro_collection_created": "Collection created.",
     "outro_next_steps": "Next steps:",
@@ -87,7 +89,7 @@
     "usage_init": "  ifs-bruno init\n    Create a new Bruno collection folder pre-configured for IFS Cloud auth.\n    Options (all optional — prompts will ask for missing values):\n      --name <name>        Collection name and output folder  [default: IFS]\n      --host <url>         IFS Cloud base URL  e.g. https://acme.ifs.cloud\n      --realm <realm>      Keycloak realm name\n      --client-id <id>     OAuth2 client ID  e.g. IFS_postman\n      --output <folder>    Output folder path  [default: same as --name]\n",
     "usage_add_spec": "  ifs-bruno add --spec <path.json> --collection <folder>\n    Add endpoints from a local Swagger 2.0 JSON file to a Bruno collection.\n      --spec <path>        [required]  Path to a local Swagger 2.0 JSON spec file\n      --collection <dir>   [required]  Bruno collection folder (created by ifs-bruno init)\n",
     "usage_add_profile": "  ifs-bruno add --profile <name> --collection <folder>\n    Connect to IFS Cloud, browse projections, and add endpoints interactively.\n      --profile <name>     [required]  Saved profile name (created by ifs-bruno profile add)\n      --collection <dir>   [required]  Bruno collection folder (created by ifs-bruno init)\n",
-    "usage_profile_add": "  ifs-bruno profile add [<name>]\n    Save an IFS Cloud connection profile (host, realm, client credentials).\n    Profiles are stored at ~/.ifs-bruno/config.json\n",
+    "usage_profile_add": "  ifs-bruno profile add [<name>] [options]\n    Save an IFS Cloud connection profile (host, realm, client credentials).\n    Profiles are stored at ~/.ifs-bruno/config.json\n    Options (all optional — prompts will ask for missing values):\n      --host <url>                  IFS Cloud base URL  e.g. https://acme.ifs.cloud\n      --realm <realm>               Keycloak realm name\n      --client-id <id>              OAuth2 client ID  e.g. IFS_postman\n      --client-secret <secret>      OAuth2 client secret\n      --keycloak-base-path <path>   Keycloak base path  [default: /auth]\n",
     "usage_profile_list": "  ifs-bruno profile list\n    List all saved profiles.\n",
     "usage_profile_delete": "  ifs-bruno profile delete <name>\n    Delete a saved profile.\n",
     "unknown_subcommand": "Unknown subcommand: profile {{subcommand}}",

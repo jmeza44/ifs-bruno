@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, Text, useInput, useApp, useStdout } from "ink";
+import { Select, TextInput, Spinner, ConfirmInput } from "@inkjs/ui";
 import fs from "fs";
 import path from "path";
 import { t } from "../i18n";
@@ -36,57 +37,23 @@ export interface AddFlowProps {
   profileName?: string;
 }
 
-// ─── Small reusable components ───────────────────────────────────────────────
-
-function Spinner({ label }: { label: string }) {
-  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-  const [frame, setFrame] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setFrame((f) => (f + 1) % frames.length), 80);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <Box gap={1}>
-      <Text color="cyan">{frames[frame]}</Text>
-      <Text>{label}</Text>
-    </Box>
-  );
-}
-
 // ─── Collection selector ─────────────────────────────────────────────────────
 
 function CollectionSelect({ onSelect }: { onSelect: (p: string) => void }) {
   const saved = listCollections().filter((c) => fs.existsSync(path.join(c.path, "opencollection.yml")));
   const options = [
-    ...saved.map((c: CollectionEntry) => c.path),
-    "__other__",
+    ...saved.map((c: CollectionEntry) => ({
+      label: c.path,
+      value: c.path,
+      hint: new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(c.lastUsed)),
+    })),
+    { label: t("add.collection_other"), value: "__other__" },
   ];
-  const [cursor, setCursor] = useState(0);
-
-  useInput((input, key) => {
-    if (key.upArrow) setCursor((c) => Math.max(0, c - 1));
-    if (key.downArrow) setCursor((c) => Math.min(options.length - 1, c + 1));
-    if (key.return) onSelect(options[cursor]!);
-  });
 
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Text bold>{t("add.prompt_select_collection")}</Text>
-      {options.map((opt, i) => {
-        const isCursor = i === cursor;
-        const entry = saved[i];
-        const label = opt === "__other__" ? t("add.collection_other") : opt;
-        const hint = entry
-          ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.lastUsed))
-          : undefined;
-        return (
-          <Box key={opt} gap={1}>
-            <Text color={isCursor ? "cyan" : "gray"}>{isCursor ? "›" : " "}</Text>
-            <Text color={isCursor ? "white" : undefined}>{label}</Text>
-            {hint && <Text dimColor>{hint}</Text>}
-          </Box>
-        );
-      })}
+      <Select options={options} onChange={onSelect} />
     </Box>
   );
 }
@@ -94,21 +61,10 @@ function CollectionSelect({ onSelect }: { onSelect: (p: string) => void }) {
 // ─── Collection path input ────────────────────────────────────────────────────
 
 function CollectionInput({ onSubmit }: { onSubmit: (p: string) => void }) {
-  const [value, setValue] = useState("");
-
-  useInput((input, key) => {
-    if (key.return) { onSubmit(path.resolve(value.trim() || ".")); return; }
-    if (key.backspace || key.delete) { setValue((v) => v.slice(0, -1)); return; }
-    if (input && !key.ctrl && !key.meta) setValue((v) => v + input);
-  });
-
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Text bold>{t("add.prompt_collection_path")}</Text>
-      <Box gap={1}>
-        <Text dimColor>›</Text>
-        <Text>{value || <Text dimColor>collections/TEST-AUTH</Text>}█</Text>
-      </Box>
+      <TextInput placeholder="collections/MY-COLLECTION" onSubmit={(v) => onSubmit(path.resolve(v.trim() || "."))} />
     </Box>
   );
 }
@@ -193,16 +149,6 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
 // ─── Confirm screen ───────────────────────────────────────────────────────────
 
 function Confirm({ selected, onConfirm, onCancel }: { selected: EndpointEntry[]; onConfirm: () => void; onCancel: () => void }) {
-  const [choice, setChoice] = useState(true);
-
-  useInput((input, key) => {
-    if (key.leftArrow || key.rightArrow) setChoice((c) => !c);
-    if (input === "y") { setChoice(true); }
-    if (input === "n") { setChoice(false); }
-    if (key.return) { choice ? onConfirm() : onCancel(); }
-    if (key.escape) onCancel();
-  });
-
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Text bold>{selected.length} endpoint(s) selected:</Text>
@@ -211,11 +157,9 @@ function Confirm({ selected, onConfirm, onCancel }: { selected: EndpointEntry[];
       ))}
       {selected.length > 8 && <Text dimColor>  …+{selected.length - 8} more</Text>}
       <Box gap={2} marginTop={1}>
-        <Text>{t("add.confirm_add")}</Text>
-        <Text color={choice ? "green" : "gray"} bold={choice}>● Yes</Text>
-        <Text color={!choice ? "red" : "gray"} bold={!choice}>○ No</Text>
+        <Text>{t("add.confirm_add")} </Text>
+        <ConfirmInput onConfirm={onConfirm} onCancel={onCancel} />
       </Box>
-      <Text dimColor>← → toggle  enter confirm  esc cancel</Text>
     </Box>
   );
 }
@@ -368,6 +312,8 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
           } />
         </Box>
       )}
+
+      {phase.id === "restoring-input" && <Box />}
 
       {phase.id === "select-projection" && (
         <ProjectionSelect

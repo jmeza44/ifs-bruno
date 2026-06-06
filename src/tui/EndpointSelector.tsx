@@ -101,6 +101,22 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
       return;
     }
 
+    if (input === "t" && current) {
+      const tagEntries = filtered.filter((e) => e.tag === current.tag);
+      const tagKeys = tagEntries.map(entryKey);
+      const allSelected = tagKeys.every((k) => selected.has(k));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (allSelected) {
+          tagKeys.forEach((k) => next.delete(k));
+        } else {
+          tagKeys.forEach((k) => next.add(k));
+        }
+        return next;
+      });
+      return;
+    }
+
     // method toggles
     const methodKeys: Record<string, HttpMethod> = { g: "get", p: "post", u: "put", c: "patch", d: "delete" };
     if (methodKeys[input]) {
@@ -136,12 +152,13 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
     }
   });
 
-  const visibleCount = 18;
+  // header(2) + search(2) + footer(2) + borders(2) + padding(2) = 10 fixed lines
+  const visibleCount = Math.max(4, (stdout?.rows ?? 28) - 10);
   const scrollOffset = Math.max(0, safeCursor - Math.floor(visibleCount / 2));
   const visible = filtered.slice(scrollOffset, scrollOffset + visibleCount);
 
   return (
-    <Box flexDirection="column" height={28}>
+    <Box flexDirection="column">
       {/* header */}
       <Box gap={2} paddingX={1} marginBottom={1}>
         <Text bold>Endpoints</Text>
@@ -195,6 +212,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
                 </Text>
                 <Text bold wrap="wrap">{current.path}</Text>
               </Box>
+              {current.tag && <Text dimColor>Tag: {current.tag}</Text>}
               {operation?.summary && <Text dimColor wrap="wrap">{operation.summary}</Text>}
               {operation?.description && operation.description !== operation.summary && (
                 <Text dimColor wrap="wrap">{truncate(operation.description.split("\n")[0]!, 80)}</Text>
@@ -233,6 +251,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
         <Text dimColor>↑↓ navigate</Text>
         <Text dimColor>space select</Text>
         <Text dimColor>a select all</Text>
+        <Text dimColor>t select tag</Text>
         <Text dimColor>/ search</Text>
         <Text dimColor>g=GET p=POST u=PUT c=PATCH d=DELETE toggle</Text>
         <Text dimColor>enter confirm</Text>
