@@ -76,6 +76,17 @@ export function fetchCollectionEndpoints(collectionPath: string): Promise<{ fold
   return request(`/collections/endpoints?${qs}`);
 }
 
+export interface CollectionDetails {
+  realm: string;
+  clientId: string;
+  keycloakBasePath: string;
+}
+
+export function fetchCollectionDetails(collectionPath: string): Promise<CollectionDetails> {
+  const qs = new URLSearchParams({ path: collectionPath }).toString();
+  return request(`/collections/details?${qs}`);
+}
+
 export interface InitCollectionInput {
   name: string;
   host: string;

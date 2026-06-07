@@ -16,6 +16,12 @@ export interface CollectionFolder {
   endpoints: CollectionEndpoint[];
 }
 
+export interface CollectionDetails {
+  realm: string;
+  clientId: string;
+  keycloakBasePath: string;
+}
+
 // Matches `{{baseHost}}/main/ifsapplications/projection/v1/<ProjectionName>.svc`,
 // the fixed basePath prefix request-builder.ts embeds in every generated URL —
 // each projection has a different `.svc` segment, so this can't be a static constant.
@@ -85,6 +91,31 @@ export function readCollectionFolders(collectionPath: string): CollectionFolder[
   }
 
   return folders;
+}
+
+/**
+ * Reads `realm`, `clientId` and `keycloakBasePath` from a collection's
+ * `environments/default.yml` — the auth variables `bruno-writer.ts` writes
+ * at init time. Returns null when the file is missing or malformed.
+ */
+export function readCollectionDetails(collectionPath: string): CollectionDetails | null {
+  try {
+    const envPath = path.join(path.resolve(collectionPath), "environments", "default.yml");
+    const raw = fs.readFileSync(envPath, "utf-8");
+    const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
+
+    const variables = doc?.variables ?? [];
+    const find = (name: string) => variables.find((v) => v.name === name)?.value;
+
+    const realm = find("realm");
+    const clientId = find("clientId");
+    const keycloakBasePath = find("keycloakBasePath");
+    if (!realm || !clientId || !keycloakBasePath) return null;
+
+    return { realm, clientId, keycloakBasePath };
+  } catch {
+    return null;
+  }
 }
 
 /**

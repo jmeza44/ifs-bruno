@@ -94,7 +94,7 @@ export function CollectionEndpointsTree({ folders }: CollectionEndpointsTreeProp
 
   if (folders.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border p-4 text-center text-xs text-muted-foreground">
+      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border bg-card p-4 text-center text-xs text-muted-foreground">
         <FolderIcon size={20} />
         <span>No endpoints in this collection yet</span>
       </div>
@@ -102,7 +102,7 @@ export function CollectionEndpointsTree({ folders }: CollectionEndpointsTreeProp
   }
 
   return (
-    <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border">
+    <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border bg-card">
       <div className="flex shrink-0 items-center justify-end gap-1 border-b border-border px-1.5 py-1">
         <Button
           variant="ghost"

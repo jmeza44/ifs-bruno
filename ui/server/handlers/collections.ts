@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { initCollection, type InitOptions } from "../../../src/core/bruno-writer.ts";
-import { readCollectionFolders } from "../../../src/core/collection-reader.ts";
+import { readCollectionDetails, readCollectionFolders } from "../../../src/core/collection-reader.ts";
 import {
   listCollections,
   saveCollection,
@@ -26,6 +26,26 @@ export const getCollectionEndpoints = route((req) => {
   }
 
   return ok({ folders: readCollectionFolders(resolvedPath) });
+});
+
+export const getCollectionDetails = route((req) => {
+  const url = new URL(req.url);
+  const collectionPath = url.searchParams.get("path");
+  if (!collectionPath) {
+    return err("path query parameter is required", 400);
+  }
+
+  const resolvedPath = path.resolve(collectionPath);
+  if (!fs.existsSync(resolvedPath)) {
+    return err(`Collection not found: ${resolvedPath}`, 404);
+  }
+
+  const details = readCollectionDetails(resolvedPath);
+  if (!details) {
+    return err(`Collection details not found: ${resolvedPath}`, 404);
+  }
+
+  return ok(details);
 });
 
 export const postCollectionSelect = route(async (req) => {

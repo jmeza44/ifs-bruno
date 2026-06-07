@@ -47,6 +47,35 @@ const METHOD_STYLES: Record<string, string> = {
   DELETE: "text-rose-600 dark:text-rose-400",
 };
 
+const MARKDOWN_LINK_PATTERN = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+
+function LinkedText({ text, className }: { text: string; className?: string }) {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  MARKDOWN_LINK_PATTERN.lastIndex = 0;
+  while ((match = MARKDOWN_LINK_PATTERN.exec(text)) !== null) {
+    const [full, label, url] = match;
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    parts.push(
+      <a
+        key={`${url}-${match.index}`}
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sky-600 underline decoration-dotted underline-offset-2 hover:text-sky-500 dark:text-sky-400"
+      >
+        {label}
+      </a>
+    );
+    lastIndex = match.index + full.length;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+
+  return <span className={className}>{parts}</span>;
+}
+
 function Section({ title, children, wide }: { title: string; children: React.ReactNode; wide?: boolean }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-1.5 basis-full", !wide && "@lg:basis-[calc(50%-0.625rem)]")}>
@@ -72,7 +101,7 @@ function SchemaDetails({ schema }: { schema: unknown }) {
 export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, onToggleSelected }: EndpointDetailPanelProps) {
   if (!endpoint) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border p-4 text-center text-xs text-muted-foreground">
+      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border bg-card p-4 text-center text-xs text-muted-foreground">
         <span>Select an endpoint to see its details</span>
       </div>
     );
@@ -81,7 +110,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
   const method = endpoint.method.toUpperCase();
 
   return (
-    <div className="@container scroll-discreet flex h-full flex-col gap-3 overflow-y-auto rounded-none border border-border p-3">
+    <div className="@container scroll-discreet flex h-full flex-col gap-3 overflow-y-auto rounded-none border border-border bg-card p-3">
       {/* header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -134,9 +163,9 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
       {/* summary / description */}
       {(endpoint.summary || endpoint.description) && (
         <Section title="Description">
-          {endpoint.summary && <p className="text-xs">{endpoint.summary}</p>}
+          {endpoint.summary && <p className="text-xs"><LinkedText text={endpoint.summary} /></p>}
           {endpoint.description && endpoint.description !== endpoint.summary && (
-            <p className="text-xs text-muted-foreground">{endpoint.description}</p>
+            <p className="text-xs text-muted-foreground"><LinkedText text={endpoint.description} /></p>
           )}
         </Section>
       )}
@@ -172,7 +201,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
                   </span>
                   <span className="font-mono">{param.name}</span>
                   <span className="text-muted-foreground">({param.in}{param.type ? `: ${param.type}` : ""})</span>
-                  {param.description && <span className="text-muted-foreground">{param.description}</span>}
+                  {param.description && <LinkedText text={param.description} className="text-muted-foreground" />}
                 </div>
                 {(param.enum || param.example !== undefined) && (
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-4 text-xs text-muted-foreground">
@@ -213,7 +242,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
               >
                 <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5 text-xs">
                   <span className="font-mono font-semibold">{resp.status}</span>
-                  {resp.description && <span className="text-muted-foreground">{resp.description}</span>}
+                  {resp.description && <LinkedText text={resp.description} className="text-muted-foreground" />}
                 </div>
                 {resp.schema !== undefined && (
                   <div className="pl-4">

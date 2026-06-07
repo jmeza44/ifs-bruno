@@ -1,4 +1,5 @@
 import {
+  getCollectionDetails,
   getCollectionEndpoints,
   getCollections,
   postCollectionInit,
@@ -8,6 +9,7 @@ import { getHealth } from "./handlers/health.ts";
 import { deleteProfileByName, getProfiles, postProfile } from "./handlers/profiles.ts";
 import { postProjections } from "./handlers/projections.ts";
 import { postSpecEntry, postSpecLocal, postSpecRemote } from "./handlers/spec.ts";
+import { postWrite } from "./handlers/write.ts";
 import { serveStatic } from "./static.ts";
 
 export async function handleRequest(req: Request): Promise<Response> {
@@ -34,6 +36,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (pathname === "/api/collections/endpoints" && method === "GET") {
     return getCollectionEndpoints(req);
   }
+  if (pathname === "/api/collections/details" && method === "GET") {
+    return getCollectionDetails(req);
+  }
   if (pathname === "/api/collections/select" && method === "POST") {
     return postCollectionSelect(req);
   }
@@ -53,6 +58,10 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
   if (pathname === "/api/spec/entry" && method === "POST") {
     return postSpecEntry(req);
+  }
+
+  if (pathname === "/api/write" && method === "POST") {
+    return postWrite(req);
   }
 
   return serveStatic(req);

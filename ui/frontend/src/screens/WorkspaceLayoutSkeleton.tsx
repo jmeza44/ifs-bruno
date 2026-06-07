@@ -1,516 +1,163 @@
-// Visual-only skeleton to validate the single-view layout proportions.
-// Solid colors stand in for real components — no logic, no global state.
+// Single-view workspace layout, wired to the global workspace store.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { CollectionSelector } from "@/components/workspace/collection-selector";
-import {
-  ProfileSelector,
-  type ProfileOption,
-} from "@/components/workspace/profile-selector";
+import { ProfileSelector } from "@/components/workspace/profile-selector";
 import { NewProfileDialog } from "@/components/workspace/new-profile-dialog";
 import { NewCollectionDialog } from "@/components/workspace/new-collection-dialog";
-import {
-  CollectionDetailsPanel,
-  type CollectionDetails,
-} from "@/components/workspace/collection-details-panel";
-import {
-  CollectionEndpointsTree,
-  type CollectionFolder,
-} from "@/components/workspace/collection-endpoints-tree";
-import {
-  SpecLoader,
-  type LoadedSpec,
-} from "@/components/workspace/spec-loader";
-import {
-  EndpointListPanel,
-  type EndpointListEntry,
-} from "@/components/workspace/endpoint-list-panel";
-import {
-  EndpointDetailPanel,
-  type EndpointDetail,
-} from "@/components/workspace/endpoint-detail-panel";
-import type { CollectionEntry } from "@/lib/types";
+import { CollectionDetailsPanel } from "@/components/workspace/collection-details-panel";
+import { CollectionEndpointsTree } from "@/components/workspace/collection-endpoints-tree";
+import { SpecLoader } from "@/components/workspace/spec-loader";
+import { EndpointListPanel } from "@/components/workspace/endpoint-list-panel";
+import { EndpointDetailPanel } from "@/components/workspace/endpoint-detail-panel";
+import { ProjectionSearchPanel } from "@/components/workspace/projection-search-panel";
+import { ConfirmationDialog } from "@/components/workspace/confirmation-dialog";
+import { fetchCollectionDetails, fetchCollectionEndpoints, fetchProjections, fetchRemoteSpec, fetchSpecEntry, listCollections, listProfiles, selectCollection as selectCollectionOnServer, writeEndpoints } from "@/lib/api";
+import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } from "@/lib/types";
+import type { EndpointListEntry } from "@/components/workspace/endpoint-list-panel";
+import { useWorkspaceStore, workspaceActions } from "@/lib/workspace-store";
 
-const now = Date.now();
-
-const MOCK_COLLECTIONS: CollectionEntry[] = [
-  {
-    path: "/home/jaime/collections/ifs-cloud-meco",
-    name: "ifs-cloud-meco",
-    baseHost: "https://meco-cfg.ifs.cloud/",
-    endpointCount: 18,
-    lastUsed: new Date(now - 2 * 60 * 60_000).toISOString(),
-  },
-  {
-    path: "/home/jaime/collections/customer-orders-sandbox",
-    name: "customer-orders-sandbox",
-    baseHost: "https://qa-tenant.ifs.cloud/",
-    endpointCount: 6,
-    lastUsed: new Date(now - 3 * 24 * 60 * 60_000).toISOString(),
-  },
-];
-
-const MOCK_COLLECTION_DETAILS: Record<string, CollectionDetails> = {
-  "/home/jaime/collections/ifs-cloud-meco": {
-    realm: "ifs-meco",
-    clientId: "IFS_postman",
-    keycloakBasePath: "/auth",
-  },
-  "/home/jaime/collections/customer-orders-sandbox": {
-    realm: "qa-tenant",
-    clientId: "IFS_postman",
-    keycloakBasePath: "/auth",
-  },
-};
-
-const MOCK_COLLECTION_FOLDERS: Record<string, CollectionFolder[]> = {
-  "/home/jaime/collections/ifs-cloud-meco": [
-    {
-      name: "CustomerOrderHandling",
-      endpoints: [
-        {
-          name: "Get customer orders",
-          method: "GET",
-          operationId: "getCustomerOrders",
-        },
-        {
-          name: "Create customer order",
-          method: "POST",
-          operationId: "createCustomerOrder",
-        },
-        {
-          name: "Update order line",
-          method: "PATCH",
-          operationId: "updateOrderLine",
-        },
-      ],
-    },
-    {
-      name: "InventoryPartHandling",
-      endpoints: [
-        {
-          name: "Get inventory parts",
-          method: "GET",
-          operationId: "getInventoryParts",
-        },
-        {
-          name: "Delete inventory part",
-          method: "DELETE",
-          operationId: "deleteInventoryPart",
-        },
-      ],
-    },
-    {
-      name: "Auth",
-      endpoints: [
-        { name: "Authenticate", method: "POST", operationId: "auth" },
-      ],
-    },
-  ],
-  "/home/jaime/collections/customer-orders-sandbox": [
-    {
-      name: "CustomerOrderHandling",
-      endpoints: [
-        {
-          name: "Get customer orders",
-          method: "GET",
-          operationId: "getCustomerOrders",
-        },
-        {
-          name: "Create customer order",
-          method: "POST",
-          operationId: "createCustomerOrder",
-        },
-      ],
-    },
-    {
-      name: "Auth",
-      endpoints: [
-        { name: "Authenticate", method: "POST", operationId: "auth" },
-      ],
-    },
-  ],
-};
-
-const MOCK_SPEC_ENDPOINTS: EndpointListEntry[] = [
-  {
-    id: "GET:/customer-orders",
-    path: "/customer-orders",
-    method: "GET",
-    summary: "List customer orders",
-    operationId: "getCustomerOrders",
-  },
-  {
-    id: "POST:/customer-orders",
-    path: "/customer-orders",
-    method: "POST",
-    summary: "Create a new customer order",
-    operationId: "createCustomerOrder",
-  },
-  {
-    id: "PATCH:/customer-orders/{orderId}/lines/{lineNo}",
-    path: "/customer-orders/{orderId}/lines/{lineNo}",
-    method: "PATCH",
-    summary: "Update an order line",
-    operationId: "updateOrderLine",
-  },
-  {
-    id: "GET:/inventory-parts",
-    path: "/inventory-parts",
-    method: "GET",
-    summary: "List inventory parts",
-    operationId: "getInventoryParts",
-  },
-  {
-    id: "DELETE:/inventory-parts/{partNo}",
-    path: "/inventory-parts/{partNo}",
-    method: "DELETE",
-    summary: "Delete an inventory part",
-    operationId: "deleteInventoryPart",
-  },
-  {
-    id: "POST:/auth/token",
-    path: "/auth/token",
-    method: "POST",
-    summary: "Authenticate and obtain a token",
-    operationId: "auth",
-  },
-  {
-    id: "PUT:/customer-orders/{orderId}/status",
-    path: "/customer-orders/{orderId}/status",
-    method: "PUT",
-    summary: "Replace the status of a customer order",
-    operationId: "setCustomerOrderStatus",
-  },
-];
-
-const MOCK_ENDPOINT_DETAILS: Record<string, EndpointDetail> = {
-  "GET:/customer-orders": {
-    id: "GET:/customer-orders",
-    path: "/customer-orders",
-    method: "GET",
-    operationId: "getCustomerOrders",
-    summary: "List customer orders",
-    description:
-      "Returns a paginated list of customer orders for the active company.",
-    tags: ["CustomerOrderHandling"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "company",
-        in: "query",
-        required: true,
-        description: "Company id",
-        type: "string",
-        example: "MECO",
-      },
-      {
-        name: "$top",
-        in: "query",
-        description: "Max number of records to return",
-        type: "integer",
-        example: 50,
-      },
-      {
-        name: "$filter",
-        in: "query",
-        description: "OData filter expression",
-        type: "string",
-      },
-      {
-        name: "status",
-        in: "query",
-        description: "Filter by order status",
-        type: "string",
-        enum: ["Planned", "Released", "Closed", "Cancelled"],
-      },
-    ],
-    responses: [
-      {
-        status: "200",
-        description: "OK",
-        schema: {
-          type: "object",
-          properties: {
-            value: {
-              type: "array",
-              items: { $ref: "#/definitions/CustomerOrder" },
-            },
-            "@odata.count": { type: "integer" },
-          },
-        },
-      },
-      { status: "400", description: "Bad request" },
-    ],
-  },
-  "POST:/customer-orders": {
-    id: "POST:/customer-orders",
-    path: "/customer-orders",
-    method: "POST",
-    operationId: "createCustomerOrder",
-    summary: "Create a new customer order",
-    tags: ["CustomerOrderHandling"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "body",
-        in: "body",
-        required: true,
-        description: "Customer order payload",
-        schema: {
-          type: "object",
-          properties: {
-            CustomerNo: { type: "string" },
-            OrderType: { type: "string" },
-            Currency: { type: "string" },
-            Lines: {
-              type: "array",
-              items: { $ref: "#/definitions/CustomerOrderLine" },
-            },
-          },
-        },
-      },
-    ],
-    responses: [
-      {
-        status: "201",
-        description: "Created",
-        schema: { $ref: "#/definitions/CustomerOrder" },
-      },
-      { status: "422", description: "Validation error" },
-    ],
-  },
-  "PATCH:/customer-orders/{orderId}/lines/{lineNo}": {
-    id: "PATCH:/customer-orders/{orderId}/lines/{lineNo}",
-    path: "/customer-orders/{orderId}/lines/{lineNo}",
-    method: "PATCH",
-    operationId: "updateOrderLine",
-    summary: "Update an order line",
-    tags: ["CustomerOrderHandling"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "orderId",
-        in: "path",
-        required: true,
-        description: "Customer order id",
-        type: "string",
-        example: "CO-10042",
-      },
-      {
-        name: "lineNo",
-        in: "path",
-        required: true,
-        description: "Order line number",
-        type: "integer",
-        example: 1,
-      },
-      {
-        name: "body",
-        in: "body",
-        required: true,
-        description: "Fields to update",
-        schema: {
-          type: "object",
-          properties: {
-            BuyQtyDue: { type: "number" },
-            RequestedDeliveryDate: { type: "string", format: "date" },
-          },
-        },
-      },
-    ],
-    responses: [
-      {
-        status: "200",
-        description: "OK",
-        schema: { $ref: "#/definitions/CustomerOrderLine" },
-      },
-      { status: "404", description: "Order line not found" },
-    ],
-  },
-  "GET:/inventory-parts": {
-    id: "GET:/inventory-parts",
-    path: "/inventory-parts",
-    method: "GET",
-    operationId: "getInventoryParts",
-    summary: "List inventory parts",
-    tags: ["InventoryPartHandling"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "company",
-        in: "query",
-        required: true,
-        description: "Company id",
-        type: "string",
-        example: "MECO",
-      },
-      {
-        name: "$top",
-        in: "query",
-        description: "Max number of records to return",
-        type: "integer",
-        example: 50,
-      },
-    ],
-    responses: [
-      {
-        status: "200",
-        description: "OK",
-        schema: {
-          type: "object",
-          properties: {
-            value: {
-              type: "array",
-              items: { $ref: "#/definitions/InventoryPart" },
-            },
-          },
-        },
-      },
-    ],
-  },
-  "DELETE:/inventory-parts/{partNo}": {
-    id: "DELETE:/inventory-parts/{partNo}",
-    path: "/inventory-parts/{partNo}",
-    method: "DELETE",
-    operationId: "deleteInventoryPart",
-    summary: "Delete an inventory part",
-    tags: ["InventoryPartHandling"],
-    parameters: [
-      {
-        name: "partNo",
-        in: "path",
-        required: true,
-        description: "Inventory part number",
-        type: "string",
-        example: "PART-001",
-      },
-    ],
-    responses: [
-      { status: "204", description: "No content" },
-      { status: "404", description: "Part not found" },
-    ],
-  },
-  "POST:/auth/token": {
-    id: "POST:/auth/token",
-    path: "/auth/token",
-    method: "POST",
-    operationId: "auth",
-    summary: "Authenticate and obtain a token",
-    tags: ["Auth"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "body",
-        in: "body",
-        required: true,
-        description: "Client credentials",
-        schema: {
-          type: "object",
-          properties: {
-            grant_type: {
-              type: "string",
-              enum: ["client_credentials", "password"],
-            },
-            client_id: { type: "string" },
-            client_secret: { type: "string" },
-          },
-        },
-      },
-    ],
-    responses: [
-      {
-        status: "200",
-        description: "OK",
-        schema: {
-          type: "object",
-          properties: {
-            access_token: { type: "string" },
-            expires_in: { type: "integer" },
-            token_type: { type: "string" },
-          },
-        },
-      },
-      { status: "401", description: "Unauthorized" },
-    ],
-  },
-  "PUT:/customer-orders/{orderId}/status": {
-    id: "PUT:/customer-orders/{orderId}/status",
-    path: "/customer-orders/{orderId}/status",
-    method: "PUT",
-    operationId: "setCustomerOrderStatus",
-    summary: "Replace the status of a customer order",
-    tags: ["CustomerOrderHandling"],
-    produces: ["application/json"],
-    parameters: [
-      {
-        name: "orderId",
-        in: "path",
-        required: true,
-        description: "Customer order id",
-        type: "string",
-        example: "CO-10042",
-      },
-      {
-        name: "body",
-        in: "body",
-        required: true,
-        description: "New status payload",
-        schema: {
-          type: "object",
-          properties: {
-            Status: {
-              type: "string",
-              enum: ["Planned", "Released", "Closed", "Cancelled"],
-            },
-          },
-        },
-      },
-    ],
-    responses: [
-      { status: "200", description: "OK" },
-      { status: "409", description: "Conflict" },
-    ],
-  },
-};
-
-const MOCK_ALREADY_IN_COLLECTION = new Set([
-  "GET:/customer-orders",
-  "POST:/customer-orders",
-  "PATCH:/customer-orders/{orderId}/lines/{lineNo}",
-]);
-
-const MOCK_PROFILES: ProfileOption[] = [
-  { id: "prof-1", name: "meco-cfg", environment: "https://meco-cfg.ifs.cloud" },
-  { id: "prof-2", name: "qa-tenant", environment: "https://qa.ifs.cloud" },
-];
+function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
+  const keys = new Set<string>();
+  for (const folder of folders) {
+    for (const endpoint of folder.endpoints) {
+      if (endpoint.path === null) continue;
+      keys.add(`${endpoint.method}:${endpoint.path}`);
+    }
+  }
+  return keys;
+}
 
 export function WorkspaceLayoutSkeleton() {
-  const [activeCollection, setActiveCollection] =
-    useState<CollectionEntry | null>(MOCK_COLLECTIONS[0]);
-  const [profiles, setProfiles] = useState(MOCK_PROFILES);
-  const [activeProfile, setActiveProfile] = useState<ProfileOption | null>(
-    MOCK_PROFILES[0],
-  );
-  const [loadedSpec, setLoadedSpec] = useState<LoadedSpec | null>(null);
+  const collection = useWorkspaceStore((state) => state.collection);
+  const profiles = useWorkspaceStore((state) => state.profiles);
+  const source = useWorkspaceStore((state) => state.source);
+  const endpoints = useWorkspaceStore((state) => state.endpoints);
+  const pendingConfirmation = useWorkspaceStore((state) => state.ui.pendingConfirmation);
+
   const [newProfileOpen, setNewProfileOpen] = useState(false);
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
-  const [collections, setCollections] = useState(MOCK_COLLECTIONS);
-  const [selectedToAdd, setSelectedToAdd] = useState<Set<string>>(new Set());
-  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
-  const activeEndpointDetail = activeEndpointId
-    ? (MOCK_ENDPOINT_DETAILS[activeEndpointId] ?? null)
-    : null;
+  const [searchedProjection, setSearchedProjection] = useState<IfsProjection | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const collectionsQuery = useQuery({ queryKey: ["collections"], queryFn: listCollections });
+  const profilesQuery = useQuery({ queryKey: ["profiles"], queryFn: listProfiles });
+
+  const selectCollectionMutation = useMutation({
+    mutationFn: (path: string) => selectCollectionOnServer(path),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["collections"] }),
+  });
+
+  const activeCollectionPath = collection.active?.path;
+  const collectionEndpointsQuery = useQuery({
+    queryKey: ["collection-endpoints", activeCollectionPath],
+    queryFn: () => fetchCollectionEndpoints(activeCollectionPath!),
+    enabled: activeCollectionPath !== undefined,
+  });
+  const collectionDetailsQuery = useQuery({
+    queryKey: ["collection-details", activeCollectionPath],
+    queryFn: () => fetchCollectionDetails(activeCollectionPath!),
+    enabled: activeCollectionPath !== undefined,
+  });
+
+  const loadProjectionMutation = useMutation({
+    mutationFn: async (projection: IfsProjection) => {
+      if (source.type !== "profile") throw new Error("No active profile");
+      const spec = await fetchRemoteSpec(source.profile.name, projection.ProjectionName);
+      return { projection, spec };
+    },
+    onSuccess: ({ projection, spec }) => {
+      const endpoints: EndpointListEntry[] = spec.entries.map((entry) => ({
+        id: `${entry.method.toUpperCase()}:${entry.path}`,
+        path: entry.path,
+        method: entry.method.toUpperCase(),
+        summary: entry.summary,
+        operationId: entry.operationId,
+      }));
+      const alreadyInCollection = buildAlreadyInCollectionKeys(collectionEndpointsQuery.data?.folders ?? []);
+      workspaceActions.selectProjection(projection, endpoints, alreadyInCollection);
+    },
+  });
+
+  const viewEndpointDetailMutation = useMutation({
+    mutationFn: async (entry: EndpointListEntry) => ({
+      entry,
+      detail: await fetchSpecEntry(entry.path, entry.method),
+    }),
+    onSuccess: ({ entry, detail }) => workspaceActions.viewEndpointDetail({ ...detail, id: entry.id }),
+  });
+
+  const saveSelectionMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeCollectionPath) throw new Error("No active collection");
+
+      if (!(source.type === "profile" && source.projection.state === "resolved")) {
+        throw new Error("No remote projection loaded to save endpoints from");
+      }
+      const specSource: SpecSource = {
+        kind: "remote",
+        profileName: source.profile.name,
+        projectionName: source.projection.projection.ProjectionName,
+      };
+
+      const selected = endpoints.available
+        .filter((entry) => endpoints.selectedToAdd.has(entry.id))
+        .map((entry) => ({ path: entry.path, method: entry.method }));
+
+      return writeEndpoints({ collectionPath: activeCollectionPath, source: specSource, selected });
+    },
+    onSuccess: () => {
+      workspaceActions.saveSelection();
+      queryClient.invalidateQueries({ queryKey: ["collection-endpoints", activeCollectionPath] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+    },
+  });
+
+  useEffect(() => {
+    if (!collectionsQuery.data) return;
+    workspaceActions.setAvailableCollections(collectionsQuery.data.collections);
+  }, [collectionsQuery.data]);
+
+  useEffect(() => {
+    if (!profilesQuery.data) return;
+    workspaceActions.setAvailableProfiles(
+      profilesQuery.data.profiles.map((profile) => ({ id: profile.name, name: profile.name, environment: profile.host })),
+    );
+  }, [profilesQuery.data]);
+
+  useEffect(() => {
+    if (!activeCollectionPath) return;
+    selectCollectionMutation.mutate(activeCollectionPath);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCollectionPath]);
+
+  const activeProfile = source.type === "profile" ? source.profile : null;
+  const loadedSpec = source.type === "spec" ? source.spec : null;
+  const isSearchingProjection = source.type === "profile" && source.projection.state === "searching";
+
+  const projectionsQuery = useQuery({
+    queryKey: ["projections", activeProfile?.name],
+    queryFn: () => fetchProjections(activeProfile!.name),
+    enabled: isSearchingProjection && activeProfile !== null,
+  });
+
+  useEffect(() => {
+    setSearchedProjection(null);
+  }, [activeProfile?.name]);
+
+  const activeEndpointId = endpoints.detail?.id;
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden">
       {/* Top bar */}
-      <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border p-2">
+      <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-card p-2">
         <CollectionSelector
-          active={activeCollection}
-          available={collections}
-          onSelect={setActiveCollection}
+          active={collection.active}
+          available={collection.available}
+          onSelect={workspaceActions.selectCollection}
           onCreateNew={() => setNewCollectionOpen(true)}
         />
         <NewCollectionDialog
@@ -524,44 +171,24 @@ export function WorkspaceLayoutSkeleton() {
               endpointCount: 0,
               lastUsed: new Date().toISOString(),
             };
-            setCollections((prev) => [...prev, entry]);
-            setActiveCollection(entry);
+            workspaceActions.createCollection(entry);
           }}
         />
-        <span className="text-sm font-semibold tracking-wide text-muted-foreground">
-          IFS Bruno
-        </span>
+        <span className="text-sm font-semibold tracking-wide text-muted-foreground">IFS Bruno</span>
         <div className="flex gap-2">
           <ProfileSelector
             active={activeProfile}
-            available={profiles}
-            onSelect={setActiveProfile}
-            onDelete={(profile) => {
-              setProfiles((prev) => prev.filter((p) => p.id !== profile.id));
-              if (activeProfile?.id === profile.id) setActiveProfile(null);
-            }}
+            available={profiles.available}
+            onSelect={workspaceActions.selectProfile}
+            onDelete={workspaceActions.deleteProfile}
             onAddNew={() => setNewProfileOpen(true)}
           />
           <NewProfileDialog
             open={newProfileOpen}
             onOpenChange={setNewProfileOpen}
-            onCreated={(name) =>
-              setProfiles((prev) => [
-                ...prev,
-                { id: name, name, environment: "" },
-              ])
-            }
+            onCreated={(name) => workspaceActions.addProfile({ id: name, name, environment: "" })}
           />
-          <SpecLoader
-            loaded={loadedSpec}
-            onLoad={(file) =>
-              setLoadedSpec({
-                fileName: file.name,
-                projectionName: "CustomerOrderHandling",
-              })
-            }
-            onClear={() => setLoadedSpec(null)}
-          />
+          <SpecLoader loaded={loadedSpec} onLoad={() => {}} onClear={workspaceActions.closeProjection} />
         </div>
       </div>
 
@@ -570,49 +197,51 @@ export function WorkspaceLayoutSkeleton() {
         <Group className="gap-x-2">
           {/* Main panel */}
           <Panel className="flex gap-2">
-            <Group className="gap-x-2">
-              <Panel defaultSize="30%" minSize="30%" maxSize="50%">
-                <EndpointListPanel
-                  entries={MOCK_SPEC_ENDPOINTS}
-                  selected={selectedToAdd}
-                  alreadyInCollection={MOCK_ALREADY_IN_COLLECTION}
-                  activeId={activeEndpointId ?? undefined}
-                  onToggleSelected={(id) =>
-                    setSelectedToAdd((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(id)) next.delete(id);
-                      else next.add(id);
-                      return next;
-                    })
-                  }
-                  onViewDetail={(entry) => setActiveEndpointId(entry.id)}
-                />
-              </Panel>
-              <Separator className="w-px bg-border transition-colors hover:bg-primary/50 data-active:bg-primary" />
-              <Panel>
-                <EndpointDetailPanel
-                  endpoint={activeEndpointDetail}
-                  selected={
-                    activeEndpointId
-                      ? selectedToAdd.has(activeEndpointId)
-                      : false
-                  }
-                  alreadyInCollection={
-                    activeEndpointId
-                      ? MOCK_ALREADY_IN_COLLECTION.has(activeEndpointId)
-                      : false
-                  }
-                  onToggleSelected={(id) =>
-                    setSelectedToAdd((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(id)) next.delete(id);
-                      else next.add(id);
-                      return next;
-                    })
-                  }
-                />
-              </Panel>
-            </Group>
+            {isSearchingProjection && activeProfile ? (
+              <ProjectionSearchPanel
+                profileName={activeProfile.name}
+                projections={projectionsQuery.data?.projections ?? []}
+                isLoading={projectionsQuery.isLoading}
+                selected={searchedProjection}
+                onSelect={setSearchedProjection}
+                onContinue={(projection) => loadProjectionMutation.mutate(projection)}
+                isContinuing={loadProjectionMutation.isPending}
+              />
+            ) : (
+              <Group className="gap-x-2">
+                <Panel defaultSize="30%" minSize="30%" maxSize="50%">
+                  <EndpointListPanel
+                    entries={endpoints.available}
+                    selected={endpoints.selectedToAdd}
+                    alreadyInCollection={endpoints.alreadyInCollection}
+                    activeId={activeEndpointId}
+                    onToggleSelected={workspaceActions.toggleEndpointSelection}
+                    onChangeProjection={workspaceActions.closeProjection}
+                    onViewDetail={(entry) => {
+                      workspaceActions.viewEndpointDetail({
+                        id: entry.id,
+                        path: entry.path,
+                        method: entry.method,
+                        operationId: entry.operationId,
+                        summary: entry.summary,
+                      });
+                      viewEndpointDetailMutation.mutate(entry);
+                    }}
+                    onSave={() => saveSelectionMutation.mutate()}
+                    isSaving={saveSelectionMutation.isPending}
+                  />
+                </Panel>
+                <Separator className="w-px bg-border transition-colors hover:bg-primary/50 data-active:bg-primary" />
+                <Panel>
+                  <EndpointDetailPanel
+                    endpoint={endpoints.detail}
+                    selected={activeEndpointId ? endpoints.selectedToAdd.has(activeEndpointId) : false}
+                    alreadyInCollection={activeEndpointId ? endpoints.alreadyInCollection.has(activeEndpointId) : false}
+                    onToggleSelected={workspaceActions.toggleEndpointSelection}
+                  />
+                </Panel>
+              </Group>
+            )}
           </Panel>
 
           <Separator className="w-px bg-border transition-colors hover:bg-primary/50 data-active:bg-primary" />
@@ -621,28 +250,22 @@ export function WorkspaceLayoutSkeleton() {
           <Panel defaultSize="20%" minSize="0%" maxSize="30%" collapsible>
             <div className="flex h-full flex-col gap-2">
               <div className="flex-initial overflow-hidden">
-                <CollectionDetailsPanel
-                  collection={activeCollection}
-                  details={
-                    activeCollection
-                      ? (MOCK_COLLECTION_DETAILS[activeCollection.path] ?? null)
-                      : null
-                  }
-                />
+                <CollectionDetailsPanel collection={collection.active} details={collectionDetailsQuery.data ?? null} />
               </div>
               <div className="flex-2 overflow-hidden">
-                <CollectionEndpointsTree
-                  folders={
-                    activeCollection
-                      ? (MOCK_COLLECTION_FOLDERS[activeCollection.path] ?? [])
-                      : []
-                  }
-                />
+                <CollectionEndpointsTree folders={collectionEndpointsQuery.data?.folders ?? []} />
               </div>
             </div>
           </Panel>
         </Group>
       </div>
+
+      <ConfirmationDialog
+        pending={pendingConfirmation}
+        selectedCount={endpoints.selectedToAdd.size}
+        onConfirm={workspaceActions.confirmPending}
+        onCancel={workspaceActions.cancelPending}
+      />
     </div>
   );
 }

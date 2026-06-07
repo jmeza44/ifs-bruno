@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { CheckSquareIcon, MagnifyingGlassIcon, SquareIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, CheckSquareIcon, MagnifyingGlassIcon, SquareIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,9 @@ export type EndpointListPanelProps = {
   activeId?: string;
   onToggleSelected: (id: string) => void;
   onViewDetail: (entry: EndpointListEntry) => void;
+  onChangeProjection?: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 };
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
@@ -47,6 +51,9 @@ export function EndpointListPanel({
   activeId,
   onToggleSelected,
   onViewDetail,
+  onChangeProjection,
+  onSave,
+  isSaving,
 }: EndpointListPanelProps) {
   const [search, setSearch] = useState("");
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(new Set(HTTP_METHODS));
@@ -74,17 +81,24 @@ export function EndpointListPanel({
   }, [entries, search, activeMethods]);
 
   return (
-    <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border">
+    <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border bg-card">
       {/* header: filters */}
       <div className="flex shrink-0 flex-col gap-1.5 border-b border-border p-1.5">
-        <div className="relative">
-          <MagnifyingGlassIcon size={12} className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by path, summary or operation id..."
-            className="pl-7"
-          />
+        <div className="flex items-center gap-1.5">
+          {onChangeProjection && (
+            <Button variant="outline" size="icon" onClick={onChangeProjection} title="Change projection">
+              <ArrowLeftIcon size={12} />
+            </Button>
+          )}
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon size={12} className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by path, summary or operation id..."
+              className="pl-7"
+            />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-1">
           {HTTP_METHODS.map((method) => {
@@ -139,7 +153,8 @@ export function EndpointListPanel({
                     onToggleSelected(entry.id);
                   }}
                   className={cn(
-                    "shrink-0 text-muted-foreground transition-colors",
+                    "shrink-0 transition-colors",
+                    isSelected ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground",
                     isLocked ? "cursor-not-allowed opacity-40" : "hover:text-foreground"
                   )}
                   title={isLocked ? "Already in collection" : isSelected ? "Deselect" : "Select"}
@@ -156,11 +171,16 @@ export function EndpointListPanel({
         )}
       </div>
 
-      {/* footer: counters */}
+      {/* footer: counters + save action */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-1.5 py-1 text-xs text-muted-foreground">
         <span>
           {filtered.length}/{entries.length} shown
         </span>
+        {onSave && (
+          <Button size="xs" disabled={selected.size === 0 || isSaving} onClick={onSave}>
+            {isSaving ? "Saving..." : `Save ${selected.size > 0 ? `(${selected.size})` : ""}`.trim()}
+          </Button>
+        )}
         <span>{selected.size} selected</span>
       </div>
     </div>

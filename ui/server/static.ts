@@ -1,18 +1,35 @@
-const PLACEHOLDER_HTML = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>ifs-bruno-ui</title>
-  </head>
-  <body>
-    <h1>ifs-bruno-ui</h1>
-    <p>Server is running. Frontend assets will be embedded in M8.</p>
-  </body>
-</html>
-`;
+import assetManifest from "./static-assets.gen.ts";
 
-export function serveStatic(_req: Request): Response {
-  return new Response(PLACEHOLDER_HTML, {
-    headers: { "content-type": "text/html; charset=utf-8" },
+const MIME_TYPES: Record<string, string> = {
+  html: "text/html; charset=utf-8",
+  js: "text/javascript; charset=utf-8",
+  css: "text/css; charset=utf-8",
+  svg: "image/svg+xml",
+  woff2: "font/woff2",
+  json: "application/json; charset=utf-8",
+  ico: "image/x-icon",
+  png: "image/png",
+};
+
+function mimeFor(path: string): string {
+  const ext = path.split(".").pop() ?? "";
+  return MIME_TYPES[ext] ?? "application/octet-stream";
+}
+
+function lookup(pathname: string): Bun.BunFile | undefined {
+  const key = pathname === "/" ? "/index.html" : pathname;
+  return assetManifest[key];
+}
+
+export function serveStatic(req: Request): Response {
+  const { pathname } = new URL(req.url);
+
+  const asset = lookup(pathname) ?? assetManifest["/index.html"];
+  if (!asset) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  return new Response(asset, {
+    headers: { "content-type": mimeFor(asset.name ?? pathname) },
   });
 }

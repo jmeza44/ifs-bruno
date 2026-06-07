@@ -46,7 +46,7 @@ export function CollectionDetailsPanel({
 }: CollectionDetailsPanelProps) {
   if (!collection || !details) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border p-4 text-center text-xs text-muted-foreground">
+      <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border bg-card p-4 text-center text-xs text-muted-foreground">
         <FolderIcon size={20} />
         <span>Select a collection to see its details</span>
       </div>
@@ -54,7 +54,7 @@ export function CollectionDetailsPanel({
   }
 
   return (
-    <div className="scroll-discreet flex flex-col gap-3 overflow-y-auto rounded-none border border-border p-3">
+    <div className="scroll-discreet flex flex-col gap-3 overflow-y-auto rounded-none border border-border bg-card p-3">
       <div className="space-y-1">
         <p className="truncate text-sm font-semibold" title={collection.name}>
           {collection.name}
