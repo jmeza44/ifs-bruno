@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
+import yaml from "js-yaml";
 
 export interface IfsProfile {
   host: string;
@@ -10,14 +11,20 @@ export interface IfsProfile {
   keycloakBasePath?: string;
 }
 
-export interface CollectionEntry {
+interface StoredCollectionEntry {
   path: string;
   lastUsed: string;
 }
 
+export interface CollectionEntry extends StoredCollectionEntry {
+  name: string;
+  baseHost: string | null;
+  endpointCount: number;
+}
+
 interface ConfigFile {
   profiles: Record<string, IfsProfile>;
-  collections?: Array<CollectionEntry | string>;
+  collections?: Array<StoredCollectionEntry | string>;
 }
 
 const CONFIG_DIR = path.join(os.homedir(), ".ifs-bruno");
@@ -59,9 +66,11 @@ export function deleteProfile(name: string): boolean {
   return true;
 }
 
-function normalizeCollections(raw: Array<CollectionEntry | string>): CollectionEntry[] {
+function normalizeCollections(
+  raw: Array<StoredCollectionEntry | string>,
+): StoredCollectionEntry[] {
   const seen = new Set<string>();
-  const result: CollectionEntry[] = [];
+  const result: StoredCollectionEntry[] = [];
   for (const c of raw) {
     const entry = typeof c === "string" ? { path: c, lastUsed: new Date(0).toISOString() } : c;
     if (!seen.has(entry.path)) {
@@ -70,6 +79,51 @@ function normalizeCollections(raw: Array<CollectionEntry | string>): CollectionE
     }
   }
   return result;
+}
+
+function countBruFiles(dir: string): number {
+  let count = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "node_modules" || entry.name === ".git") continue;
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      count += countBruFiles(fullPath);
+    } else if (entry.name.endsWith(".bru")) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function readCollectionName(collectionPath: string): string | null {
+  try {
+    const raw = fs.readFileSync(path.join(collectionPath, "opencollection.yml"), "utf-8");
+    const doc = yaml.load(raw) as { info?: { name?: string } } | undefined;
+    return doc?.info?.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function readCollectionBaseHost(collectionPath: string): string | null {
+  try {
+    const envPath = path.join(collectionPath, "environments", "default.yml");
+    const raw = fs.readFileSync(envPath, "utf-8");
+    const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
+    const baseHost = doc?.variables?.find((v) => v.name === "baseHost");
+    return baseHost?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function enrichCollection(entry: StoredCollectionEntry): CollectionEntry {
+  return {
+    ...entry,
+    name: readCollectionName(entry.path) ?? path.basename(entry.path),
+    baseHost: readCollectionBaseHost(entry.path),
+    endpointCount: countBruFiles(entry.path),
+  };
 }
 
 export function saveCollection(collectionPath: string): void {
@@ -90,5 +144,5 @@ export function listCollections(): CollectionEntry[] {
     config.collections = valid;
     writeConfig(config);
   }
-  return valid;
+  return valid.map(enrichCollection);
 }

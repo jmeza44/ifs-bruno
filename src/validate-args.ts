@@ -2,7 +2,10 @@ import fs from "fs";
 import path from "path";
 import pc from "picocolors";
 
-type ValidationError = { message: string };
+export interface ValidationResult {
+  ok: boolean;
+  errors: string[];
+}
 
 function fail(message: string): never {
   console.error(pc.red("✗") + " " + message);
@@ -18,17 +21,22 @@ function isValidUrl(value: string): boolean {
   }
 }
 
-export function validateAddArgs(args: {
+function result(errors: string[]): ValidationResult {
+  return { ok: errors.length === 0, errors };
+}
+
+export function checkAddArgs(args: {
   spec?: string;
   collection?: string;
   profile?: string;
-}): void {
+}): ValidationResult {
+  const errors: string[] = [];
+
   if (args.spec) {
     if (!fs.existsSync(args.spec)) {
-      fail(`Spec file not found: ${args.spec}`);
-    }
-    if (!args.spec.endsWith(".json")) {
-      fail(`Spec file must be a JSON file: ${args.spec}`);
+      errors.push(`Spec file not found: ${args.spec}`);
+    } else if (!args.spec.endsWith(".json")) {
+      errors.push(`Spec file must be a JSON file: ${args.spec}`);
     }
   }
 
@@ -36,8 +44,52 @@ export function validateAddArgs(args: {
     const resolved = path.resolve(args.collection);
     const parent = path.dirname(resolved);
     if (!fs.existsSync(parent)) {
-      fail(`Collection parent folder does not exist: ${parent}`);
+      errors.push(`Collection parent folder does not exist: ${parent}`);
     }
+  }
+
+  return result(errors);
+}
+
+export function checkInitArgs(args: {
+  host?: string;
+  output?: string;
+}): ValidationResult {
+  const errors: string[] = [];
+
+  if (args.host && !isValidUrl(args.host)) {
+    errors.push(`Invalid host URL: ${args.host}\n  Expected format: https://acme.ifs.cloud`);
+  }
+
+  if (args.output) {
+    const resolved = path.resolve(args.output);
+    const parent = path.dirname(resolved);
+    if (!fs.existsSync(parent)) {
+      errors.push(`Output parent folder does not exist: ${parent}`);
+    }
+  }
+
+  return result(errors);
+}
+
+export function checkProfileAddArgs(args: { host?: string }): ValidationResult {
+  const errors: string[] = [];
+
+  if (args.host && !isValidUrl(args.host)) {
+    errors.push(`Invalid host URL: ${args.host}\n  Expected format: https://acme.ifs.cloud`);
+  }
+
+  return result(errors);
+}
+
+export function validateAddArgs(args: {
+  spec?: string;
+  collection?: string;
+  profile?: string;
+}): void {
+  const { ok, errors } = checkAddArgs(args);
+  if (!ok) {
+    fail(errors.join("\n"));
   }
 }
 
@@ -45,21 +97,15 @@ export function validateInitArgs(args: {
   host?: string;
   output?: string;
 }): void {
-  if (args.host && !isValidUrl(args.host)) {
-    fail(`Invalid host URL: ${args.host}\n  Expected format: https://acme.ifs.cloud`);
-  }
-
-  if (args.output) {
-    const resolved = path.resolve(args.output);
-    const parent = path.dirname(resolved);
-    if (!fs.existsSync(parent)) {
-      fail(`Output parent folder does not exist: ${parent}`);
-    }
+  const { ok, errors } = checkInitArgs(args);
+  if (!ok) {
+    fail(errors.join("\n"));
   }
 }
 
 export function validateProfileAddArgs(args: { host?: string }): void {
-  if (args.host && !isValidUrl(args.host)) {
-    fail(`Invalid host URL: ${args.host}\n  Expected format: https://acme.ifs.cloud`);
+  const { ok, errors } = checkProfileAddArgs(args);
+  if (!ok) {
+    fail(errors.join("\n"));
   }
 }
