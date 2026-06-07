@@ -134,15 +134,28 @@ export const workspaceActions = {
     }));
   },
 
-  deleteProfile(profile: ProfileOption) {
+  requestDeleteProfile(profile: ProfileOption): "confirm" | "delete" {
+    const { source } = workspaceStore.state;
+    const isActive = source.type === "profile" && source.profile.id === profile.id;
+    if (isActive) {
+      workspaceStore.setState((state) => ({
+        ...state,
+        ui: { pendingConfirmation: { type: "delete-active-profile", target: profile } },
+      }));
+      return "confirm";
+    }
+    return "delete";
+  },
+
+  removeProfile(profile: ProfileOption) {
     workspaceStore.setState((state) => {
       const isActive = state.source.type === "profile" && state.source.profile.id === profile.id;
-      if (isActive) {
-        return { ...state, ui: { pendingConfirmation: { type: "delete-active-profile", target: profile } } };
-      }
       return {
         ...state,
+        source: isActive ? { type: "none" } : state.source,
+        endpoints: isActive ? resetEndpoints() : state.endpoints,
         profiles: { available: state.profiles.available.filter((p) => p.id !== profile.id) },
+        ui: { pendingConfirmation: null },
       };
     });
   },
@@ -238,15 +251,6 @@ export const workspaceActions = {
         workspaceStore.setState((state) => ({
           ...state,
           source: { type: "profile", profile: pending.target, projection: { state: "searching" } },
-          endpoints: resetEndpoints(),
-          ui: { pendingConfirmation: null },
-        }));
-        return;
-
-      case "delete-active-profile":
-        workspaceStore.setState((state) => ({
-          ...state,
-          source: { type: "none" },
           endpoints: resetEndpoints(),
           ui: { pendingConfirmation: null },
         }));

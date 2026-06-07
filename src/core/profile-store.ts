@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import yaml from "js-yaml";
+import { readCollectionFolders } from "./collection-reader";
 
 export interface IfsProfile {
   host: string;
@@ -81,18 +82,8 @@ function normalizeCollections(
   return result;
 }
 
-function countBruFiles(dir: string): number {
-  let count = 0;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === "node_modules" || entry.name === ".git") continue;
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      count += countBruFiles(fullPath);
-    } else if (entry.name.endsWith(".bru")) {
-      count += 1;
-    }
-  }
-  return count;
+function countEndpoints(collectionPath: string): number {
+  return readCollectionFolders(collectionPath).reduce((total, folder) => total + folder.endpoints.length, 0);
 }
 
 function readCollectionName(collectionPath: string): string | null {
@@ -122,7 +113,7 @@ function enrichCollection(entry: StoredCollectionEntry): CollectionEntry {
     ...entry,
     name: readCollectionName(entry.path) ?? path.basename(entry.path),
     baseHost: readCollectionBaseHost(entry.path),
-    endpointCount: countBruFiles(entry.path),
+    endpointCount: countEndpoints(entry.path),
   };
 }
 

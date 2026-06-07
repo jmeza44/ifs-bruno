@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { CollectionSelector } from "@/components/workspace/collection-selector";
-import { ProfileSelector } from "@/components/workspace/profile-selector";
+import { ProfileSelector, type ProfileOption } from "@/components/workspace/profile-selector";
 import { NewProfileDialog } from "@/components/workspace/new-profile-dialog";
 import { NewCollectionDialog } from "@/components/workspace/new-collection-dialog";
 import { CollectionDetailsPanel } from "@/components/workspace/collection-details-panel";
@@ -14,7 +14,7 @@ import { EndpointListPanel } from "@/components/workspace/endpoint-list-panel";
 import { EndpointDetailPanel } from "@/components/workspace/endpoint-detail-panel";
 import { ProjectionSearchPanel } from "@/components/workspace/projection-search-panel";
 import { ConfirmationDialog } from "@/components/workspace/confirmation-dialog";
-import { fetchCollectionDetails, fetchCollectionEndpoints, fetchProjections, fetchRemoteSpec, fetchSpecEntry, listCollections, listProfiles, selectCollection as selectCollectionOnServer, writeEndpoints } from "@/lib/api";
+import { deleteProfile as deleteProfileOnServer, fetchCollectionDetails, fetchCollectionEndpoints, fetchProjections, fetchRemoteSpec, fetchSpecEntry, listCollections, listProfiles, selectCollection as selectCollectionOnServer, writeEndpoints } from "@/lib/api";
 import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } from "@/lib/types";
 import type { EndpointListEntry } from "@/components/workspace/endpoint-list-panel";
 import { useWorkspaceStore, workspaceActions } from "@/lib/workspace-store";
@@ -49,6 +49,14 @@ export function WorkspaceLayoutSkeleton() {
   const selectCollectionMutation = useMutation({
     mutationFn: (path: string) => selectCollectionOnServer(path),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["collections"] }),
+  });
+
+  const deleteProfileMutation = useMutation({
+    mutationFn: (profile: ProfileOption) => deleteProfileOnServer(profile.name),
+    onSuccess: (_result, profile) => {
+      workspaceActions.removeProfile(profile);
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+    },
   });
 
   const activeCollectionPath = collection.active?.path;
@@ -180,7 +188,11 @@ export function WorkspaceLayoutSkeleton() {
             active={activeProfile}
             available={profiles.available}
             onSelect={workspaceActions.selectProfile}
-            onDelete={workspaceActions.deleteProfile}
+            onDelete={(profile) => {
+              if (workspaceActions.requestDeleteProfile(profile) === "delete") {
+                deleteProfileMutation.mutate(profile);
+              }
+            }}
             onAddNew={() => setNewProfileOpen(true)}
           />
           <NewProfileDialog
@@ -231,7 +243,7 @@ export function WorkspaceLayoutSkeleton() {
                     isSaving={saveSelectionMutation.isPending}
                   />
                 </Panel>
-                <Separator className="w-px bg-border transition-colors hover:bg-primary/50 data-active:bg-primary" />
+                <Separator className="w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary" />
                 <Panel>
                   <EndpointDetailPanel
                     endpoint={endpoints.detail}
@@ -244,7 +256,7 @@ export function WorkspaceLayoutSkeleton() {
             )}
           </Panel>
 
-          <Separator className="w-px bg-border transition-colors hover:bg-primary/50 data-active:bg-primary" />
+          <Separator className="w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary" />
 
           {/* Right sidebar — collapsible down to 0 */}
           <Panel defaultSize="20%" minSize="0%" maxSize="30%" collapsible>
@@ -263,7 +275,13 @@ export function WorkspaceLayoutSkeleton() {
       <ConfirmationDialog
         pending={pendingConfirmation}
         selectedCount={endpoints.selectedToAdd.size}
-        onConfirm={workspaceActions.confirmPending}
+        onConfirm={() => {
+          if (pendingConfirmation?.type === "delete-active-profile") {
+            deleteProfileMutation.mutate(pendingConfirmation.target);
+            return;
+          }
+          workspaceActions.confirmPending();
+        }}
         onCancel={workspaceActions.cancelPending}
       />
     </div>
