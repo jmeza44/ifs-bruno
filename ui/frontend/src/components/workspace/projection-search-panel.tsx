@@ -101,8 +101,8 @@ export function ProjectionSearchPanel({
 
         {selected ? (
           <div className="@container flex flex-col gap-3 rounded-none border border-border bg-card p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-xs font-semibold text-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm mb-2">
+              <span className="font-mono font-semibold text-foreground">
                 {selected.ProjectionName}
               </span>
               {selected.Deprecated === 'true' && <Badge variant="destructive">Deprecated</Badge>}
@@ -112,7 +112,7 @@ export function ProjectionSearchPanel({
               <FieldValue value={selected.Description} />
             </Section>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap justify-between gap-4">
               <Section title="Categories">
                 <FieldValue value={selected.Categories} />
               </Section>
