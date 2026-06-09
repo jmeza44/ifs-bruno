@@ -6,7 +6,7 @@ import {
   postCollectionSelect,
 } from "./handlers/collections.ts";
 import { getHealth } from "./handlers/health.ts";
-import { deleteProfileByName, getProfiles, postProfile } from "./handlers/profiles.ts";
+import { deleteProfileByName, getProfiles, postProfile, postProfileTest } from "./handlers/profiles.ts";
 import { postProjections } from "./handlers/projections.ts";
 import { postSpecEntry, postSpecLocal, postSpecRemote } from "./handlers/spec.ts";
 import { postWrite } from "./handlers/write.ts";
@@ -25,6 +25,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
   if (pathname === "/api/profiles" && method === "POST") {
     return postProfile(req);
+  }
+  if (pathname === "/api/profiles/test" && method === "POST") {
+    return postProfileTest(req);
   }
   if (pathname.startsWith("/api/profiles/") && method === "DELETE") {
     return deleteProfileByName(req);

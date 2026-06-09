@@ -5,8 +5,9 @@ import {
   saveProfile,
   type IfsProfile,
 } from "../../../src/core/profile-store.ts";
+import { fetchToken } from "../../../src/core/ifs-client.ts";
 import { checkProfileAddArgs } from "../../../src/validate-args.ts";
-import { err, ok, route } from "../json.ts";
+import { err, fieldErr, ok, route } from "../json.ts";
 
 interface ProfileSummary {
   name: string;
@@ -42,17 +43,16 @@ export const postProfile = route(async (req) => {
   const body = (await req.json()) as Partial<IfsProfile> & { name?: string };
   const { name, host, realm, clientId, clientSecret, keycloakBasePath } = body;
 
-  if (!name) {
-    return err("name is required", 400);
-  }
+  const fieldErrors: Record<string, string> = {};
+  if (!name) fieldErrors.name = "Required";
+  if (!host) fieldErrors.host = "Required";
+  else if (!checkProfileAddArgs({ host }).ok) fieldErrors.host = "Must be a valid URL, e.g. https://acme.ifs.cloud";
+  if (!realm) fieldErrors.realm = "Required";
+  if (!clientId) fieldErrors.clientId = "Required";
+  if (!clientSecret) fieldErrors.clientSecret = "Required";
 
-  const { ok: valid, errors } = checkProfileAddArgs({ host });
-  if (!valid) {
-    return err(errors.join("; "), 400);
-  }
-
-  if (!host || !realm || !clientId || !clientSecret) {
-    return err("host, realm, clientId and clientSecret are required", 400);
+  if (Object.keys(fieldErrors).length > 0) {
+    return fieldErr(fieldErrors);
   }
 
   if (getProfile(name) && !overwrite) {
@@ -61,6 +61,18 @@ export const postProfile = route(async (req) => {
 
   saveProfile(name, { host, realm, clientId, clientSecret, keycloakBasePath });
   return ok({ name }, 201);
+});
+
+export const postProfileTest = route(async (req) => {
+  const body = (await req.json()) as Partial<IfsProfile>;
+  const { host, realm, clientId, clientSecret, keycloakBasePath } = body;
+
+  if (!host || !realm || !clientId || !clientSecret) {
+    return err("host, realm, clientId and clientSecret are required", 400);
+  }
+
+  await fetchToken({ host, realm, clientId, clientSecret, keycloakBasePath });
+  return ok({ ok: true });
 });
 
 export const deleteProfileByName = route((req) => {

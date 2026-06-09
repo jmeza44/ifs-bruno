@@ -31,6 +31,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
   const queryClient = useQueryClient();
   const [form, setForm] = useState<InitCollectionInput>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const mutation = useMutation({
     mutationFn: (input: InitCollectionInput) => initCollection(input),
@@ -39,11 +40,14 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
       onOpenChange(false);
       setForm(EMPTY_FORM);
       setError(null);
+      setFieldErrors({});
       onCreated?.(result.path);
     },
     onError: (err: Error) => {
-      if (err instanceof ApiError && err.status === 409) {
-        setError(`A collection already exists at that location. Choose a different output path.`);
+      if (err instanceof ApiError && err.fieldErrors) {
+        setFieldErrors(err.fieldErrors);
+      } else if (err instanceof ApiError && err.status === 409) {
+        setFieldErrors({ output: "A collection already exists at that location. Choose a different output path." });
       } else {
         setError(err.message);
       }
@@ -54,6 +58,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
     if (!next) {
       setForm(EMPTY_FORM);
       setError(null);
+      setFieldErrors({});
     }
     onOpenChange(next);
   }
@@ -61,6 +66,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     const output = form.output?.trim() || undefined;
     mutation.mutate({ ...form, output });
   }
@@ -88,6 +94,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               value={form.name}
               onChange={(v) => set("name", v)}
               hint="Name or path for the collection folder (relative or absolute). A simple name like IFS creates ./IFS; a path like collections/IFS creates that subfolder."
+              error={fieldErrors.name}
             />
             <HintField
               id="host"
@@ -96,6 +103,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               value={form.host}
               onChange={(v) => set("host", v)}
               hint="Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud"
+              error={fieldErrors.host}
             />
             <HintField
               id="realm"
@@ -104,6 +112,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               value={form.realm}
               onChange={(v) => set("realm", v)}
               hint="Found in your Keycloak admin panel under Realms, usually matches your environment name"
+              error={fieldErrors.realm}
             />
             <HintField
               id="clientId"
@@ -112,15 +121,17 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               value={form.clientId}
               onChange={(v) => set("clientId", v)}
               hint="OAuth2 client configured for API access, e.g. IFS_postman"
+              error={fieldErrors.clientId}
             />
             <HintField
               id="output"
-              label="Output folder (optional)"
+              label="Output folder"
               placeholder={form.name || "defaults to collection name"}
               value={form.output ?? ""}
               onChange={(v) => set("output", v)}
               required={false}
               hint="Optional · Defaults to the collection name when left empty"
+              error={fieldErrors.output}
             />
           </FieldGroup>
 

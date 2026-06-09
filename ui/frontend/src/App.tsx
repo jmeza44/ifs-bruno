@@ -8,7 +8,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <WorkspaceLayoutSkeleton />
-      <Toaster />
+      <Toaster position="top-center" />
     </QueryClientProvider>
   );
 }

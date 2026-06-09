@@ -11,11 +11,13 @@ import type {
 
 export class ApiError extends Error {
   status: number;
+  fieldErrors?: Record<string, string>;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, fieldErrors?: Record<string, string>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -27,7 +29,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(body.error ?? res.statusText, res.status);
+    throw new ApiError(body.error ?? res.statusText, res.status, body.fieldErrors);
   }
 
   return res.json() as Promise<T>;
@@ -59,6 +61,10 @@ export function createProfile(input: ProfileInput, overwrite = false): Promise<{
 
 export function deleteProfile(name: string): Promise<{ deleted: true }> {
   return request(`/profiles/${encodeURIComponent(name)}`, { method: "DELETE" });
+}
+
+export function testProfile(input: Omit<ProfileInput, "name">): Promise<{ ok: true }> {
+  return postJson("/profiles/test", input);
 }
 
 // Collections

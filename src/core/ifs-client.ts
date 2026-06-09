@@ -11,7 +11,7 @@ export interface IfsProjection {
   Deprecated: string | null;
 }
 
-async function fetchToken(profile: IfsProfile): Promise<string> {
+export async function fetchToken(profile: IfsProfile): Promise<string> {
   const keycloakBase = profile.keycloakBasePath ?? "/auth";
   const url = `${profile.host}${keycloakBase}/realms/${profile.realm}/protocol/openid-connect/token`;
 

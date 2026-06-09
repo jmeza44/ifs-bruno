@@ -7,7 +7,7 @@ import {
   saveCollection,
 } from "../../../src/core/profile-store.ts";
 import { checkInitArgs } from "../../../src/validate-args.ts";
-import { err, ok, route } from "../json.ts";
+import { err, fieldErr, ok, route } from "../json.ts";
 
 export const getCollections = route(() => {
   return ok({ collections: listCollections() });
@@ -82,13 +82,16 @@ export const postCollectionInit = route(async (req) => {
   const { name, host, realm, clientId } = body;
   const output = body.output ?? name;
 
-  const { ok: valid, errors } = checkInitArgs({ host, output });
-  if (!valid) {
-    return err(errors.join("; "), 400);
-  }
+  const fieldErrors: Record<string, string> = {};
+  if (!name) fieldErrors.name = "Required";
+  if (!host) fieldErrors.host = "Required";
+  else if (!checkInitArgs({ host }).ok) fieldErrors.host = "Must be a valid URL, e.g. https://acme.ifs.cloud";
+  if (!realm) fieldErrors.realm = "Required";
+  if (!clientId) fieldErrors.clientId = "Required";
+  if (output && !checkInitArgs({ output }).ok) fieldErrors.output = "Parent folder does not exist";
 
-  if (!name || !host || !realm || !clientId || !output) {
-    return err("name, host, realm, clientId and output are required", 400);
+  if (Object.keys(fieldErrors).length > 0) {
+    return fieldErr(fieldErrors);
   }
 
   const outputPath = path.resolve(output);
