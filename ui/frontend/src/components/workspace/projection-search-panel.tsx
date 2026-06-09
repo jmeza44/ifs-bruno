@@ -105,7 +105,7 @@ export function ProjectionSearchPanel({
               <span className="font-mono text-xs font-semibold text-foreground">
                 {selected.ProjectionName}
               </span>
-              {selected.Deprecated && <Badge variant="destructive">Deprecated</Badge>}
+              {selected.Deprecated === 'true' && <Badge variant="destructive">Deprecated</Badge>}
             </div>
 
             <Section title="Description">
