@@ -30,6 +30,7 @@ import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } fro
 import type { EndpointListEntry } from '@/components/workspace/endpoint-list-panel';
 import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
 import { toast } from 'sonner';
+import { DotsSixVerticalIcon } from '@phosphor-icons/react';
 
 function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
   const keys = new Set<string>();
@@ -131,11 +132,17 @@ export function WorkspaceLayoutSkeleton() {
         .filter((entry) => endpoints.selectedToAdd.has(entry.id))
         .map((entry) => ({ path: entry.path, method: entry.method }));
 
-      return writeEndpoints({ collectionPath: activeCollectionPath, source: specSource, selected });
+      return writeEndpoints({
+        collectionPath: activeCollectionPath,
+        source: specSource,
+        selected,
+      });
     },
     onSuccess: () => {
       workspaceActions.saveSelection();
-      queryClient.invalidateQueries({ queryKey: ['collection-endpoints', activeCollectionPath] });
+      queryClient.invalidateQueries({
+        queryKey: ['collection-endpoints', activeCollectionPath],
+      });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
   });
@@ -276,7 +283,14 @@ export function WorkspaceLayoutSkeleton() {
                     isSaving={saveSelectionMutation.isPending}
                   />
                 </Panel>
-                <Separator className="w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary" />
+                <Separator className="group relative w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary h-full">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-1 px-0.5 bg-muted rounded-lg overflow-hidden opacity-0 transition-opacity group-hover:opacity-100">
+                    <DotsSixVerticalIcon
+                      size={12}
+                      className="pointer-events-none text-muted-foreground"
+                    />
+                  </div>
+                </Separator>
                 <Panel>
                   <EndpointDetailPanel
                     endpoint={endpoints.detail}
@@ -293,7 +307,14 @@ export function WorkspaceLayoutSkeleton() {
             )}
           </Panel>
 
-          <Separator className="w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary" />
+          <Separator className="group relative w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary h-full">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-1 px-0.5 bg-muted rounded-lg overflow-hidden opacity-0 transition-opacity group-hover:opacity-100">
+              <DotsSixVerticalIcon
+                size={12}
+                className="pointer-events-none text-muted-foreground"
+              />
+            </div>
+          </Separator>
 
           {/* Right sidebar — collapsible down to 0 */}
           <Panel defaultSize="20%" minSize="0%" maxSize="30%" collapsible>

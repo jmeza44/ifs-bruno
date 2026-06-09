@@ -114,7 +114,12 @@ export const workspaceActions = {
       return {
         ...state,
         collection: { ...state.collection, available },
-        ui: { pendingConfirmation: { type: 'create-collection-and-move', created: collection } },
+        ui: {
+          pendingConfirmation: {
+            type: 'create-collection-and-move',
+            created: collection,
+          },
+        },
       };
     });
   },
@@ -132,7 +137,10 @@ export const workspaceActions = {
           endpoints: resetEndpoints(),
         };
       }
-      return { ...state, ui: { pendingConfirmation: { type: 'switch-profile', target: profile } } };
+      return {
+        ...state,
+        ui: { pendingConfirmation: { type: 'switch-profile', target: profile } },
+      };
     });
   },
 
@@ -163,7 +171,9 @@ export const workspaceActions = {
         ...state,
         source: isActive ? { type: 'none' } : state.source,
         endpoints: isActive ? resetEndpoints() : state.endpoints,
-        profiles: { available: state.profiles.available.filter((p) => p.id !== profile.id) },
+        profiles: {
+          available: state.profiles.available.filter((p) => p.id !== profile.id),
+        },
         ui: { pendingConfirmation: null },
       };
     });
@@ -179,7 +189,10 @@ export const workspaceActions = {
           endpoints: { ...resetEndpoints(), available: endpoints },
         };
       }
-      return { ...state, ui: { pendingConfirmation: { type: 'switch-source', target: 'spec' } } };
+      return {
+        ...state,
+        ui: { pendingConfirmation: { type: 'switch-source', target: 'spec' } },
+      };
     });
   },
 
@@ -212,7 +225,10 @@ export const workspaceActions = {
   },
 
   viewEndpointDetail(detail: EndpointDetail | null) {
-    workspaceStore.setState((state) => ({ ...state, endpoints: { ...state.endpoints, detail } }));
+    workspaceStore.setState((state) => ({
+      ...state,
+      endpoints: { ...state.endpoints, detail },
+    }));
   },
 
   toggleEndpointSelection(id: string) {
@@ -263,7 +279,11 @@ export const workspaceActions = {
       case 'switch-profile':
         workspaceStore.setState((state) => ({
           ...state,
-          source: { type: 'profile', profile: pending.target, projection: { state: 'searching' } },
+          source: {
+            type: 'profile',
+            profile: pending.target,
+            projection: { state: 'searching' },
+          },
           endpoints: resetEndpoints(),
           ui: { pendingConfirmation: null },
         }));

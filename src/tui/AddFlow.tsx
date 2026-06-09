@@ -58,9 +58,10 @@ function CollectionSelect({ onSelect }: { onSelect: (p: string) => void }) {
     ...saved.map((c: CollectionEntry) => ({
       label: c.path,
       value: c.path,
-      hint: new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
-        new Date(c.lastUsed),
-      ),
+      hint: new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(new Date(c.lastUsed)),
     })),
     { label: t('add.collection_other'), value: '__other__' },
   ];
@@ -251,7 +252,10 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       let cancelled = false;
       const profile = getProfile(profileName!);
       if (!profile) {
-        setPhase({ id: 'error', message: t('add.profile_not_found', { name: profileName }) });
+        setPhase({
+          id: 'error',
+          message: t('add.profile_not_found', { name: profileName }),
+        });
         return;
       }
       addLog(t('add.connecting', { host: profile.host }));
@@ -259,7 +263,11 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
         .then((projections) => {
           if (cancelled) return;
           addLog(t('add.projections_available', { count: projections.length }));
-          setPhase({ id: 'select-projection', collection: phase.collection, projections });
+          setPhase({
+            id: 'select-projection',
+            collection: phase.collection,
+            projections,
+          });
         })
         .catch((err: Error) => {
           if (!cancelled) setPhase({ id: 'error', message: err.message });
@@ -273,7 +281,10 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       let cancelled = false;
       const profile = getProfile(profileName!);
       if (!profile) {
-        setPhase({ id: 'error', message: t('add.profile_not_found', { name: profileName }) });
+        setPhase({
+          id: 'error',
+          message: t('add.profile_not_found', { name: profileName }),
+        });
         return;
       }
       addLog(t('add.loading_spec', { name: phase.projection }));
@@ -373,7 +384,10 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
   function advanceFromCollection(collection: string) {
     const resolvedPath = path.resolve(collection);
     if (!fs.existsSync(resolvedPath)) {
-      setPhase({ id: 'error', message: t('add.collection_not_found', { path: resolvedPath }) });
+      setPhase({
+        id: 'error',
+        message: t('add.collection_not_found', { path: resolvedPath }),
+      });
       return;
     }
     saveCollection(resolvedPath);
@@ -447,7 +461,12 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
           entries={phase.entries}
           spec={phase.spec}
           onSubmit={(selected) =>
-            setPhase({ id: 'confirm', collection: phase.collection, spec: phase.spec, selected })
+            setPhase({
+              id: 'confirm',
+              collection: phase.collection,
+              spec: phase.spec,
+              selected,
+            })
           }
           onCancel={() => setPhase({ id: 'restoring-input', next: phase.prev })}
         />

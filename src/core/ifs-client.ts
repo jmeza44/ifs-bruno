@@ -52,9 +52,9 @@ export async function fetchToken(profile: IfsProfile): Promise<string> {
 export async function fetchProjections(profile: IfsProfile): Promise<IfsProjection[]> {
   const token = await fetchToken(profile);
   const params = new URLSearchParams({
-    '$format': 'json',
-    '$select': 'ProjectionName,Name,Description,Categories,ApiClass,Layer,Deprecated',
-    '$orderby': 'ProjectionName',
+    $format: 'json',
+    $select: 'ProjectionName,Name,Description,Categories,ApiClass,Layer,Deprecated',
+    $orderby: 'ProjectionName',
   });
   const url = `${profile.host}/main/ifsapplications/projection/v1/AllProjections.svc/Projections?${params}`;
 
