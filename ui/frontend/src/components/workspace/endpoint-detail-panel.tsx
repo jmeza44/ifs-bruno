@@ -160,7 +160,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
                 )}
               >
                 <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5 text-xs">
-                  <span className={cn("shrink-0", param.required ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
+                  <span className={cn("shrink-0", param.required ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} title={param.required ? "Required" : "Optional"}>
                     {param.required ? "●" : "○"}
                   </span>
                   <span className="font-mono">{param.name}</span>
