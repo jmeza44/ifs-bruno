@@ -15,7 +15,7 @@ async function loggedHandler(req: Request): Promise<Response> {
   const { pathname } = new URL(req.url);
   const response = await handleRequest(req);
   const durationMs = (performance.now() - start).toFixed(1);
-  log(`${req.method} ${pathname} -> ${response.status} (${durationMs}ms)`);
+  log(`${req.method}\t${pathname} -> ${response.status} (${durationMs}ms)`);
   return response;
 }
 

@@ -51,7 +51,12 @@ export async function fetchToken(profile: IfsProfile): Promise<string> {
 
 export async function fetchProjections(profile: IfsProfile): Promise<IfsProjection[]> {
   const token = await fetchToken(profile);
-  const url = `${profile.host}/main/ifsapplications/projection/v1/AllProjections.svc/Projections?$format=json`;
+  const params = new URLSearchParams({
+    '$format': 'json',
+    '$select': 'ProjectionName,Name,Description,Categories,ApiClass,Layer,Deprecated',
+    '$orderby': 'ProjectionName',
+  });
+  const url = `${profile.host}/main/ifsapplications/projection/v1/AllProjections.svc/Projections?${params}`;
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
