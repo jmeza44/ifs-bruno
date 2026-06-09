@@ -1,4 +1,5 @@
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Combobox,
@@ -122,9 +123,7 @@ export function ProjectionSearchPanel({
                 {selected.ProjectionName}
               </span>
               {selected.Deprecated && (
-                <span className="rounded-none border border-rose-600/40 px-1.5 py-0.5 text-xs text-rose-600 dark:text-rose-400">
-                  Deprecated
-                </span>
+                <Badge variant="destructive">Deprecated</Badge>
               )}
             </div>
 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CaretRightIcon, FolderIcon, RowsIcon, StackIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { methodTextStyle } from "@/lib/http-method-styles";
 import { cn } from "@/lib/utils";
 
 export type StoredEndpoint = {
@@ -18,18 +19,10 @@ export type CollectionEndpointsTreeProps = {
   folders: CollectionFolder[];
 };
 
-const METHOD_STYLES: Record<string, string> = {
-  GET: "text-emerald-600 dark:text-emerald-400",
-  POST: "text-amber-600 dark:text-amber-400",
-  PUT: "text-sky-600 dark:text-sky-400",
-  PATCH: "text-violet-600 dark:text-violet-400",
-  DELETE: "text-rose-600 dark:text-rose-400",
-};
-
 function MethodLabel({ method }: { method: string }) {
   const upper = method.toUpperCase();
   return (
-    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", METHOD_STYLES[upper] ?? "text-muted-foreground")}>
+    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", methodTextStyle(upper))}>
       {upper}
     </span>
   );

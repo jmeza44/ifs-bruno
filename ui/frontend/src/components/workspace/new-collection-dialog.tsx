@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldGroup } from "@/components/ui/field";
+import { HintField } from "@/components/workspace/hint-field";
 
 const EMPTY_FORM: InitCollectionInput = {
   name: "",
@@ -80,26 +80,49 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <Field id="name" label="Collection name" placeholder="IFS" value={form.name} onChange={(v) => set("name", v)} />
-            <Field
+          <FieldGroup>
+            <HintField
+              id="name"
+              label="Collection name"
+              placeholder="IFS"
+              value={form.name}
+              onChange={(v) => set("name", v)}
+              hint="Name or path for the collection folder (relative or absolute). A simple name like IFS creates ./IFS; a path like collections/IFS creates that subfolder."
+            />
+            <HintField
               id="host"
               label="Host"
               placeholder="https://acme.ifs.cloud"
               value={form.host}
               onChange={(v) => set("host", v)}
+              hint="Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud"
             />
-            <Field id="realm" label="Realm" placeholder="your-realm" value={form.realm} onChange={(v) => set("realm", v)} />
-            <Field id="clientId" label="Client ID" placeholder="IFS_postman" value={form.clientId} onChange={(v) => set("clientId", v)} />
-            <Field
+            <HintField
+              id="realm"
+              label="Realm"
+              placeholder="your-realm"
+              value={form.realm}
+              onChange={(v) => set("realm", v)}
+              hint="Found in your Keycloak admin panel under Realms, usually matches your environment name"
+            />
+            <HintField
+              id="clientId"
+              label="Client ID"
+              placeholder="IFS_postman"
+              value={form.clientId}
+              onChange={(v) => set("clientId", v)}
+              hint="OAuth2 client configured for API access, e.g. IFS_postman"
+            />
+            <HintField
               id="output"
               label="Output folder (optional)"
               placeholder={form.name || "defaults to collection name"}
               value={form.output ?? ""}
               onChange={(v) => set("output", v)}
               required={false}
+              hint="Optional · Defaults to the collection name when left empty"
             />
-          </div>
+          </FieldGroup>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -111,34 +134,5 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  required = true,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-      />
-    </div>
   );
 }

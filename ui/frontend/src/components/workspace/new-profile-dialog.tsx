@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldGroup } from "@/components/ui/field";
+import { HintField } from "@/components/workspace/hint-field";
 
 const EMPTY_FORM: ProfileInput = {
   name: "",
@@ -73,25 +73,45 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <Field id="name" label="Name" value={form.name} onChange={(v) => set("name", v)} />
-            <Field
+          <FieldGroup>
+            <HintField
+              id="name"
+              label="Name"
+              value={form.name}
+              onChange={(v) => set("name", v)}
+              hint="A local alias for this connection, e.g. prod or staging"
+            />
+            <HintField
               id="host"
               label="Host"
               placeholder="https://acme.ifs.cloud"
               value={form.host}
               onChange={(v) => set("host", v)}
+              hint="Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud"
             />
-            <Field id="realm" label="Realm" value={form.realm} onChange={(v) => set("realm", v)} />
-            <Field id="clientId" label="Client ID" value={form.clientId} onChange={(v) => set("clientId", v)} />
-            <Field
+            <HintField
+              id="realm"
+              label="Realm"
+              value={form.realm}
+              onChange={(v) => set("realm", v)}
+              hint="Found in your Keycloak admin panel under Realms"
+            />
+            <HintField
+              id="clientId"
+              label="Client ID"
+              value={form.clientId}
+              onChange={(v) => set("clientId", v)}
+              hint="Found in Keycloak → Clients, e.g. IFS_postman"
+            />
+            <HintField
               id="clientSecret"
               label="Client secret"
               type="password"
               value={form.clientSecret}
               onChange={(v) => set("clientSecret", v)}
+              hint="Found in Keycloak → Clients → [client] → Credentials tab"
             />
-          </div>
+          </FieldGroup>
 
           {formError && <p className="text-sm text-destructive">{formError}</p>}
 
@@ -103,35 +123,5 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  type?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        required
-      />
-    </div>
   );
 }

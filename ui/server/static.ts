@@ -1,4 +1,6 @@
-import assetManifest from "./static-assets.gen.ts";
+const assetManifest: Record<string, Bun.BunFile> = await import("./static-assets.gen.ts")
+  .then((mod) => mod.default)
+  .catch(() => ({}));
 
 const MIME_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
@@ -26,7 +28,10 @@ export function serveStatic(req: Request): Response {
 
   const asset = lookup(pathname) ?? assetManifest["/index.html"];
   if (!asset) {
-    return new Response("Not found", { status: 404 });
+    return new Response(
+      "No embedded frontend assets found. Run the frontend dev server (pnpm --filter frontend dev) and use its URL instead, or run `bun run build.ts` to embed the production build.",
+      { status: 404 },
+    );
   }
 
   return new Response(asset, {

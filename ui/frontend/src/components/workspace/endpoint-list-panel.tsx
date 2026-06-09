@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
-import { ArrowLeftIcon, CheckSquareIcon, MagnifyingGlassIcon, SquareIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { METHOD_STYLES, methodTextStyle } from "@/lib/http-method-styles";
 import { cn } from "@/lib/utils";
 
 export type EndpointListEntry = {
@@ -27,18 +30,10 @@ export type EndpointListPanelProps = {
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
 
-const METHOD_STYLES: Record<string, string> = {
-  GET: "text-emerald-600 dark:text-emerald-400",
-  POST: "text-amber-600 dark:text-amber-400",
-  PUT: "text-sky-600 dark:text-sky-400",
-  PATCH: "text-violet-600 dark:text-violet-400",
-  DELETE: "text-rose-600 dark:text-rose-400",
-};
-
 function MethodLabel({ method }: { method: string }) {
   const upper = method.toUpperCase();
   return (
-    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", METHOD_STYLES[upper] ?? "text-muted-foreground")}>
+    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", methodTextStyle(upper))}>
       {upper}
     </span>
   );
@@ -57,15 +52,6 @@ export function EndpointListPanel({
 }: EndpointListPanelProps) {
   const [search, setSearch] = useState("");
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(new Set(HTTP_METHODS));
-
-  function toggleMethod(method: HttpMethod) {
-    setActiveMethods((prev) => {
-      const next = new Set(prev);
-      if (next.has(method)) next.delete(method);
-      else next.add(method);
-      return next;
-    });
-  }
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -100,26 +86,32 @@ export function EndpointListPanel({
             />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1">
+        <ToggleGroup
+          type="multiple"
+          spacing={1}
+          value={Array.from(activeMethods)}
+          onValueChange={(value) => setActiveMethods(new Set(value as HttpMethod[]))}
+          className="flex-wrap"
+        >
           {HTTP_METHODS.map((method) => {
             const active = activeMethods.has(method);
             return (
-              <button
+              <ToggleGroupItem
                 key={method}
-                type="button"
-                onClick={() => toggleMethod(method)}
+                value={method}
+                size="sm"
                 className={cn(
-                  "rounded-none border px-1.5 py-0.5 font-mono text-[11px] font-semibold transition-colors",
+                  "h-auto rounded-none border px-1.5 py-0.5 font-mono text-[11px] font-semibold transition-colors",
                   active
                     ? cn("border-border bg-muted", METHOD_STYLES[method])
-                    : "border-transparent text-muted-foreground/50 hover:text-muted-foreground"
+                    : "border-transparent text-muted-foreground/50 hover:bg-transparent hover:text-muted-foreground"
                 )}
               >
                 {method}
-              </button>
+              </ToggleGroupItem>
             );
           })}
-        </div>
+        </ToggleGroup>
       </div>
 
       {/* middle: scrollable list */}
@@ -145,22 +137,14 @@ export function EndpointListPanel({
                   isActive && "bg-accent text-accent-foreground"
                 )}
               >
-                <button
-                  type="button"
+                <Checkbox
+                  checked={isSelected || isLocked}
                   disabled={isLocked}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleSelected(entry.id);
-                  }}
-                  className={cn(
-                    "shrink-0 transition-colors",
-                    isSelected ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground",
-                    isLocked ? "cursor-not-allowed opacity-40" : "hover:text-foreground"
-                  )}
+                  onClick={(e) => e.stopPropagation()}
+                  onCheckedChange={() => onToggleSelected(entry.id)}
+                  className="shrink-0"
                   title={isLocked ? "Already in collection" : isSelected ? "Deselect" : "Select"}
-                >
-                  {isSelected || isLocked ? <CheckSquareIcon size={14} /> : <SquareIcon size={14} />}
-                </button>
+                />
                 <MethodLabel method={entry.method} />
                 <span className="truncate" title={entry.path}>
                   {entry.path}

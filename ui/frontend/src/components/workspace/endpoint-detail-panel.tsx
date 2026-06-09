@@ -1,5 +1,6 @@
 import { CheckSquareIcon, SquareIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { methodTextStyle } from "@/lib/http-method-styles";
 import { cn } from "@/lib/utils";
 
 export type EndpointDetailParameter = {
@@ -37,14 +38,6 @@ export type EndpointDetailPanelProps = {
   selected?: boolean;
   alreadyInCollection?: boolean;
   onToggleSelected?: (id: string) => void;
-};
-
-const METHOD_STYLES: Record<string, string> = {
-  GET: "text-emerald-600 dark:text-emerald-400",
-  POST: "text-amber-600 dark:text-amber-400",
-  PUT: "text-sky-600 dark:text-sky-400",
-  PATCH: "text-violet-600 dark:text-violet-400",
-  DELETE: "text-rose-600 dark:text-rose-400",
 };
 
 const MARKDOWN_LINK_PATTERN = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
@@ -114,7 +107,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
       {/* header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("font-mono text-xs font-semibold", METHOD_STYLES[method] ?? "text-muted-foreground")}>
+          <span className={cn("font-mono text-xs font-semibold", methodTextStyle(method))}>
             {method}
           </span>
           <span className="font-mono text-xs break-all" title={endpoint.path}>
