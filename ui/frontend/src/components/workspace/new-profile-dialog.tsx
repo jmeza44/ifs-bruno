@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { ApiError, createProfile, testProfile, type ProfileInput } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { ApiError, createProfile, testProfile, type ProfileInput } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { FieldGroup } from "@/components/ui/field";
-import { HintField } from "@/components/workspace/hint-field";
+} from '@/components/ui/dialog';
+import { FieldGroup } from '@/components/ui/field';
+import { HintField } from '@/components/workspace/hint-field';
 
 const EMPTY_FORM: ProfileInput = {
-  name: "",
-  host: "",
-  realm: "",
-  clientId: "",
-  clientSecret: "",
+  name: '',
+  host: '',
+  realm: '',
+  clientId: '',
+  clientSecret: '',
 };
 
 export type NewProfileDialogProps = {
@@ -37,13 +37,19 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
   const canTest = !!(form.host && form.realm && form.clientId && form.clientSecret);
 
   const testMutation = useMutation({
-    mutationFn: () => testProfile({ host: form.host, realm: form.realm, clientId: form.clientId, clientSecret: form.clientSecret }),
+    mutationFn: () =>
+      testProfile({
+        host: form.host,
+        realm: form.realm,
+        clientId: form.clientId,
+        clientSecret: form.clientSecret,
+      }),
   });
 
   function handleTest() {
     toast.promise(testMutation.mutateAsync(), {
-      loading: "Testing connection…",
-      success: "Connection successful",
+      loading: 'Testing connection…',
+      success: 'Connection successful',
       error: (err) => `Connection failed: ${err.message}`,
     });
   }
@@ -51,7 +57,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
   const createMutation = useMutation({
     mutationFn: (input: ProfileInput) => createProfile(input),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      queryClient.invalidateQueries({ queryKey: ['profiles'] });
       onOpenChange(false);
       setForm(EMPTY_FORM);
       setFormError(null);
@@ -94,7 +100,8 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
           <DialogHeader>
             <DialogTitle>New profile</DialogTitle>
             <DialogDescription>
-              Credentials are stored locally in ~/.ifs-bruno/config.json and never leave this machine.
+              Credentials are stored locally in ~/.ifs-bruno/config.json and never leave this
+              machine.
             </DialogDescription>
           </DialogHeader>
 
@@ -103,7 +110,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               id="name"
               label="Name"
               value={form.name}
-              onChange={(v) => set("name", v)}
+              onChange={(v) => set('name', v)}
               hint="A local alias for this connection, e.g. prod or staging"
               error={fieldErrors.name}
             />
@@ -112,7 +119,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               label="Host"
               placeholder="https://acme.ifs.cloud"
               value={form.host}
-              onChange={(v) => set("host", v)}
+              onChange={(v) => set('host', v)}
               hint="Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud"
               error={fieldErrors.host}
             />
@@ -120,7 +127,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               id="realm"
               label="Realm"
               value={form.realm}
-              onChange={(v) => set("realm", v)}
+              onChange={(v) => set('realm', v)}
               hint="Found in your Keycloak admin panel under Realms"
               error={fieldErrors.realm}
             />
@@ -128,7 +135,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               id="clientId"
               label="Client ID"
               value={form.clientId}
-              onChange={(v) => set("clientId", v)}
+              onChange={(v) => set('clientId', v)}
               hint="Found in Keycloak → Clients, e.g. IFS_postman"
               error={fieldErrors.clientId}
             />
@@ -137,7 +144,7 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               label="Client secret"
               type="password"
               value={form.clientSecret}
-              onChange={(v) => set("clientSecret", v)}
+              onChange={(v) => set('clientSecret', v)}
               hint="Found in Keycloak → Clients → [client] → Credentials tab"
               error={fieldErrors.clientSecret}
             />
@@ -152,10 +159,10 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
               disabled={!canTest || testMutation.isPending}
               onClick={handleTest}
             >
-              {testMutation.isPending ? "Testing…" : "Test connection"}
+              {testMutation.isPending ? 'Testing…' : 'Test connection'}
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Saving…" : "Save"}
+              {createMutation.isPending ? 'Saving…' : 'Save'}
             </Button>
           </DialogFooter>
         </form>

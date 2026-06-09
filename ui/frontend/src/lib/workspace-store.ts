@@ -1,4 +1,4 @@
-import { Store, useStore } from "@tanstack/react-store";
+import { Store, useStore } from '@tanstack/react-store';
 import type {
   CollectionEntry,
   EndpointDetail,
@@ -7,16 +7,16 @@ import type {
   LoadedSpec,
   PendingConfirmation,
   ProfileOption,
-} from "@/lib/types";
+} from '@/lib/types';
 
 export type ProjectionSource =
-  | { type: "none" }
+  | { type: 'none' }
   | {
-      type: "profile";
+      type: 'profile';
       profile: ProfileOption;
-      projection: { state: "searching" } | { state: "resolved"; projection: IfsProjection };
+      projection: { state: 'searching' } | { state: 'resolved'; projection: IfsProjection };
     }
-  | { type: "spec"; spec: LoadedSpec; projection: IfsProjection };
+  | { type: 'spec'; spec: LoadedSpec; projection: IfsProjection };
 
 export type WorkspaceState = {
   collection: {
@@ -41,7 +41,7 @@ export type WorkspaceState = {
 const initialState: WorkspaceState = {
   collection: { active: null, available: [] },
   profiles: { available: [] },
-  source: { type: "none" },
+  source: { type: 'none' },
   endpoints: {
     available: [],
     alreadyInCollection: new Set(),
@@ -57,7 +57,7 @@ function isDirty(state: WorkspaceState): boolean {
   return state.endpoints.selectedToAdd.size > 0;
 }
 
-function resetEndpoints(): WorkspaceState["endpoints"] {
+function resetEndpoints(): WorkspaceState['endpoints'] {
   return {
     available: [],
     alreadyInCollection: new Set(),
@@ -70,7 +70,8 @@ export const workspaceActions = {
   setAvailableCollections(collections: CollectionEntry[]) {
     workspaceStore.setState((state) => {
       const active = state.collection.active
-        ? (collections.find((entry) => entry.path === state.collection.active!.path) ?? state.collection.active)
+        ? (collections.find((entry) => entry.path === state.collection.active!.path) ??
+          state.collection.active)
         : null;
       return { ...state, collection: { active, available: collections } };
     });
@@ -95,7 +96,7 @@ export const workspaceActions = {
       }
       return {
         ...state,
-        ui: { pendingConfirmation: { type: "switch-collection", target: collection } },
+        ui: { pendingConfirmation: { type: 'switch-collection', target: collection } },
       };
     });
   },
@@ -113,20 +114,25 @@ export const workspaceActions = {
       return {
         ...state,
         collection: { ...state.collection, available },
-        ui: { pendingConfirmation: { type: "create-collection-and-move", created: collection } },
+        ui: { pendingConfirmation: { type: 'create-collection-and-move', created: collection } },
       };
     });
   },
 
   selectProfile(profile: ProfileOption) {
     workspaceStore.setState((state) => {
-      const isSameProfile = state.source.type === "profile" && state.source.profile.id === profile.id;
+      const isSameProfile =
+        state.source.type === 'profile' && state.source.profile.id === profile.id;
       if (isSameProfile) return state;
 
       if (!isDirty(state)) {
-        return { ...state, source: { type: "profile", profile, projection: { state: "searching" } }, endpoints: resetEndpoints() };
+        return {
+          ...state,
+          source: { type: 'profile', profile, projection: { state: 'searching' } },
+          endpoints: resetEndpoints(),
+        };
       }
-      return { ...state, ui: { pendingConfirmation: { type: "switch-profile", target: profile } } };
+      return { ...state, ui: { pendingConfirmation: { type: 'switch-profile', target: profile } } };
     });
   },
 
@@ -137,25 +143,25 @@ export const workspaceActions = {
     }));
   },
 
-  requestDeleteProfile(profile: ProfileOption): "confirm" | "delete" {
+  requestDeleteProfile(profile: ProfileOption): 'confirm' | 'delete' {
     const { source } = workspaceStore.state;
-    const isActive = source.type === "profile" && source.profile.id === profile.id;
+    const isActive = source.type === 'profile' && source.profile.id === profile.id;
     if (isActive) {
       workspaceStore.setState((state) => ({
         ...state,
-        ui: { pendingConfirmation: { type: "delete-active-profile", target: profile } },
+        ui: { pendingConfirmation: { type: 'delete-active-profile', target: profile } },
       }));
-      return "confirm";
+      return 'confirm';
     }
-    return "delete";
+    return 'delete';
   },
 
   removeProfile(profile: ProfileOption) {
     workspaceStore.setState((state) => {
-      const isActive = state.source.type === "profile" && state.source.profile.id === profile.id;
+      const isActive = state.source.type === 'profile' && state.source.profile.id === profile.id;
       return {
         ...state,
-        source: isActive ? { type: "none" } : state.source,
+        source: isActive ? { type: 'none' } : state.source,
         endpoints: isActive ? resetEndpoints() : state.endpoints,
         profiles: { available: state.profiles.available.filter((p) => p.id !== profile.id) },
         ui: { pendingConfirmation: null },
@@ -165,24 +171,28 @@ export const workspaceActions = {
 
   loadSpec(spec: LoadedSpec, projection: IfsProjection, endpoints: EndpointListEntry[]) {
     workspaceStore.setState((state) => {
-      const hasProgress = state.source.type !== "none" || isDirty(state);
+      const hasProgress = state.source.type !== 'none' || isDirty(state);
       if (!hasProgress) {
         return {
           ...state,
-          source: { type: "spec", spec, projection },
+          source: { type: 'spec', spec, projection },
           endpoints: { ...resetEndpoints(), available: endpoints },
         };
       }
-      return { ...state, ui: { pendingConfirmation: { type: "switch-source", target: "spec" } } };
+      return { ...state, ui: { pendingConfirmation: { type: 'switch-source', target: 'spec' } } };
     });
   },
 
-  selectProjection(projection: IfsProjection, endpoints: EndpointListEntry[], alreadyInCollection: Set<string>) {
+  selectProjection(
+    projection: IfsProjection,
+    endpoints: EndpointListEntry[],
+    alreadyInCollection: Set<string>,
+  ) {
     workspaceStore.setState((state) => {
-      if (state.source.type !== "profile") return state;
+      if (state.source.type !== 'profile') return state;
       return {
         ...state,
-        source: { ...state.source, projection: { state: "resolved", projection } },
+        source: { ...state.source, projection: { state: 'resolved', projection } },
         endpoints: { ...resetEndpoints(), available: endpoints, alreadyInCollection },
       };
     });
@@ -190,14 +200,14 @@ export const workspaceActions = {
 
   closeProjection() {
     workspaceStore.setState((state) => {
-      if (state.source.type === "profile") {
+      if (state.source.type === 'profile') {
         return {
           ...state,
-          source: { ...state.source, projection: { state: "searching" } },
+          source: { ...state.source, projection: { state: 'searching' } },
           endpoints: resetEndpoints(),
         };
       }
-      return { ...state, source: { type: "none" }, endpoints: resetEndpoints() };
+      return { ...state, source: { type: 'none' }, endpoints: resetEndpoints() };
     });
   },
 
@@ -232,7 +242,7 @@ export const workspaceActions = {
     if (!pending) return;
 
     switch (pending.type) {
-      case "switch-collection":
+      case 'switch-collection':
         workspaceStore.setState((state) => ({
           ...state,
           collection: { ...state.collection, active: pending.target },
@@ -241,7 +251,7 @@ export const workspaceActions = {
         }));
         return;
 
-      case "create-collection-and-move":
+      case 'create-collection-and-move':
         workspaceStore.setState((state) => ({
           ...state,
           collection: { ...state.collection, active: pending.created },
@@ -250,19 +260,19 @@ export const workspaceActions = {
         }));
         return;
 
-      case "switch-profile":
+      case 'switch-profile':
         workspaceStore.setState((state) => ({
           ...state,
-          source: { type: "profile", profile: pending.target, projection: { state: "searching" } },
+          source: { type: 'profile', profile: pending.target, projection: { state: 'searching' } },
           endpoints: resetEndpoints(),
           ui: { pendingConfirmation: null },
         }));
         return;
 
-      case "switch-source":
+      case 'switch-source':
         workspaceStore.setState((state) => ({
           ...state,
-          source: { type: "none" },
+          source: { type: 'none' },
           endpoints: resetEndpoints(),
           ui: { pendingConfirmation: null },
         }));

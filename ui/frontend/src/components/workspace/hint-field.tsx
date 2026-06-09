@@ -1,7 +1,7 @@
-import { QuestionIcon } from "@phosphor-icons/react";
-import { Field, FieldContent, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { QuestionIcon } from '@phosphor-icons/react';
+import { Field, FieldContent, FieldError, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export type HintFieldProps = {
   id: string;
@@ -21,7 +21,7 @@ export function HintField({
   value,
   onChange,
   placeholder,
-  type = "text",
+  type = 'text',
   required = true,
   hint,
   error,
@@ -29,7 +29,14 @@ export function HintField({
   return (
     <Field data-invalid={!!error || undefined}>
       <FieldLabel htmlFor={id} className="justify-between">
-        <span>{label}{required && <span className="text-destructive"><sup>*</sup></span>}</span>
+        <span>
+          {label}
+          {required && (
+            <span className="text-destructive">
+              <sup>*</sup>
+            </span>
+          )}
+        </span>
         {hint && (
           <Popover>
             <PopoverTrigger

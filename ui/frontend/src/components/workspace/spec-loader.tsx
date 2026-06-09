@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import { FileCodeIcon, UploadSimpleIcon, XIcon } from "@phosphor-icons/react";
-import type { LoadedSpec } from "@/lib/types";
+import { useRef } from 'react';
+import { FileCodeIcon, UploadSimpleIcon, XIcon } from '@phosphor-icons/react';
+import type { LoadedSpec } from '@/lib/types';
 
 export type { LoadedSpec };
 
@@ -16,7 +16,7 @@ export function SpecLoader({ loaded, onLoad, onClear }: SpecLoaderProps) {
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) onLoad(file);
-    event.target.value = "";
+    event.target.value = '';
   }
 
   return (

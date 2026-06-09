@@ -4,10 +4,10 @@ import {
   listProfiles,
   saveProfile,
   type IfsProfile,
-} from "../../../src/core/profile-store.ts";
-import { fetchToken } from "../../../src/core/ifs-client.ts";
-import { checkProfileAddArgs } from "../../../src/validate-args.ts";
-import { err, fieldErr, ok, route } from "../json.ts";
+} from '../../../src/core/profile-store.ts';
+import { fetchToken } from '../../../src/core/ifs-client.ts';
+import { checkProfileAddArgs } from '../../../src/validate-args.ts';
+import { err, fieldErr, ok, route } from '../json.ts';
 
 interface ProfileSummary {
   name: string;
@@ -38,18 +38,19 @@ export const getProfiles = route(() => {
 
 export const postProfile = route(async (req) => {
   const url = new URL(req.url);
-  const overwrite = url.searchParams.get("overwrite") === "true";
+  const overwrite = url.searchParams.get('overwrite') === 'true';
 
   const body = (await req.json()) as Partial<IfsProfile> & { name?: string };
   const { name, host, realm, clientId, clientSecret, keycloakBasePath } = body;
 
   const fieldErrors: Record<string, string> = {};
-  if (!name) fieldErrors.name = "Required";
-  if (!host) fieldErrors.host = "Required";
-  else if (!checkProfileAddArgs({ host }).ok) fieldErrors.host = "Must be a valid URL, e.g. https://acme.ifs.cloud";
-  if (!realm) fieldErrors.realm = "Required";
-  if (!clientId) fieldErrors.clientId = "Required";
-  if (!clientSecret) fieldErrors.clientSecret = "Required";
+  if (!name) fieldErrors.name = 'Required';
+  if (!host) fieldErrors.host = 'Required';
+  else if (!checkProfileAddArgs({ host }).ok)
+    fieldErrors.host = 'Must be a valid URL, e.g. https://acme.ifs.cloud';
+  if (!realm) fieldErrors.realm = 'Required';
+  if (!clientId) fieldErrors.clientId = 'Required';
+  if (!clientSecret) fieldErrors.clientSecret = 'Required';
 
   if (Object.keys(fieldErrors).length > 0) {
     return fieldErr(fieldErrors);
@@ -68,7 +69,7 @@ export const postProfileTest = route(async (req) => {
   const { host, realm, clientId, clientSecret, keycloakBasePath } = body;
 
   if (!host || !realm || !clientId || !clientSecret) {
-    return err("host, realm, clientId and clientSecret are required", 400);
+    return err('host, realm, clientId and clientSecret are required', 400);
   }
 
   await fetchToken({ host, realm, clientId, clientSecret, keycloakBasePath });
@@ -76,9 +77,9 @@ export const postProfileTest = route(async (req) => {
 });
 
 export const deleteProfileByName = route((req) => {
-  const name = decodeURIComponent(new URL(req.url).pathname.split("/").pop() ?? "");
+  const name = decodeURIComponent(new URL(req.url).pathname.split('/').pop() ?? '');
   if (!name) {
-    return err("name is required", 400);
+    return err('name is required', 400);
   }
 
   const deleted = deleteProfile(name);

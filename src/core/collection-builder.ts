@@ -1,4 +1,4 @@
-import type { BrunoCollection, BrunoEnvironment, BrunoRequest } from "../types/bruno.types";
+import type { BrunoCollection, BrunoEnvironment, BrunoRequest } from '../types/bruno.types';
 
 export interface InitOptions {
   host: string;
@@ -50,16 +50,16 @@ await bru.sendRequest(
 
 export function buildCollectionManifest(name: string): BrunoCollection {
   return {
-    opencollection: "1.0.0",
+    opencollection: '1.0.0',
     info: { name },
     request: {
       auth: {
-        type: "bearer",
-        token: "{{accessToken}}",
+        type: 'bearer',
+        token: '{{accessToken}}',
       },
       scripts: [
         {
-          type: "before-request",
+          type: 'before-request',
           code: COLLECTION_PRE_REQUEST_SCRIPT,
         },
       ],
@@ -67,7 +67,7 @@ export function buildCollectionManifest(name: string): BrunoCollection {
     bundled: false,
     extensions: {
       bruno: {
-        ignore: ["node_modules", ".git"],
+        ignore: ['node_modules', '.git'],
       },
     },
   };
@@ -75,15 +75,15 @@ export function buildCollectionManifest(name: string): BrunoCollection {
 
 export function buildEnvironment(options: InitOptions): BrunoEnvironment {
   return {
-    name: "default",
+    name: 'default',
     variables: [
-      { name: "baseHost", value: options.host },
-      { name: "realm", value: options.realm },
-      { name: "clientId", value: options.clientId },
-      { name: "clientSecret", secret: true as const },
-      { name: "keycloakBasePath", value: "/auth" },
-      { name: "accessToken", secret: true as const },
-      { name: "xsrfToken", value: "" },
+      { name: 'baseHost', value: options.host },
+      { name: 'realm', value: options.realm },
+      { name: 'clientId', value: options.clientId },
+      { name: 'clientSecret', secret: true as const },
+      { name: 'keycloakBasePath', value: '/auth' },
+      { name: 'accessToken', secret: true as const },
+      { name: 'xsrfToken', value: '' },
     ],
   };
 }
@@ -91,29 +91,29 @@ export function buildEnvironment(options: InitOptions): BrunoEnvironment {
 export function buildAuthRequest(): BrunoRequest {
   return {
     info: {
-      name: "Auth",
-      type: "http",
+      name: 'Auth',
+      type: 'http',
       seq: 1,
     },
     http: {
-      method: "POST",
-      url: "{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token",
-      auth: "none",
+      method: 'POST',
+      url: '{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token',
+      auth: 'none',
       body: {
-        type: "form-urlencoded",
+        type: 'form-urlencoded',
         data: [
-          { name: "grant_type", value: "client_credentials" },
-          { name: "scope", value: "openid microprofile-jwt" },
-          { name: "client_id", value: "{{clientId}}" },
-          { name: "client_secret", value: "{{clientSecret}}" },
+          { name: 'grant_type', value: 'client_credentials' },
+          { name: 'scope', value: 'openid microprofile-jwt' },
+          { name: 'client_id', value: '{{clientId}}' },
+          { name: 'client_secret', value: '{{clientSecret}}' },
         ],
       },
     },
     runtime: {
       scripts: [
         {
-          type: "after-response",
-          code: "bru.setEnvVar(\"accessToken\", res.body.access_token);\nbru.setEnvVar(\"xsrfToken\", res.body.session_state);",
+          type: 'after-response',
+          code: 'bru.setEnvVar("accessToken", res.body.access_token);\nbru.setEnvVar("xsrfToken", res.body.session_state);',
         },
       ],
     },

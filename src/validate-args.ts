@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import pc from "picocolors";
+import fs from 'fs';
+import path from 'path';
+import pc from 'picocolors';
 
 export interface ValidationResult {
   ok: boolean;
@@ -8,14 +8,14 @@ export interface ValidationResult {
 }
 
 function fail(message: string): never {
-  console.error(pc.red("✗") + " " + message);
+  console.error(pc.red('✗') + ' ' + message);
   process.exit(1);
 }
 
 function isValidUrl(value: string): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
+    return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;
   }
@@ -35,7 +35,7 @@ export function checkAddArgs(args: {
   if (args.spec) {
     if (!fs.existsSync(args.spec)) {
       errors.push(`Spec file not found: ${args.spec}`);
-    } else if (!args.spec.endsWith(".json")) {
+    } else if (!args.spec.endsWith('.json')) {
       errors.push(`Spec file must be a JSON file: ${args.spec}`);
     }
   }
@@ -51,10 +51,7 @@ export function checkAddArgs(args: {
   return result(errors);
 }
 
-export function checkInitArgs(args: {
-  host?: string;
-  output?: string;
-}): ValidationResult {
+export function checkInitArgs(args: { host?: string; output?: string }): ValidationResult {
   const errors: string[] = [];
 
   if (args.host && !isValidUrl(args.host)) {
@@ -89,23 +86,20 @@ export function validateAddArgs(args: {
 }): void {
   const { ok, errors } = checkAddArgs(args);
   if (!ok) {
-    fail(errors.join("\n"));
+    fail(errors.join('\n'));
   }
 }
 
-export function validateInitArgs(args: {
-  host?: string;
-  output?: string;
-}): void {
+export function validateInitArgs(args: { host?: string; output?: string }): void {
   const { ok, errors } = checkInitArgs(args);
   if (!ok) {
-    fail(errors.join("\n"));
+    fail(errors.join('\n'));
   }
 }
 
 export function validateProfileAddArgs(args: { host?: string }): void {
   const { ok, errors } = checkProfileAddArgs(args);
   if (!ok) {
-    fail(errors.join("\n"));
+    fail(errors.join('\n'));
   }
 }

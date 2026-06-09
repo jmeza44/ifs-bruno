@@ -7,7 +7,7 @@ import type {
   SpecResult,
   SpecSource,
   WriteResult,
-} from "./types";
+} from './types';
 
 export class ApiError extends Error {
   status: number;
@@ -15,7 +15,7 @@ export class ApiError extends Error {
 
   constructor(message: string, status: number, fieldErrors?: Record<string, string>) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.fieldErrors = fieldErrors;
   }
@@ -23,7 +23,7 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
     ...init,
   });
 
@@ -36,14 +36,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function postJson<T>(path: string, body: unknown, query?: Record<string, string>): Promise<T> {
-  const qs = query ? `?${new URLSearchParams(query).toString()}` : "";
-  return request<T>(`${path}${qs}`, { method: "POST", body: JSON.stringify(body) });
+  const qs = query ? `?${new URLSearchParams(query).toString()}` : '';
+  return request<T>(`${path}${qs}`, { method: 'POST', body: JSON.stringify(body) });
 }
 
 // Profiles
 
 export function listProfiles(): Promise<{ profiles: ProfileSummary[] }> {
-  return request("/profiles");
+  return request('/profiles');
 }
 
 export interface ProfileInput {
@@ -56,28 +56,30 @@ export interface ProfileInput {
 }
 
 export function createProfile(input: ProfileInput, overwrite = false): Promise<{ name: string }> {
-  return postJson("/profiles", input, overwrite ? { overwrite: "true" } : undefined);
+  return postJson('/profiles', input, overwrite ? { overwrite: 'true' } : undefined);
 }
 
 export function deleteProfile(name: string): Promise<{ deleted: true }> {
-  return request(`/profiles/${encodeURIComponent(name)}`, { method: "DELETE" });
+  return request(`/profiles/${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
 
-export function testProfile(input: Omit<ProfileInput, "name">): Promise<{ ok: true }> {
-  return postJson("/profiles/test", input);
+export function testProfile(input: Omit<ProfileInput, 'name'>): Promise<{ ok: true }> {
+  return postJson('/profiles/test', input);
 }
 
 // Collections
 
 export function listCollections(): Promise<{ collections: CollectionEntry[] }> {
-  return request("/collections");
+  return request('/collections');
 }
 
 export function selectCollection(path: string): Promise<{ path: string }> {
-  return postJson("/collections/select", { path });
+  return postJson('/collections/select', { path });
 }
 
-export function fetchCollectionEndpoints(collectionPath: string): Promise<{ folders: CollectionFolder[] }> {
+export function fetchCollectionEndpoints(
+  collectionPath: string,
+): Promise<{ folders: CollectionFolder[] }> {
   const qs = new URLSearchParams({ path: collectionPath }).toString();
   return request(`/collections/endpoints?${qs}`);
 }
@@ -105,27 +107,27 @@ export function initCollection(
   input: InitCollectionInput,
   overwrite = false,
 ): Promise<{ path: string }> {
-  return postJson("/collections/init", input, overwrite ? { overwrite: "true" } : undefined);
+  return postJson('/collections/init', input, overwrite ? { overwrite: 'true' } : undefined);
 }
 
 // Projections
 
 export function fetchProjections(profileName: string): Promise<{ projections: IfsProjection[] }> {
-  return postJson("/projections", { profileName });
+  return postJson('/projections', { profileName });
 }
 
 // Spec
 
 export function fetchRemoteSpec(profileName: string, projectionName: string): Promise<SpecResult> {
-  return postJson("/spec/remote", { profileName, projectionName });
+  return postJson('/spec/remote', { profileName, projectionName });
 }
 
 export function fetchLocalSpec(specPath: string): Promise<SpecResult> {
-  return postJson("/spec/local", { specPath });
+  return postJson('/spec/local', { specPath });
 }
 
 export function fetchSpecEntry(path: string, method: string): Promise<EndpointDetail> {
-  return postJson("/spec/entry", { path, method });
+  return postJson('/spec/entry', { path, method });
 }
 
 // Write
@@ -137,5 +139,5 @@ export interface WriteInput {
 }
 
 export function writeEndpoints(input: WriteInput): Promise<WriteResult> {
-  return postJson("/write", input);
+  return postJson('/write', input);
 }

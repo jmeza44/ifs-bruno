@@ -1,8 +1,8 @@
-import fs from "fs";
-import path from "path";
-import os from "os";
-import yaml from "js-yaml";
-import { readCollectionFolders } from "./collection-reader";
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import yaml from 'js-yaml';
+import { readCollectionFolders } from './collection-reader';
 
 export interface IfsProfile {
   host: string;
@@ -28,13 +28,13 @@ interface ConfigFile {
   collections?: Array<StoredCollectionEntry | string>;
 }
 
-const CONFIG_DIR = path.join(os.homedir(), ".ifs-bruno");
-const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
+const CONFIG_DIR = path.join(os.homedir(), '.ifs-bruno');
+const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
 function readConfig(): ConfigFile {
   if (!fs.existsSync(CONFIG_FILE)) return { profiles: {} };
   try {
-    return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8")) as ConfigFile;
+    return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8')) as ConfigFile;
   } catch {
     return { profiles: {} };
   }
@@ -42,7 +42,7 @@ function readConfig(): ConfigFile {
 
 function writeConfig(config: ConfigFile): void {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8');
 }
 
 export function saveProfile(name: string, profile: IfsProfile): void {
@@ -67,13 +67,11 @@ export function deleteProfile(name: string): boolean {
   return true;
 }
 
-function normalizeCollections(
-  raw: Array<StoredCollectionEntry | string>,
-): StoredCollectionEntry[] {
+function normalizeCollections(raw: Array<StoredCollectionEntry | string>): StoredCollectionEntry[] {
   const seen = new Set<string>();
   const result: StoredCollectionEntry[] = [];
   for (const c of raw) {
-    const entry = typeof c === "string" ? { path: c, lastUsed: new Date(0).toISOString() } : c;
+    const entry = typeof c === 'string' ? { path: c, lastUsed: new Date(0).toISOString() } : c;
     if (!seen.has(entry.path)) {
       seen.add(entry.path);
       result.push(entry);
@@ -83,12 +81,15 @@ function normalizeCollections(
 }
 
 function countEndpoints(collectionPath: string): number {
-  return readCollectionFolders(collectionPath).reduce((total, folder) => total + folder.endpoints.length, 0);
+  return readCollectionFolders(collectionPath).reduce(
+    (total, folder) => total + folder.endpoints.length,
+    0,
+  );
 }
 
 function readCollectionName(collectionPath: string): string | null {
   try {
-    const raw = fs.readFileSync(path.join(collectionPath, "opencollection.yml"), "utf-8");
+    const raw = fs.readFileSync(path.join(collectionPath, 'opencollection.yml'), 'utf-8');
     const doc = yaml.load(raw) as { info?: { name?: string } } | undefined;
     return doc?.info?.name ?? null;
   } catch {
@@ -98,10 +99,12 @@ function readCollectionName(collectionPath: string): string | null {
 
 function readCollectionBaseHost(collectionPath: string): string | null {
   try {
-    const envPath = path.join(collectionPath, "environments", "default.yml");
-    const raw = fs.readFileSync(envPath, "utf-8");
-    const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
-    const baseHost = doc?.variables?.find((v) => v.name === "baseHost");
+    const envPath = path.join(collectionPath, 'environments', 'default.yml');
+    const raw = fs.readFileSync(envPath, 'utf-8');
+    const doc = yaml.load(raw) as
+      | { variables?: Array<{ name?: string; value?: string }> }
+      | undefined;
+    const baseHost = doc?.variables?.find((v) => v.name === 'baseHost');
     return baseHost?.value ?? null;
   } catch {
     return null;
@@ -130,7 +133,7 @@ export function saveCollection(collectionPath: string): void {
 export function listCollections(): CollectionEntry[] {
   const config = readConfig();
   const all = normalizeCollections(config.collections ?? []);
-  const valid = all.filter((c) => fs.existsSync(path.join(c.path, "opencollection.yml")));
+  const valid = all.filter((c) => fs.existsSync(path.join(c.path, 'opencollection.yml')));
   if (valid.length !== all.length) {
     config.collections = valid;
     writeConfig(config);

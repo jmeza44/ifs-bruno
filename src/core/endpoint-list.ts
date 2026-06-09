@@ -1,8 +1,14 @@
-import type { SwaggerSpec, PathItem, Operation, ParameterObject, ResponseObject } from "../types/spec.types";
-import type { EndpointDetail, EndpointEntry } from "../types/tool.types";
-import { RefResolver } from "./ref-resolver";
+import type {
+  SwaggerSpec,
+  PathItem,
+  Operation,
+  ParameterObject,
+  ResponseObject,
+} from '../types/spec.types';
+import type { EndpointDetail, EndpointEntry } from '../types/tool.types';
+import { RefResolver } from './ref-resolver';
 
-const HTTP_METHODS = ["get", "post", "put", "patch", "delete"] as const;
+const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
 export function buildEndpointList(spec: SwaggerSpec): EndpointEntry[] {
   const entries: EndpointEntry[] = [];
@@ -12,9 +18,9 @@ export function buildEndpointList(spec: SwaggerSpec): EndpointEntry[] {
       const operation = (pathItem as PathItem)[method] as Operation | undefined;
       if (!operation) continue;
 
-      const tag = operation.tags?.[0] ?? "Untagged";
+      const tag = operation.tags?.[0] ?? 'Untagged';
       const summary = (operation.summary ?? operation.operationId ?? pathTemplate).trim();
-      const operationId = operation.operationId ?? "";
+      const operationId = operation.operationId ?? '';
       const displayLabel = `[${method.toUpperCase()}] ${pathTemplate} — ${summary}`;
 
       entries.push({ path: pathTemplate, method, tag, summary, operationId, displayLabel });
@@ -29,7 +35,11 @@ export function buildEndpointList(spec: SwaggerSpec): EndpointEntry[] {
  * parameters/responses/schemas (following $refs) into the enriched detail shape
  * the endpoint detail panel renders.
  */
-export function buildEndpointDetail(spec: SwaggerSpec, pathTemplate: string, method: string): EndpointDetail | null {
+export function buildEndpointDetail(
+  spec: SwaggerSpec,
+  pathTemplate: string,
+  method: string,
+): EndpointDetail | null {
   const pathItem = spec.paths[pathTemplate] as PathItem | undefined;
   if (!pathItem) return null;
 
@@ -48,7 +58,7 @@ export function buildEndpointDetail(spec: SwaggerSpec, pathTemplate: string, met
       description: param.description,
       type: param.type,
       enum: param.enum,
-      example: param["x-example"],
+      example: param['x-example'],
       schema: resolveSchemaSafely(resolver, param.schema),
     };
   });
@@ -75,7 +85,7 @@ export function buildEndpointDetail(spec: SwaggerSpec, pathTemplate: string, met
   };
 }
 
-function resolveSchemaSafely(resolver: RefResolver, schemaOrRef: ParameterObject["schema"]) {
+function resolveSchemaSafely(resolver: RefResolver, schemaOrRef: ParameterObject['schema']) {
   if (!schemaOrRef) return undefined;
   try {
     return resolver.resolveSchema(schemaOrRef);
@@ -84,10 +94,13 @@ function resolveSchemaSafely(resolver: RefResolver, schemaOrRef: ParameterObject
   }
 }
 
-function resolveResponseSafely(resolver: RefResolver, responseOrRef: ResponseObject | { $ref: string }) {
+function resolveResponseSafely(
+  resolver: RefResolver,
+  responseOrRef: ResponseObject | { $ref: string },
+) {
   try {
     return resolver.resolveResponse(responseOrRef);
   } catch {
-    return "$ref" in responseOrRef ? undefined : responseOrRef;
+    return '$ref' in responseOrRef ? undefined : responseOrRef;
   }
 }

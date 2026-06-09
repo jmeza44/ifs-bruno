@@ -1,5 +1,5 @@
 export interface SwaggerSpec {
-  swagger: "2.0";
+  swagger: '2.0';
   info: {
     title: string;
     description?: string;
@@ -34,7 +34,7 @@ export interface Operation {
 
 export interface ParameterObject {
   name: string;
-  in: "body" | "query" | "header" | "path" | "formData";
+  in: 'body' | 'query' | 'header' | 'path' | 'formData';
   description?: string;
   required?: boolean;
   type?: string;
@@ -43,7 +43,7 @@ export interface ParameterObject {
   enum?: string[];
   collectionFormat?: string;
   uniqueItems?: boolean;
-  "x-example"?: unknown;
+  'x-example'?: unknown;
 }
 
 export interface SchemaObject {

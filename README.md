@@ -38,13 +38,13 @@ The CLI will prompt for each value interactively. You can also pass them as flag
 ifs-bruno init --name IFS --host https://your-env.ifs.cloud --realm your-realm --client-id IFS_postman
 ```
 
-| Flag | Description |
-|---|---|
-| `--name` | Collection name and output folder |
-| `--host` | IFS Cloud base URL, e.g. `https://acme.ifs.cloud` |
-| `--realm` | Keycloak realm name |
-| `--client-id` | OAuth2 client ID, e.g. `IFS_postman` |
-| `--output` | Output folder path (defaults to `--name`) |
+| Flag          | Description                                       |
+| ------------- | ------------------------------------------------- |
+| `--name`      | Collection name and output folder                 |
+| `--host`      | IFS Cloud base URL, e.g. `https://acme.ifs.cloud` |
+| `--realm`     | Keycloak realm name                               |
+| `--client-id` | OAuth2 client ID, e.g. `IFS_postman`              |
+| `--output`    | Output folder path (defaults to `--name`)         |
 
 **Generated structure:**
 
@@ -96,11 +96,11 @@ ifs-bruno add --spec ./WorkTaskHandling.json --collection ./my-collection
 ifs-bruno add --profile my-env --collection ./my-collection
 ```
 
-| Flag | Description |
-|---|---|
-| `--spec`, `-s` | Path to a local IFS OpenAPI spec (JSON) |
-| `--profile`, `-p` | Name of a saved profile to fetch specs live |
-| `--collection`, `-c` | Path to the Bruno collection folder |
+| Flag                 | Description                                 |
+| -------------------- | ------------------------------------------- |
+| `--spec`, `-s`       | Path to a local IFS OpenAPI spec (JSON)     |
+| `--profile`, `-p`    | Name of a saved profile to fetch specs live |
+| `--collection`, `-c` | Path to the Bruno collection folder         |
 
 The CLI shows a searchable list of available projections and endpoints. Select the ones you want and confirm — the files are written immediately.
 

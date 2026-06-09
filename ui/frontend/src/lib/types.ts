@@ -87,11 +87,11 @@ export type LoadedSpec = {
 };
 
 export type PendingConfirmation =
-  | { type: "switch-collection"; target: CollectionEntry }
-  | { type: "create-collection-and-move"; created: CollectionEntry }
-  | { type: "switch-profile"; target: ProfileOption }
-  | { type: "delete-active-profile"; target: ProfileOption }
-  | { type: "switch-source"; target: "profile" | "spec" };
+  | { type: 'switch-collection'; target: CollectionEntry }
+  | { type: 'create-collection-and-move'; created: CollectionEntry }
+  | { type: 'switch-profile'; target: ProfileOption }
+  | { type: 'delete-active-profile'; target: ProfileOption }
+  | { type: 'switch-source'; target: 'profile' | 'spec' };
 
 export interface CollectionEndpoint {
   name: string;
@@ -105,8 +105,8 @@ export interface CollectionFolder {
 }
 
 export type SpecSource =
-  | { kind: "remote"; profileName: string; projectionName: string }
-  | { kind: "local"; specPath: string };
+  | { kind: 'remote'; profileName: string; projectionName: string }
+  | { kind: 'local'; specPath: string };
 
 export interface WriteResult {
   created: number;

@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
-import yaml from "js-yaml";
-import type { BrunoRequest } from "../types/bruno.types";
+import fs from 'fs';
+import path from 'path';
+import yaml from 'js-yaml';
+import type { BrunoRequest } from '../types/bruno.types';
 
-const RESERVED_ENTRIES = new Set(["environments", "opencollection.yml", "Auth.yml", ".gitignore"]);
+const RESERVED_ENTRIES = new Set(['environments', 'opencollection.yml', 'Auth.yml', '.gitignore']);
 
 export interface CollectionEndpoint {
   name: string;
@@ -35,17 +35,17 @@ const BASE_PATH_PATTERN = /^\{\{baseHost\}\}\/main\/ifsapplications\/projection\
  * expected IFS projection-service shape (e.g. hand-written or non-standard requests).
  */
 export function urlToPathTemplate(url: string): string | null {
-  const withoutQuery = url.split("?")[0];
+  const withoutQuery = url.split('?')[0];
   const match = withoutQuery.match(BASE_PATH_PATTERN);
   if (!match) return null;
 
   const rest = withoutQuery.slice(match[0].length);
-  return rest.replace(/\{\{([^}]+)\}\}/g, "{$1}");
+  return rest.replace(/\{\{([^}]+)\}\}/g, '{$1}');
 }
 
 function readRequest(filePath: string): BrunoRequest | null {
   try {
-    const raw = fs.readFileSync(filePath, "utf-8");
+    const raw = fs.readFileSync(filePath, 'utf-8');
     const doc = yaml.load(raw) as BrunoRequest;
     if (!doc?.http?.method || !doc?.info?.name) return null;
     return doc;
@@ -73,7 +73,7 @@ export function readCollectionFolders(collectionPath: string): CollectionFolder[
     const endpoints: CollectionEndpoint[] = [];
 
     for (const file of fs.readdirSync(folderPath)) {
-      if (!file.endsWith(".yml")) continue;
+      if (!file.endsWith('.yml')) continue;
 
       const request = readRequest(path.join(folderPath, file));
       if (!request) continue;
@@ -100,16 +100,18 @@ export function readCollectionFolders(collectionPath: string): CollectionFolder[
  */
 export function readCollectionDetails(collectionPath: string): CollectionDetails | null {
   try {
-    const envPath = path.join(path.resolve(collectionPath), "environments", "default.yml");
-    const raw = fs.readFileSync(envPath, "utf-8");
-    const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
+    const envPath = path.join(path.resolve(collectionPath), 'environments', 'default.yml');
+    const raw = fs.readFileSync(envPath, 'utf-8');
+    const doc = yaml.load(raw) as
+      | { variables?: Array<{ name?: string; value?: string }> }
+      | undefined;
 
     const variables = doc?.variables ?? [];
     const find = (name: string) => variables.find((v) => v.name === name)?.value;
 
-    const realm = find("realm");
-    const clientId = find("clientId");
-    const keycloakBasePath = find("keycloakBasePath");
+    const realm = find('realm');
+    const clientId = find('clientId');
+    const keycloakBasePath = find('keycloakBasePath');
     if (!realm || !clientId || !keycloakBasePath) return null;
 
     return { realm, clientId, keycloakBasePath };

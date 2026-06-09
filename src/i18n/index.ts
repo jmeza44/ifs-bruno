@@ -1,9 +1,9 @@
-import i18next from "i18next";
-import en from "./locales/en.json";
-import es from "./locales/es.json";
+import i18next from 'i18next';
+import en from './locales/en.json';
+import es from './locales/es.json';
 
 function detectLocale(): string {
-  return Intl.DateTimeFormat().resolvedOptions().locale.split("-")[0];
+  return Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
 }
 
 export async function initI18n(): Promise<void> {
@@ -11,7 +11,7 @@ export async function initI18n(): Promise<void> {
 
   await i18next.init({
     lng,
-    fallbackLng: "en",
+    fallbackLng: 'en',
     resources: {
       en: { translation: en },
       es: { translation: es },

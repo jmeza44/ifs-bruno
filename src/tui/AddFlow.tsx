@@ -1,35 +1,46 @@
-import React, { useState, useEffect } from "react";
-import { Box, Text, useInput, useApp, useStdout } from "ink";
-import { Select, TextInput, Spinner, ConfirmInput } from "@inkjs/ui";
-import fs from "fs";
-import path from "path";
-import { t } from "../i18n";
-import { loadSpec } from "../core/spec-loader";
-import { RequestBuilder } from "../core/request-builder";
-import { loadCollection, upsertRequests } from "../core/bruno-writer";
-import { buildEndpointList } from "./endpoint-selector";
-import { EndpointSelector } from "./EndpointSelector";
-import { getProfile, listCollections, saveCollection, type CollectionEntry } from "../core/profile-store";
-import { fetchProjections, fetchOpenApiSpec, type IfsProjection } from "../core/ifs-client";
-import type { SwaggerSpec, Operation } from "../types/spec.types";
-import type { EndpointEntry } from "../types/tool.types";
+import React, { useState, useEffect } from 'react';
+import { Box, Text, useInput, useApp, useStdout } from 'ink';
+import { Select, TextInput, Spinner, ConfirmInput } from '@inkjs/ui';
+import fs from 'fs';
+import path from 'path';
+import { t } from '../i18n';
+import { loadSpec } from '../core/spec-loader';
+import { RequestBuilder } from '../core/request-builder';
+import { loadCollection, upsertRequests } from '../core/bruno-writer';
+import { buildEndpointList } from './endpoint-selector';
+import { EndpointSelector } from './EndpointSelector';
+import {
+  getProfile,
+  listCollections,
+  saveCollection,
+  type CollectionEntry,
+} from '../core/profile-store';
+import { fetchProjections, fetchOpenApiSpec, type IfsProjection } from '../core/ifs-client';
+import type { SwaggerSpec, Operation } from '../types/spec.types';
+import type { EndpointEntry } from '../types/tool.types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Phase =
-  | { id: "collection" }
-  | { id: "collection-input" }
-  | { id: "loading-projections"; collection: string }
-  | { id: "select-projection"; collection: string; projections: IfsProjection[] }
-  | { id: "restoring-input"; next: Phase }
-  | { id: "loading-spec"; collection: string; projection: string; projections: IfsProjection[] }
-  | { id: "loading-spec-file"; collection: string; specPath: string }
-  | { id: "select-endpoints"; collection: string; spec: SwaggerSpec; entries: EndpointEntry[]; prev: Phase }
-  | { id: "confirm"; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
-  | { id: "writing"; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
-  | { id: "done"; collection: string; spec: SwaggerSpec; created: number; updated: number }
-  | { id: "error"; message: string }
-  | { id: "cancelled" };
+  | { id: 'collection' }
+  | { id: 'collection-input' }
+  | { id: 'loading-projections'; collection: string }
+  | { id: 'select-projection'; collection: string; projections: IfsProjection[] }
+  | { id: 'restoring-input'; next: Phase }
+  | { id: 'loading-spec'; collection: string; projection: string; projections: IfsProjection[] }
+  | { id: 'loading-spec-file'; collection: string; specPath: string }
+  | {
+      id: 'select-endpoints';
+      collection: string;
+      spec: SwaggerSpec;
+      entries: EndpointEntry[];
+      prev: Phase;
+    }
+  | { id: 'confirm'; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
+  | { id: 'writing'; collection: string; spec: SwaggerSpec; selected: EndpointEntry[] }
+  | { id: 'done'; collection: string; spec: SwaggerSpec; created: number; updated: number }
+  | { id: 'error'; message: string }
+  | { id: 'cancelled' };
 
 export interface AddFlowProps {
   specPath?: string;
@@ -40,19 +51,23 @@ export interface AddFlowProps {
 // ─── Collection selector ─────────────────────────────────────────────────────
 
 function CollectionSelect({ onSelect }: { onSelect: (p: string) => void }) {
-  const saved = listCollections().filter((c) => fs.existsSync(path.join(c.path, "opencollection.yml")));
+  const saved = listCollections().filter((c) =>
+    fs.existsSync(path.join(c.path, 'opencollection.yml')),
+  );
   const options = [
     ...saved.map((c: CollectionEntry) => ({
       label: c.path,
       value: c.path,
-      hint: new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(c.lastUsed)),
+      hint: new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
+        new Date(c.lastUsed),
+      ),
     })),
-    { label: t("add.collection_other"), value: "__other__" },
+    { label: t('add.collection_other'), value: '__other__' },
   ];
 
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
-      <Text bold>{t("add.prompt_select_collection")}</Text>
+      <Text bold>{t('add.prompt_select_collection')}</Text>
       <Select options={options} onChange={onSelect} />
     </Box>
   );
@@ -63,55 +78,83 @@ function CollectionSelect({ onSelect }: { onSelect: (p: string) => void }) {
 function CollectionInput({ onSubmit }: { onSubmit: (p: string) => void }) {
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
-      <Text bold>{t("add.prompt_collection_path")}</Text>
-      <TextInput placeholder="collections/MY-COLLECTION" onSubmit={(v) => onSubmit(path.resolve(v.trim() || "."))} />
+      <Text bold>{t('add.prompt_collection_path')}</Text>
+      <TextInput
+        placeholder="collections/MY-COLLECTION"
+        onSubmit={(v) => onSubmit(path.resolve(v.trim() || '.'))}
+      />
     </Box>
   );
 }
 
 // ─── Projection selector ──────────────────────────────────────────────────────
 
-function ProjectionSelect({ projections, onSelect }: { projections: IfsProjection[]; onSelect: (p: IfsProjection) => void }) {
-  const [search, setSearch] = useState("");
-  const [mode, setMode] = useState<"search" | "select">("search");
+function ProjectionSelect({
+  projections,
+  onSelect,
+}: {
+  projections: IfsProjection[];
+  onSelect: (p: IfsProjection) => void;
+}) {
+  const [search, setSearch] = useState('');
+  const [mode, setMode] = useState<'search' | 'select'>('search');
   const [cursor, setCursor] = useState(0);
   const { stdout } = useStdout();
   // header(1) + gap(1) + search(1) + gap(1) + select-label(1) + pagination(1) + paddingY(2) = 8 fixed lines
   const visibleCount = Math.max(2, Math.floor(((stdout?.rows ?? 24) - 8) / 2));
 
-
   const filtered = projections.filter((p) => {
     if (!search.trim()) return true;
     const term = search.toLowerCase();
-    return p.ProjectionName.toLowerCase().includes(term) || (p.Description ?? "").toLowerCase().includes(term);
+    return (
+      p.ProjectionName.toLowerCase().includes(term) ||
+      (p.Description ?? '').toLowerCase().includes(term)
+    );
   });
 
   useInput((input, key) => {
-    if (mode === "search") {
-      if (key.return) { setMode("select"); setCursor(0); return; }
-      if (key.backspace || key.delete) { setSearch((s) => s.slice(0, -1)); return; }
+    if (mode === 'search') {
+      if (key.return) {
+        setMode('select');
+        setCursor(0);
+        return;
+      }
+      if (key.backspace || key.delete) {
+        setSearch((s) => s.slice(0, -1));
+        return;
+      }
       if (input && !key.ctrl && !key.meta) setSearch((s) => s + input);
       return;
     }
     if (key.upArrow) setCursor((c) => Math.max(0, c - 1));
     if (key.downArrow) setCursor((c) => Math.min(filtered.length - 1, c + 1));
     if (key.return && filtered[cursor]) onSelect(filtered[cursor]!);
-    if (key.escape) { setMode("search"); }
+    if (key.escape) {
+      setMode('search');
+    }
   });
 
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Box gap={1}>
-        <Text bold>{t("projection_selector.search", { count: projections.length })}</Text>
-        <Text dimColor>{t("projection_selector.search_hint")}</Text>
+        <Text bold>{t('projection_selector.search', { count: projections.length })}</Text>
+        <Text dimColor>{t('projection_selector.search_hint')}</Text>
       </Box>
       <Box gap={1}>
-        <Text dimColor>{mode === "search" ? "›" : " "}</Text>
-        <Text>{search || <Text dimColor>{t("projection_selector.search_placeholder")}</Text>}{mode === "search" ? "█" : ""}</Text>
+        <Text dimColor>{mode === 'search' ? '›' : ' '}</Text>
+        <Text>
+          {search || <Text dimColor>{t('projection_selector.search_placeholder')}</Text>}
+          {mode === 'search' ? '█' : ''}
+        </Text>
       </Box>
-      {mode === "select" && (
+      {mode === 'select' && (
         <Box flexDirection="column" marginTop={1}>
-          <Text dimColor>{t("projection_selector.select", { count: filtered.length, plural: filtered.length === 1 ? "" : "s" })}</Text>
+          <Text dimColor>
+            {t('projection_selector.select', {
+              count: filtered.length,
+              plural: filtered.length === 1 ? '' : 's',
+            })}
+          </Text>
           {(() => {
             const offset = Math.max(0, cursor - Math.floor(visibleCount / 2));
             const visible = filtered.slice(offset, offset + visibleCount);
@@ -123,19 +166,26 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
                   return (
                     <Box key={proj.ProjectionName} flexDirection="column">
                       <Box gap={1}>
-                        <Text color={isCursor ? "cyan" : "gray"}>{isCursor ? "›" : " "}</Text>
-                        <Text color={isCursor ? "white" : undefined} bold={isCursor}>{proj.ProjectionName}</Text>
+                        <Text color={isCursor ? 'cyan' : 'gray'}>{isCursor ? '›' : ' '}</Text>
+                        <Text color={isCursor ? 'white' : undefined} bold={isCursor}>
+                          {proj.ProjectionName}
+                        </Text>
                       </Box>
                       {proj.Description && (
                         <Box paddingLeft={2}>
-                          <Text dimColor wrap="wrap">{proj.Description.replace(/\s+/g, " ").trim()}</Text>
+                          <Text dimColor wrap="wrap">
+                            {proj.Description.replace(/\s+/g, ' ').trim()}
+                          </Text>
                         </Box>
                       )}
                     </Box>
                   );
                 })}
                 {filtered.length > visibleCount && (
-                  <Text dimColor>  {cursor + 1}/{filtered.length}</Text>
+                  <Text dimColor>
+                    {' '}
+                    {cursor + 1}/{filtered.length}
+                  </Text>
                 )}
               </>
             );
@@ -148,16 +198,27 @@ function ProjectionSelect({ projections, onSelect }: { projections: IfsProjectio
 
 // ─── Confirm screen ───────────────────────────────────────────────────────────
 
-function Confirm({ selected, onConfirm, onCancel }: { selected: EndpointEntry[]; onConfirm: () => void; onCancel: () => void }) {
+function Confirm({
+  selected,
+  onConfirm,
+  onCancel,
+}: {
+  selected: EndpointEntry[];
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
   return (
     <Box flexDirection="column" gap={1} paddingX={2}>
       <Text bold>{selected.length} endpoint(s) selected:</Text>
       {selected.slice(0, 8).map((e) => (
-        <Text key={`${e.method}:${e.path}`} dimColor>  [{e.method.toUpperCase()}] {e.path}</Text>
+        <Text key={`${e.method}:${e.path}`} dimColor>
+          {' '}
+          [{e.method.toUpperCase()}] {e.path}
+        </Text>
       ))}
-      {selected.length > 8 && <Text dimColor>  …+{selected.length - 8} more</Text>}
+      {selected.length > 8 && <Text dimColor> …+{selected.length - 8} more</Text>}
       <Box gap={2} marginTop={1}>
-        <Text>{t("add.confirm_add")} </Text>
+        <Text>{t('add.confirm_add')} </Text>
         <ConfirmInput onConfirm={onConfirm} onCancel={onCancel} />
       </Box>
     </Box>
@@ -171,10 +232,10 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
 
   const initialPhase = (): Phase => {
     if (collectionPath) {
-      if (profileName) return { id: "loading-projections", collection: collectionPath };
-      if (specPath) return { id: "loading-spec-file", collection: collectionPath, specPath };
+      if (profileName) return { id: 'loading-projections', collection: collectionPath };
+      if (specPath) return { id: 'loading-spec-file', collection: collectionPath, specPath };
     }
-    return { id: "collection" };
+    return { id: 'collection' };
   };
 
   const [phase, setPhase] = useState<Phase>(initialPhase);
@@ -186,81 +247,124 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
 
   // Side effects triggered by phase transitions
   useEffect(() => {
-    if (phase.id === "loading-projections") {
+    if (phase.id === 'loading-projections') {
       let cancelled = false;
       const profile = getProfile(profileName!);
-      if (!profile) { setPhase({ id: "error", message: t("add.profile_not_found", { name: profileName }) }); return; }
-      addLog(t("add.connecting", { host: profile.host }));
+      if (!profile) {
+        setPhase({ id: 'error', message: t('add.profile_not_found', { name: profileName }) });
+        return;
+      }
+      addLog(t('add.connecting', { host: profile.host }));
       fetchProjections(profile)
         .then((projections) => {
           if (cancelled) return;
-          addLog(t("add.projections_available", { count: projections.length }));
-          setPhase({ id: "select-projection", collection: phase.collection, projections });
+          addLog(t('add.projections_available', { count: projections.length }));
+          setPhase({ id: 'select-projection', collection: phase.collection, projections });
         })
-        .catch((err: Error) => { if (!cancelled) setPhase({ id: "error", message: err.message }); });
-      return () => { cancelled = true; };
+        .catch((err: Error) => {
+          if (!cancelled) setPhase({ id: 'error', message: err.message });
+        });
+      return () => {
+        cancelled = true;
+      };
     }
 
-    if (phase.id === "loading-spec") {
+    if (phase.id === 'loading-spec') {
       let cancelled = false;
       const profile = getProfile(profileName!);
-      if (!profile) { setPhase({ id: "error", message: t("add.profile_not_found", { name: profileName }) }); return; }
-      addLog(t("add.loading_spec", { name: phase.projection }));
+      if (!profile) {
+        setPhase({ id: 'error', message: t('add.profile_not_found', { name: profileName }) });
+        return;
+      }
+      addLog(t('add.loading_spec', { name: phase.projection }));
       fetchOpenApiSpec(profile, phase.projection)
         .then((spec) => {
           if (cancelled) return;
           const entries = buildEndpointList(spec);
           setLog([]);
-          setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries, prev: { id: "select-projection", collection: phase.collection, projections: phase.projections } });
+          setPhase({
+            id: 'select-endpoints',
+            collection: phase.collection,
+            spec,
+            entries,
+            prev: {
+              id: 'select-projection',
+              collection: phase.collection,
+              projections: phase.projections,
+            },
+          });
         })
-        .catch((err: Error) => { if (!cancelled) setPhase({ id: "error", message: err.message }); });
-      return () => { cancelled = true; };
+        .catch((err: Error) => {
+          if (!cancelled) setPhase({ id: 'error', message: err.message });
+        });
+      return () => {
+        cancelled = true;
+      };
     }
 
-    if (phase.id === "loading-spec-file") {
-      addLog(t("add.loading_spec_file"));
+    if (phase.id === 'loading-spec-file') {
+      addLog(t('add.loading_spec_file'));
       try {
         const spec = loadSpec(phase.specPath);
-        addLog(t("add.spec_file_loaded", { title: spec.info.title, count: Object.keys(spec.paths).length }));
+        addLog(
+          t('add.spec_file_loaded', {
+            title: spec.info.title,
+            count: Object.keys(spec.paths).length,
+          }),
+        );
         const entries = buildEndpointList(spec);
         setLog([]);
-        setPhase({ id: "select-endpoints", collection: phase.collection, spec, entries, prev: { id: "collection" } });
+        setPhase({
+          id: 'select-endpoints',
+          collection: phase.collection,
+          spec,
+          entries,
+          prev: { id: 'collection' },
+        });
       } catch (err) {
-        setPhase({ id: "error", message: (err as Error).message });
+        setPhase({ id: 'error', message: (err as Error).message });
       }
     }
 
-    if (phase.id === "writing") {
+    if (phase.id === 'writing') {
       try {
         loadCollection(phase.collection);
         const builder = new RequestBuilder(phase.spec);
         const builtRequests = phase.selected.map((entry, index) => {
-          const operation = (phase.spec.paths[entry.path] as Record<string, Operation>)[entry.method];
+          const operation = (phase.spec.paths[entry.path] as Record<string, Operation>)[
+            entry.method
+          ];
           return builder.build(entry.path, entry.method, operation, index + 1);
         });
         const result = upsertRequests(phase.collection, phase.spec.info.title, builtRequests);
-        setPhase({ id: "done", collection: phase.collection, spec: phase.spec, created: result.created, updated: result.updated });
+        setPhase({
+          id: 'done',
+          collection: phase.collection,
+          spec: phase.spec,
+          created: result.created,
+          updated: result.updated,
+        });
       } catch (err) {
-        setPhase({ id: "error", message: (err as Error).message });
+        setPhase({ id: 'error', message: (err as Error).message });
       }
     }
 
-    if (phase.id === "restoring-input") {
+    if (phase.id === 'restoring-input') {
       // One-frame buffer: lets the unmounting component's useInput cleanup (setRawMode false)
       // finish before the next phase mounts its own useInput, preventing a frozen input state.
       const id = setTimeout(() => setPhase(phase.next), 32);
       return () => clearTimeout(id);
     }
 
-    if (phase.id === "done" || phase.id === "error" || phase.id === "cancelled") {
+    if (phase.id === 'done' || phase.id === 'error' || phase.id === 'cancelled') {
       setTimeout(exit, 100);
     }
   }, [phase.id]);
 
   // Collection selection: if collectionPath given but need projections/spec
   function handleCollectionSelected(selected: string) {
-    if (selected === "__other__") {
-      setPhase({ id: "collection-input" });
+    if (selected === '__other__') {
+      setPhase({ id: 'collection-input' });
       return;
     }
     advanceFromCollection(selected);
@@ -269,20 +373,23 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
   function advanceFromCollection(collection: string) {
     const resolvedPath = path.resolve(collection);
     if (!fs.existsSync(resolvedPath)) {
-      setPhase({ id: "error", message: t("add.collection_not_found", { path: resolvedPath }) });
+      setPhase({ id: 'error', message: t('add.collection_not_found', { path: resolvedPath }) });
       return;
     }
     saveCollection(resolvedPath);
-    if (profileName) setPhase({ id: "loading-projections", collection: resolvedPath });
-    else if (specPath) setPhase({ id: "loading-spec-file", collection: resolvedPath, specPath });
-    else setPhase({ id: "error", message: t("add.need_spec_or_profile") });
+    if (profileName) setPhase({ id: 'loading-projections', collection: resolvedPath });
+    else if (specPath) setPhase({ id: 'loading-spec-file', collection: resolvedPath, specPath });
+    else setPhase({ id: 'error', message: t('add.need_spec_or_profile') });
   }
 
   return (
     <Box flexDirection="column" gap={1} paddingY={1}>
       {/* Header */}
       <Box paddingX={2}>
-        <Text backgroundColor="cyan" color="black"> {t("add.intro")} </Text>
+        <Text backgroundColor="cyan" color="black">
+          {' '}
+          {t('add.intro')}{' '}
+        </Text>
       </Box>
 
       {/* Log lines */}
@@ -294,67 +401,94 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
       ))}
 
       {/* Active phase */}
-      {phase.id === "collection" && (
-        <CollectionSelect onSelect={handleCollectionSelected} />
-      )}
+      {phase.id === 'collection' && <CollectionSelect onSelect={handleCollectionSelected} />}
 
-      {phase.id === "collection-input" && (
+      {phase.id === 'collection-input' && (
         <CollectionInput onSubmit={(p) => advanceFromCollection(p)} />
       )}
 
-      {(phase.id === "loading-projections" || phase.id === "loading-spec" || phase.id === "loading-spec-file" || phase.id === "writing") && (
+      {(phase.id === 'loading-projections' ||
+        phase.id === 'loading-spec' ||
+        phase.id === 'loading-spec-file' ||
+        phase.id === 'writing') && (
         <Box paddingX={2}>
-          <Spinner label={
-            phase.id === "loading-projections" ? t("add.connecting", { host: "" }) :
-            phase.id === "loading-spec" ? t("add.loading_spec", { name: phase.projection }) :
-            phase.id === "loading-spec-file" ? t("add.loading_spec_file") :
-            "Writing files..."
-          } />
+          <Spinner
+            label={
+              phase.id === 'loading-projections'
+                ? t('add.connecting', { host: '' })
+                : phase.id === 'loading-spec'
+                  ? t('add.loading_spec', { name: phase.projection })
+                  : phase.id === 'loading-spec-file'
+                    ? t('add.loading_spec_file')
+                    : 'Writing files...'
+            }
+          />
         </Box>
       )}
 
-      {phase.id === "restoring-input" && <Box />}
+      {phase.id === 'restoring-input' && <Box />}
 
-      {phase.id === "select-projection" && (
+      {phase.id === 'select-projection' && (
         <ProjectionSelect
           projections={phase.projections}
-          onSelect={(proj) => setPhase({ id: "loading-spec", collection: phase.collection, projection: proj.ProjectionName, projections: phase.projections })}
+          onSelect={(proj) =>
+            setPhase({
+              id: 'loading-spec',
+              collection: phase.collection,
+              projection: proj.ProjectionName,
+              projections: phase.projections,
+            })
+          }
         />
       )}
 
-      {phase.id === "select-endpoints" && (
+      {phase.id === 'select-endpoints' && (
         <EndpointSelector
           entries={phase.entries}
           spec={phase.spec}
-          onSubmit={(selected) => setPhase({ id: "confirm", collection: phase.collection, spec: phase.spec, selected })}
-          onCancel={() => setPhase({ id: "restoring-input", next: phase.prev })}
+          onSubmit={(selected) =>
+            setPhase({ id: 'confirm', collection: phase.collection, spec: phase.spec, selected })
+          }
+          onCancel={() => setPhase({ id: 'restoring-input', next: phase.prev })}
         />
       )}
 
-      {phase.id === "confirm" && (
+      {phase.id === 'confirm' && (
         <Confirm
           selected={phase.selected}
-          onConfirm={() => setPhase({ id: "writing", collection: phase.collection, spec: phase.spec, selected: phase.selected })}
-          onCancel={() => setPhase({ id: "cancelled" })}
+          onConfirm={() =>
+            setPhase({
+              id: 'writing',
+              collection: phase.collection,
+              spec: phase.spec,
+              selected: phase.selected,
+            })
+          }
+          onCancel={() => setPhase({ id: 'cancelled' })}
         />
       )}
 
-      {phase.id === "done" && (
+      {phase.id === 'done' && (
         <Box paddingX={2} flexDirection="column" gap={1}>
-          <Text color="green">✓ {t("add.outro_done", { created: phase.created, updated: phase.updated })}</Text>
-          <Text dimColor>{path.join(phase.collection, phase.spec.info.title)}{path.sep}</Text>
+          <Text color="green">
+            ✓ {t('add.outro_done', { created: phase.created, updated: phase.updated })}
+          </Text>
+          <Text dimColor>
+            {path.join(phase.collection, phase.spec.info.title)}
+            {path.sep}
+          </Text>
         </Box>
       )}
 
-      {phase.id === "error" && (
+      {phase.id === 'error' && (
         <Box paddingX={2}>
           <Text color="red">✗ {phase.message}</Text>
         </Box>
       )}
 
-      {phase.id === "cancelled" && (
+      {phase.id === 'cancelled' && (
         <Box paddingX={2}>
-          <Text dimColor>{t("common.cancelled")}</Text>
+          <Text dimColor>{t('common.cancelled')}</Text>
         </Box>
       )}
     </Box>

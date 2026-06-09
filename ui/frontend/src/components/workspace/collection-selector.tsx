@@ -1,5 +1,5 @@
-import { FolderIcon, GlobeIcon, PlusIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { FolderIcon, GlobeIcon, PlusIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -8,8 +8,8 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import type { CollectionEntry } from "@/lib/types";
+} from '@/components/ui/select';
+import type { CollectionEntry } from '@/lib/types';
 
 export type CollectionSelectorProps = {
   active: CollectionEntry | null;
@@ -19,21 +19,19 @@ export type CollectionSelectorProps = {
 };
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
-  numeric: "auto",
+  numeric: 'auto',
 });
 
 function formatLastUsed(iso: string): string {
   const diffMs = new Date(iso).getTime() - Date.now();
   const diffMinutes = Math.round(diffMs / 60_000);
-  if (Math.abs(diffMinutes) < 60)
-    return relativeTimeFormatter.format(diffMinutes, "minute");
+  if (Math.abs(diffMinutes) < 60) return relativeTimeFormatter.format(diffMinutes, 'minute');
 
   const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24)
-    return relativeTimeFormatter.format(diffHours, "hour");
+  if (Math.abs(diffHours) < 24) return relativeTimeFormatter.format(diffHours, 'hour');
 
   const diffDays = Math.round(diffHours / 24);
-  return relativeTimeFormatter.format(diffDays, "day");
+  return relativeTimeFormatter.format(diffDays, 'day');
 }
 
 function formatHost(baseHost: string | null): string | null {
@@ -72,7 +70,7 @@ export function CollectionSelector({
   return (
     <div className="flex items-center gap-2">
       <Select
-        value={active?.path ?? ""}
+        value={active?.path ?? ''}
         onValueChange={(selectedPath) => {
           const collection = available.find((c) => c.path === selectedPath);
           if (collection) onSelect(collection);
@@ -86,29 +84,16 @@ export function CollectionSelector({
             <SelectValue placeholder="Select a collection…" />
           )}
         </SelectTrigger>
-        <SelectContent
-          side="bottom"
-          align="start"
-          className="min-w-80"
-          position="popper"
-        >
+        <SelectContent side="bottom" align="start" className="min-w-80" position="popper">
           <SelectGroup>
             <SelectLabel>Collections</SelectLabel>
             {available.length === 0 && (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                No collections yet
-              </div>
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">No collections yet</div>
             )}
             {available.map((collection) => (
-              <SelectItem
-                key={collection.path}
-                value={collection.path}
-                className="py-2"
-              >
+              <SelectItem key={collection.path} value={collection.path} className="py-2">
                 <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="truncate text-sm leading-none">
-                    {collection.name}
-                  </span>
+                  <span className="truncate text-sm leading-none">{collection.name}</span>
                   <CollectionMeta collection={collection} />
                 </span>
               </SelectItem>
@@ -117,12 +102,7 @@ export function CollectionSelector({
         </SelectContent>
       </Select>
 
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={onCreateNew}
-        title="Create new collection"
-      >
+      <Button variant="outline" size="icon" onClick={onCreateNew} title="Create new collection">
         <PlusIcon size={16} />
       </Button>
     </div>

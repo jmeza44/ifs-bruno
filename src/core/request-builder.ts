@@ -1,7 +1,13 @@
-import type { SwaggerSpec, Operation, ParameterObject } from "../types/spec.types";
-import type { BrunoRequest, BrunoHeader, BrunoBody, BrunoParam, BrunoVariable } from "../types/bruno.types";
-import { RefResolver } from "./ref-resolver";
-import { HAS_BODY_METHODS, NEEDS_XSRF_METHODS } from "./constants";
+import type { SwaggerSpec, Operation, ParameterObject } from '../types/spec.types';
+import type {
+  BrunoRequest,
+  BrunoHeader,
+  BrunoBody,
+  BrunoParam,
+  BrunoVariable,
+} from '../types/bruno.types';
+import { RefResolver } from './ref-resolver';
+import { HAS_BODY_METHODS, NEEDS_XSRF_METHODS } from './constants';
 
 function extractPathParams(pathTemplate: string): string[] {
   const matches = pathTemplate.match(/\{([^}]+)\}/g) ?? [];
@@ -9,7 +15,7 @@ function extractPathParams(pathTemplate: string): string[] {
 }
 
 function convertPathParams(pathTemplate: string): string {
-  return pathTemplate.replace(/\{([^}]+)\}/g, "{{$1}}");
+  return pathTemplate.replace(/\{([^}]+)\}/g, '{{$1}}');
 }
 
 export class RequestBuilder {
@@ -20,11 +26,11 @@ export class RequestBuilder {
   }
 
   build(pathTemplate: string, method: string, operation: Operation, seq: number): BrunoRequest {
-    const operationId = operation.operationId ?? "";
+    const operationId = operation.operationId ?? '';
     const name = operationId || (operation.summary ?? pathTemplate).trim();
 
     const resolvedParams = (operation.parameters ?? []).map((p) =>
-      this.resolver.resolveParameter(p as ParameterObject)
+      this.resolver.resolveParameter(p as ParameterObject),
     );
 
     const pathParamNames = extractPathParams(pathTemplate);
@@ -35,12 +41,14 @@ export class RequestBuilder {
       : undefined;
 
     const basePath = convertPathParams(pathTemplate);
-    const queryString = queryParams.map((p) => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value)}`).join("&");
-    const url = `{{baseHost}}${this.spec.basePath}${basePath}${queryString ? `?${queryString}` : ""}`;
+    const queryString = queryParams
+      .map((p) => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value)}`)
+      .join('&');
+    const url = `{{baseHost}}${this.spec.basePath}${basePath}${queryString ? `?${queryString}` : ''}`;
 
     const runtimeVariables: BrunoVariable[] = pathParamNames.map((name) => ({
       name,
-      value: "",
+      value: '',
     }));
 
     const docs = this.buildDocs(operation, resolvedParams);
@@ -49,13 +57,13 @@ export class RequestBuilder {
     const request: BrunoRequest = {
       info: {
         name,
-        type: "http",
+        type: 'http',
         seq,
       },
       http: {
         method: method.toUpperCase(),
         url,
-        auth: "inherit",
+        auth: 'inherit',
         ...(headers.length > 0 ? { headers } : {}),
         ...(queryParams.length > 0 ? { params: queryParams } : {}),
         ...(body ? { body } : {}),
@@ -71,14 +79,16 @@ export class RequestBuilder {
 
     if (runtimeVariables.length > 0 || preRequestScript) {
       request.runtime = {
-        ...(preRequestScript ? { scripts: [{ type: "before-request", code: preRequestScript }] } : {}),
+        ...(preRequestScript
+          ? { scripts: [{ type: 'before-request', code: preRequestScript }] }
+          : {}),
         ...(runtimeVariables.length > 0 ? { variables: runtimeVariables } : {}),
       };
     }
 
     // Store operationId in a way we can retrieve it for upsert — using info metadata
     // Bruno doesn't have a description field at request level, so we extend info
-    (request.info as Record<string, unknown>)["operationId"] = operationId;
+    (request.info as Record<string, unknown>)['operationId'] = operationId;
 
     return request;
   }
@@ -86,22 +96,22 @@ export class RequestBuilder {
   private buildHeaders(method: string, params: ParameterObject[]): BrunoHeader[] {
     const headers: BrunoHeader[] = [];
     const m = method.toLowerCase();
-    const isWriteMethod = m === "patch" || m === "put";
+    const isWriteMethod = m === 'patch' || m === 'put';
 
     for (const param of params) {
-      if (param.in !== "header") continue;
-      const isIfMatch = param.name.toLowerCase() === "if-match";
+      if (param.in !== 'header') continue;
+      const isIfMatch = param.name.toLowerCase() === 'if-match';
       headers.push({
         name: param.name,
-        value: isIfMatch && isWriteMethod ? "{{ifMatch}}" : "",
+        value: isIfMatch && isWriteMethod ? '{{ifMatch}}' : '',
         enabled: true,
       });
     }
 
     if (NEEDS_XSRF_METHODS.has(m)) {
       headers.push({
-        name: "X-XSRF-TOKEN",
-        value: "{{xsrfToken}}",
+        name: 'X-XSRF-TOKEN',
+        value: '{{xsrfToken}}',
         enabled: true,
       });
     }
@@ -111,7 +121,7 @@ export class RequestBuilder {
 
   private buildBody(method: string, params: ParameterObject[]): BrunoBody | undefined {
     void method;
-    const bodyParam = params.find((p) => p.in === "body");
+    const bodyParam = params.find((p) => p.in === 'body');
     if (!bodyParam?.schema) return undefined;
 
     let schema;
@@ -125,16 +135,20 @@ export class RequestBuilder {
     if (Object.keys(exampleObj).length === 0) return undefined;
 
     return {
-      type: "json",
+      type: 'json',
       data: JSON.stringify(exampleObj, null, 2),
     };
   }
 
-  private buildETagPreRequest(method: string, pathTemplate: string, params: ParameterObject[]): string | undefined {
+  private buildETagPreRequest(
+    method: string,
+    pathTemplate: string,
+    params: ParameterObject[],
+  ): string | undefined {
     const m = method.toLowerCase();
-    if (m !== "patch" && m !== "put") return undefined;
+    if (m !== 'patch' && m !== 'put') return undefined;
 
-    const hasIfMatch = params.some((p) => p.in === "header" && p.name.toLowerCase() === "if-match");
+    const hasIfMatch = params.some((p) => p.in === 'header' && p.name.toLowerCase() === 'if-match');
     if (!hasIfMatch) return undefined;
 
     const getOperation = this.spec.paths[pathTemplate]?.get;
@@ -148,7 +162,7 @@ export class RequestBuilder {
 
     const paramAssignments = pathParamNames
       .map((name) => `const ${name} = bru.getRequestVar("${name}");`)
-      .join("\n");
+      .join('\n');
 
     return [
       paramAssignments,
@@ -167,16 +181,16 @@ export class RequestBuilder {
       `    bru.setVar("ifMatch", etag);`,
       `  }`,
       `);`,
-    ].join("\n");
+    ].join('\n');
   }
 
   private buildQueryParams(params: ParameterObject[]): BrunoParam[] {
     return params
-      .filter((p) => p.in === "query")
+      .filter((p) => p.in === 'query')
       .map((p) => ({
         name: p.name,
-        value: p.type === "array" && p.items?.enum ? p.items.enum.join(",") : "",
-        type: "query" as const,
+        value: p.type === 'array' && p.items?.enum ? p.items.enum.join(',') : '',
+        type: 'query' as const,
       }));
   }
 
@@ -184,27 +198,33 @@ export class RequestBuilder {
     const lines: string[] = [];
 
     // Title + description
-    const title = (operation.summary ?? operation.operationId ?? "").replace(/\.+$/, "");
+    const title = (operation.summary ?? operation.operationId ?? '').replace(/\.+$/, '');
     if (title) lines.push(`# ${title}`);
     if (operation.description && operation.description !== operation.summary) {
-      lines.push("", operation.description);
+      lines.push('', operation.description);
     }
 
     // Parameters table (all except body — body gets its own section)
-    const nonBodyParams = params.filter((p) => p.in !== "body");
+    const nonBodyParams = params.filter((p) => p.in !== 'body');
     if (nonBodyParams.length > 0) {
-      lines.push("", "## Parameters", "", "| Name | In | Type | Required | Description |", "| --- | --- | --- | --- | --- |");
+      lines.push(
+        '',
+        '## Parameters',
+        '',
+        '| Name | In | Type | Required | Description |',
+        '| --- | --- | --- | --- | --- |',
+      );
       for (const p of nonBodyParams) {
-        const type = p.type ?? (p.schema ? "object" : "");
-        const required = p.required ? "true" : "false";
-        const description = p.description ?? "";
+        const type = p.type ?? (p.schema ? 'object' : '');
+        const required = p.required ? 'true' : 'false';
+        const description = p.description ?? '';
         lines.push(`| ${p.name} | ${p.in} | ${type} | ${required} | ${description} |`);
       }
 
       // Enum sections for array params with items.enum
       for (const p of nonBodyParams) {
-        if (p.type === "array" && p.items?.enum && p.items.enum.length > 0) {
-          lines.push("", `## ${p.name} values`, "", "| Value |", "| --- |");
+        if (p.type === 'array' && p.items?.enum && p.items.enum.length > 0) {
+          lines.push('', `## ${p.name} values`, '', '| Value |', '| --- |');
           for (const value of p.items.enum) {
             lines.push(`| ${value} |`);
           }
@@ -213,7 +233,7 @@ export class RequestBuilder {
     }
 
     // Request body fields table
-    const bodyParam = params.find((p) => p.in === "body");
+    const bodyParam = params.find((p) => p.in === 'body');
     if (bodyParam?.schema) {
       let schema;
       try {
@@ -223,16 +243,17 @@ export class RequestBuilder {
       }
 
       if (schema?.properties && Object.keys(schema.properties).length > 0) {
-        lines.push("", "## Request Body", "", "| Field | Type | Example |", "| --- | --- | --- |");
+        lines.push('', '## Request Body', '', '| Field | Type | Example |', '| --- | --- | --- |');
         for (const [key, propOrRef] of Object.entries(schema.properties)) {
           let prop;
           try {
-            prop = "$ref" in propOrRef ? this.resolver.resolveSchema(propOrRef) : propOrRef;
+            prop = '$ref' in propOrRef ? this.resolver.resolveSchema(propOrRef) : propOrRef;
           } catch {
             continue;
           }
-          const type = prop.type ?? "object";
-          const example = prop.example !== undefined ? String(prop.example) : prop.enum?.[0] ?? "";
+          const type = prop.type ?? 'object';
+          const example =
+            prop.example !== undefined ? String(prop.example) : (prop.enum?.[0] ?? '');
           lines.push(`| ${key} | ${type} | ${example} |`);
         }
       }
@@ -240,7 +261,7 @@ export class RequestBuilder {
 
     // Responses table
     if (operation.responses && Object.keys(operation.responses).length > 0) {
-      lines.push("", "## Responses", "", "| Status | Description |", "| --- | --- |");
+      lines.push('', '## Responses', '', '| Status | Description |', '| --- | --- |');
       for (const [status, responseOrRef] of Object.entries(operation.responses)) {
         let response;
         try {
@@ -248,11 +269,11 @@ export class RequestBuilder {
         } catch {
           continue;
         }
-        lines.push(`| ${status} | ${response.description ?? ""} |`);
+        lines.push(`| ${status} | ${response.description ?? ''} |`);
       }
     }
 
     if (lines.length === 0) return undefined;
-    return lines.join("\n");
+    return lines.join('\n');
   }
 }

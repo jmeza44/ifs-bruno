@@ -1,17 +1,17 @@
 export interface BrunoScript {
-  type: "before-request" | "after-response" | "tests";
+  type: 'before-request' | 'after-response' | 'tests';
   code: string;
 }
 
 export interface BrunoCollection {
-  opencollection: "1.0.0";
+  opencollection: '1.0.0';
   info: {
     name: string;
   };
   bundled: false;
   request?: {
     auth?: {
-      type: "bearer";
+      type: 'bearer';
       token: string;
     };
     scripts?: BrunoScript[];
@@ -28,20 +28,18 @@ export interface BrunoEnvironment {
   variables: BrunoVariable[];
 }
 
-export type BrunoVariable =
-  | { name: string; value: string }
-  | { name: string; secret: true };
+export type BrunoVariable = { name: string; value: string } | { name: string; secret: true };
 
 export interface BrunoRequest {
   info: {
     name: string;
-    type: "http";
+    type: 'http';
     seq: number;
   };
   http: {
     method: string;
     url: string;
-    auth?: "bearer" | "inherit" | "none";
+    auth?: 'bearer' | 'inherit' | 'none';
     headers?: BrunoHeader[];
     params?: BrunoParam[];
     body?: BrunoBody;
@@ -61,8 +59,8 @@ export interface BrunoHeader {
 }
 
 export type BrunoBody =
-  | { type: "json"; data: string }
-  | { type: "form-urlencoded"; data: BrunoFormParam[] };
+  | { type: 'json'; data: string }
+  | { type: 'form-urlencoded'; data: BrunoFormParam[] };
 
 export interface BrunoFormParam {
   name: string;
@@ -72,7 +70,7 @@ export interface BrunoFormParam {
 export interface BrunoParam {
   name: string;
   value: string;
-  type: "query";
+  type: 'query';
 }
 
 export interface BrunoRequestSettings {

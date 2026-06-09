@@ -1,15 +1,15 @@
-import type { SwaggerSpec, Operation } from "../../../src/types/spec.types.ts";
-import { fetchOpenApiSpec } from "../../../src/core/ifs-client.ts";
-import { getProfile } from "../../../src/core/profile-store.ts";
-import { loadSpec } from "../../../src/core/spec-loader.ts";
-import { loadCollection, upsertRequests } from "../../../src/core/bruno-writer.ts";
-import { RequestBuilder } from "../../../src/core/request-builder.ts";
-import { checkAddArgs } from "../../../src/validate-args.ts";
-import { err, ok, route } from "../json.ts";
+import type { SwaggerSpec, Operation } from '../../../src/types/spec.types.ts';
+import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
+import { getProfile } from '../../../src/core/profile-store.ts';
+import { loadSpec } from '../../../src/core/spec-loader.ts';
+import { loadCollection, upsertRequests } from '../../../src/core/bruno-writer.ts';
+import { RequestBuilder } from '../../../src/core/request-builder.ts';
+import { checkAddArgs } from '../../../src/validate-args.ts';
+import { err, ok, route } from '../json.ts';
 
 type SpecSource =
-  | { kind: "remote"; profileName?: string; projectionName?: string }
-  | { kind: "local"; specPath?: string };
+  | { kind: 'remote'; profileName?: string; projectionName?: string }
+  | { kind: 'local'; specPath?: string };
 
 interface WriteBody {
   collectionPath?: string;
@@ -18,10 +18,13 @@ interface WriteBody {
 }
 
 async function resolveSpec(source: SpecSource): Promise<SwaggerSpec | Response> {
-  if (source.kind === "remote") {
+  if (source.kind === 'remote') {
     const { profileName, projectionName } = source;
     if (!profileName || !projectionName) {
-      return err("source.profileName and source.projectionName are required for a remote source", 400);
+      return err(
+        'source.profileName and source.projectionName are required for a remote source',
+        400,
+      );
     }
     const profile = getProfile(profileName);
     if (!profile) return err(`Profile not found: ${profileName}`, 404);
@@ -29,10 +32,10 @@ async function resolveSpec(source: SpecSource): Promise<SwaggerSpec | Response> 
   }
 
   const { specPath } = source;
-  if (!specPath) return err("source.specPath is required for a local source", 400);
+  if (!specPath) return err('source.specPath is required for a local source', 400);
 
   const { ok: valid, errors } = checkAddArgs({ spec: specPath });
-  if (!valid) return err(errors.join("; "), 400);
+  if (!valid) return err(errors.join('; '), 400);
 
   return loadSpec(specPath);
 }
@@ -41,13 +44,13 @@ export const postWrite = route(async (req) => {
   const body = (await req.json()) as WriteBody;
   const { collectionPath, source, selected } = body;
 
-  if (!collectionPath) return err("collectionPath is required", 400);
-  if (!source) return err("source is required", 400);
-  if (!selected || selected.length === 0) return err("selected must be a non-empty array", 400);
+  if (!collectionPath) return err('collectionPath is required', 400);
+  if (!source) return err('source is required', 400);
+  if (!selected || selected.length === 0) return err('selected must be a non-empty array', 400);
 
   for (const entry of selected) {
     if (!entry.path || !entry.method) {
-      return err("each selected entry requires path and method", 400);
+      return err('each selected entry requires path and method', 400);
     }
   }
 

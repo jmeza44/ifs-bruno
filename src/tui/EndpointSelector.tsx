@@ -1,17 +1,17 @@
-import React, { useState, useMemo } from "react";
-import { Box, Text, useInput, useStdout } from "ink";
-import type { EndpointEntry } from "../types/tool.types";
-import type { Operation, ParameterObject, SwaggerSpec, PathItem } from "../types/spec.types";
+import React, { useState, useMemo } from 'react';
+import { Box, Text, useInput, useStdout } from 'ink';
+import type { EndpointEntry } from '../types/tool.types';
+import type { Operation, ParameterObject, SwaggerSpec, PathItem } from '../types/spec.types';
 
-const HTTP_METHODS = ["get", "post", "put", "patch", "delete"] as const;
+const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
 
 const METHOD_COLORS: Record<HttpMethod, string> = {
-  get: "green",
-  post: "blue",
-  put: "yellow",
-  patch: "cyan",
-  delete: "red",
+  get: 'green',
+  post: 'blue',
+  put: 'yellow',
+  patch: 'cyan',
+  delete: 'red',
 };
 
 interface Props {
@@ -22,7 +22,7 @@ interface Props {
 }
 
 function truncate(str: string, max: number): string {
-  return str.length <= max ? str : str.slice(0, max - 1) + "…";
+  return str.length <= max ? str : str.slice(0, max - 1) + '…';
 }
 
 function getOperation(spec: SwaggerSpec, entry: EndpointEntry): Operation | undefined {
@@ -38,10 +38,9 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
 
   const [cursor, setCursor] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState('');
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(new Set(HTTP_METHODS));
-  const [mode, setMode] = useState<"list" | "search">("list");
-
+  const [mode, setMode] = useState<'list' | 'search'>('list');
 
   const filtered = useMemo(() => {
     const term = keyword.toLowerCase();
@@ -67,15 +66,18 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
   }
 
   useInput((input, key) => {
-    if (mode === "search") {
+    if (mode === 'search') {
       if (key.escape) {
-        if (!keyword) { onCancel(); return; }
-        setMode("list");
+        if (!keyword) {
+          onCancel();
+          return;
+        }
+        setMode('list');
         setCursor(0);
         return;
       }
       if (key.return) {
-        setMode("list");
+        setMode('list');
         setCursor(0);
         return;
       }
@@ -90,9 +92,15 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
     }
 
     // list mode
-    if (key.escape) { onCancel(); return; }
-    if (input === "/") { setMode("search"); return; }
-    if (input === "a") {
+    if (key.escape) {
+      onCancel();
+      return;
+    }
+    if (input === '/') {
+      setMode('search');
+      return;
+    }
+    if (input === 'a') {
       if (selected.size === filtered.length) {
         setSelected(new Set());
       } else {
@@ -101,7 +109,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
       return;
     }
 
-    if (input === "t" && current) {
+    if (input === 't' && current) {
       const tagEntries = filtered.filter((e) => e.tag === current.tag);
       const tagKeys = tagEntries.map(entryKey);
       const allSelected = tagKeys.every((k) => selected.has(k));
@@ -118,7 +126,13 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
     }
 
     // method toggles
-    const methodKeys: Record<string, HttpMethod> = { g: "get", p: "post", u: "put", c: "patch", d: "delete" };
+    const methodKeys: Record<string, HttpMethod> = {
+      g: 'get',
+      p: 'post',
+      u: 'put',
+      c: 'patch',
+      d: 'delete',
+    };
     if (methodKeys[input]) {
       const m = methodKeys[input]!;
       setActiveMethods((prev) => {
@@ -130,12 +144,24 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
       return;
     }
 
-    if (key.upArrow) { setCursor((c) => Math.max(0, c - 1)); return; }
-    if (key.downArrow) { setCursor((c) => Math.min(filtered.length - 1, c + 1)); return; }
-    if (key.pageUp) { setCursor((c) => Math.max(0, c - 10)); return; }
-    if (key.pageDown) { setCursor((c) => Math.min(filtered.length - 1, c + 10)); return; }
+    if (key.upArrow) {
+      setCursor((c) => Math.max(0, c - 1));
+      return;
+    }
+    if (key.downArrow) {
+      setCursor((c) => Math.min(filtered.length - 1, c + 1));
+      return;
+    }
+    if (key.pageUp) {
+      setCursor((c) => Math.max(0, c - 10));
+      return;
+    }
+    if (key.pageDown) {
+      setCursor((c) => Math.min(filtered.length - 1, c + 10));
+      return;
+    }
 
-    if (input === " " && current) {
+    if (input === ' ' && current) {
       const k = entryKey(current);
       setSelected((prev) => {
         const next = new Set(prev);
@@ -162,10 +188,16 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
       {/* header */}
       <Box gap={2} paddingX={1} marginBottom={1}>
         <Text bold>Endpoints</Text>
-        <Text dimColor>{filtered.length}/{entries.length} shown · {selected.size} selected</Text>
+        <Text dimColor>
+          {filtered.length}/{entries.length} shown · {selected.size} selected
+        </Text>
         <Box flexGrow={1} />
         {HTTP_METHODS.map((m) => (
-          <Text key={m} color={activeMethods.has(m) ? METHOD_COLORS[m] : undefined} dimColor={!activeMethods.has(m)}>
+          <Text
+            key={m}
+            color={activeMethods.has(m) ? METHOD_COLORS[m] : undefined}
+            dimColor={!activeMethods.has(m)}
+          >
             {m.toUpperCase()[0]}={m.toUpperCase()}
           </Text>
         ))}
@@ -173,14 +205,23 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
 
       {/* search bar */}
       <Box paddingX={1} marginBottom={1}>
-        <Text dimColor>{mode === "search" ? "▶ " : "/ "}</Text>
-        <Text>{keyword || (mode === "search" ? "" : "type / to search...")}{mode === "search" ? "█" : ""}</Text>
+        <Text dimColor>{mode === 'search' ? '▶ ' : '/ '}</Text>
+        <Text>
+          {keyword || (mode === 'search' ? '' : 'type / to search...')}
+          {mode === 'search' ? '█' : ''}
+        </Text>
       </Box>
 
       {/* main panels */}
       <Box flexDirection="row" flexGrow={1} gap={1}>
         {/* left: list */}
-        <Box flexDirection="column" width="55%" borderStyle="single" borderColor="gray" paddingX={1}>
+        <Box
+          flexDirection="column"
+          width="55%"
+          borderStyle="single"
+          borderColor="gray"
+          paddingX={1}
+        >
           {visible.length === 0 ? (
             <Text dimColor>No endpoints match.</Text>
           ) : (
@@ -191,8 +232,12 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
               const method = e.method as HttpMethod;
               return (
                 <Box key={entryKey(e)} gap={1}>
-                  <Text color={isSelected ? "green" : "gray"}>{isSelected ? "●" : "○"}</Text>
-                  <Text bold={isCursor} color={isCursor ? "white" : undefined} backgroundColor={isCursor ? "blue" : undefined}>
+                  <Text color={isSelected ? 'green' : 'gray'}>{isSelected ? '●' : '○'}</Text>
+                  <Text
+                    bold={isCursor}
+                    color={isCursor ? 'white' : undefined}
+                    backgroundColor={isCursor ? 'blue' : undefined}
+                  >
                     <Text color={METHOD_COLORS[method]}>{e.method.toUpperCase().padEnd(6)}</Text>
                     <Text>{truncate(e.path, pathMax)}</Text>
                   </Text>
@@ -203,42 +248,59 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
         </Box>
 
         {/* right: detail */}
-        <Box flexDirection="column" width="45%" borderStyle="single" borderColor="gray" paddingX={1} gap={1}>
+        <Box
+          flexDirection="column"
+          width="45%"
+          borderStyle="single"
+          borderColor="gray"
+          paddingX={1}
+          gap={1}
+        >
           {current ? (
             <>
               <Box gap={1}>
                 <Text color={METHOD_COLORS[current.method as HttpMethod]} bold>
                   {current.method.toUpperCase()}
                 </Text>
-                <Text bold wrap="wrap">{current.path}</Text>
+                <Text bold wrap="wrap">
+                  {current.path}
+                </Text>
               </Box>
               {current.tag && <Text dimColor>Tag: {current.tag}</Text>}
-              {operation?.summary && <Text dimColor wrap="wrap">{operation.summary}</Text>}
+              {operation?.summary && (
+                <Text dimColor wrap="wrap">
+                  {operation.summary}
+                </Text>
+              )}
               {operation?.description && operation.description !== operation.summary && (
-                <Text dimColor wrap="wrap">{truncate(operation.description.split("\n")[0]!, 80)}</Text>
+                <Text dimColor wrap="wrap">
+                  {truncate(operation.description.split('\n')[0]!, 80)}
+                </Text>
               )}
               {params.length > 0 && (
                 <Box flexDirection="column" gap={0}>
-                  <Text bold dimColor>Parameters</Text>
+                  <Text bold dimColor>
+                    Parameters
+                  </Text>
                   {params.slice(0, 8).map((p, i) => (
                     <Box key={`${p.name}-${i}`} gap={1}>
-                      <Text color={p.required ? "yellow" : "gray"}>{p.required ? "●" : "○"}</Text>
+                      <Text color={p.required ? 'yellow' : 'gray'}>{p.required ? '●' : '○'}</Text>
                       <Text>{p.name}</Text>
                       <Text dimColor>({p.in})</Text>
                     </Box>
                   ))}
-                  {params.length > 8 && <Text dimColor>  …+{params.length - 8} more</Text>}
+                  {params.length > 8 && <Text dimColor> …+{params.length - 8} more</Text>}
                 </Box>
               )}
               {responses.length > 0 && (
                 <Box flexDirection="column">
-                  <Text bold dimColor>Responses</Text>
-                  <Text dimColor>{responses.join("  ")}</Text>
+                  <Text bold dimColor>
+                    Responses
+                  </Text>
+                  <Text dimColor>{responses.join('  ')}</Text>
                 </Box>
               )}
-              {operation?.operationId && (
-                <Text dimColor>ID: {operation.operationId}</Text>
-              )}
+              {operation?.operationId && <Text dimColor>ID: {operation.operationId}</Text>}
             </>
           ) : (
             <Text dimColor>No endpoints match.</Text>
@@ -256,7 +318,7 @@ export function EndpointSelector({ entries, spec, onSubmit, onCancel }: Props) {
         <Text dimColor>g=GET p=POST u=PUT c=PATCH d=DELETE toggle</Text>
         <Text dimColor>enter confirm</Text>
         <Text dimColor>esc go back</Text>
-        {selected.size === 0 && mode === "list" && (
+        {selected.size === 0 && mode === 'list' && (
           <Text color="yellow">select at least one endpoint</Text>
         )}
       </Box>

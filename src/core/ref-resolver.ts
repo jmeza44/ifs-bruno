@@ -1,17 +1,23 @@
-import type { SwaggerSpec, SchemaObject, ParameterObject, RefObject, ResponseObject } from "../types/spec.types";
-import { SKIP_KEYS } from "./constants";
+import type {
+  SwaggerSpec,
+  SchemaObject,
+  ParameterObject,
+  RefObject,
+  ResponseObject,
+} from '../types/spec.types';
+import { SKIP_KEYS } from './constants';
 
 export class RefResolver {
   constructor(private spec: SwaggerSpec) {}
 
   resolveRef(ref: string): SchemaObject | ParameterObject {
-    if (!ref.startsWith("#/")) {
+    if (!ref.startsWith('#/')) {
       throw new Error(`External $ref not supported: ${ref}`);
     }
-    const parts = ref.slice(2).split("/");
+    const parts = ref.slice(2).split('/');
     let node: unknown = this.spec;
     for (const part of parts) {
-      const decoded = part.replace(/~1/g, "/").replace(/~0/g, "~");
+      const decoded = part.replace(/~1/g, '/').replace(/~0/g, '~');
       node = (node as Record<string, unknown>)[decoded];
       if (node === undefined) {
         throw new Error(`Could not resolve $ref: ${ref}`);
@@ -21,21 +27,21 @@ export class RefResolver {
   }
 
   resolveParameter(paramOrRef: ParameterObject | RefObject): ParameterObject {
-    if ("$ref" in paramOrRef) {
+    if ('$ref' in paramOrRef) {
       return this.resolveRef(paramOrRef.$ref) as ParameterObject;
     }
     return paramOrRef;
   }
 
   resolveSchema(schemaOrRef: SchemaObject | RefObject): SchemaObject {
-    if ("$ref" in schemaOrRef && schemaOrRef.$ref !== undefined) {
+    if ('$ref' in schemaOrRef && schemaOrRef.$ref !== undefined) {
       return this.resolveRef(schemaOrRef.$ref) as SchemaObject;
     }
     return schemaOrRef as SchemaObject;
   }
 
   resolveResponse(responseOrRef: ResponseObject | RefObject): ResponseObject {
-    if ("$ref" in responseOrRef && responseOrRef.$ref !== undefined) {
+    if ('$ref' in responseOrRef && responseOrRef.$ref !== undefined) {
       return this.resolveRef(responseOrRef.$ref) as ResponseObject;
     }
     return responseOrRef as ResponseObject;
@@ -51,7 +57,7 @@ export class RefResolver {
 
       let prop: SchemaObject;
       try {
-        prop = "$ref" in propOrRef ? this.resolveSchema(propOrRef) : propOrRef as SchemaObject;
+        prop = '$ref' in propOrRef ? this.resolveSchema(propOrRef) : (propOrRef as SchemaObject);
       } catch {
         continue;
       }

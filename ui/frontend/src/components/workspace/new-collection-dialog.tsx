@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ApiError, initCollection, type InitCollectionInput } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ApiError, initCollection, type InitCollectionInput } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,16 +9,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { FieldGroup } from "@/components/ui/field";
-import { HintField } from "@/components/workspace/hint-field";
+} from '@/components/ui/dialog';
+import { FieldGroup } from '@/components/ui/field';
+import { HintField } from '@/components/workspace/hint-field';
 
 const EMPTY_FORM: InitCollectionInput = {
-  name: "",
-  host: "",
-  realm: "",
-  clientId: "",
-  output: "",
+  name: '',
+  host: '',
+  realm: '',
+  clientId: '',
+  output: '',
 };
 
 export type NewCollectionDialogProps = {
@@ -36,7 +36,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
   const mutation = useMutation({
     mutationFn: (input: InitCollectionInput) => initCollection(input),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
       onOpenChange(false);
       setForm(EMPTY_FORM);
       setError(null);
@@ -47,7 +47,9 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
       if (err instanceof ApiError && err.fieldErrors) {
         setFieldErrors(err.fieldErrors);
       } else if (err instanceof ApiError && err.status === 409) {
-        setFieldErrors({ output: "A collection already exists at that location. Choose a different output path." });
+        setFieldErrors({
+          output: 'A collection already exists at that location. Choose a different output path.',
+        });
       } else {
         setError(err.message);
       }
@@ -92,7 +94,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               label="Collection name"
               placeholder="IFS"
               value={form.name}
-              onChange={(v) => set("name", v)}
+              onChange={(v) => set('name', v)}
               hint="Name or path for the collection folder (relative or absolute). A simple name like IFS creates ./IFS; a path like collections/IFS creates that subfolder."
               error={fieldErrors.name}
             />
@@ -101,7 +103,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               label="Host"
               placeholder="https://acme.ifs.cloud"
               value={form.host}
-              onChange={(v) => set("host", v)}
+              onChange={(v) => set('host', v)}
               hint="Base URL of your IFS Cloud environment, e.g. https://acme.ifs.cloud"
               error={fieldErrors.host}
             />
@@ -110,7 +112,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               label="Realm"
               placeholder="your-realm"
               value={form.realm}
-              onChange={(v) => set("realm", v)}
+              onChange={(v) => set('realm', v)}
               hint="Found in your Keycloak admin panel under Realms, usually matches your environment name"
               error={fieldErrors.realm}
             />
@@ -119,16 +121,16 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
               label="Client ID"
               placeholder="IFS_postman"
               value={form.clientId}
-              onChange={(v) => set("clientId", v)}
+              onChange={(v) => set('clientId', v)}
               hint="OAuth2 client configured for API access, e.g. IFS_postman"
               error={fieldErrors.clientId}
             />
             <HintField
               id="output"
               label="Output folder"
-              placeholder={form.name || "defaults to collection name"}
-              value={form.output ?? ""}
-              onChange={(v) => set("output", v)}
+              placeholder={form.name || 'defaults to collection name'}
+              value={form.output ?? ''}
+              onChange={(v) => set('output', v)}
               required={false}
               hint="Optional · Defaults to the collection name when left empty"
               error={fieldErrors.output}
@@ -139,7 +141,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
 
           <DialogFooter>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "Creating…" : "Create collection"}
+              {mutation.isPending ? 'Creating…' : 'Create collection'}
             </Button>
           </DialogFooter>
         </form>

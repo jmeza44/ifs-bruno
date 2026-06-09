@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
-import { CaretRightIcon, FolderIcon, RowsIcon, StackIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { MethodLabel } from "@/components/workspace/method-label";
-import { cn } from "@/lib/utils";
+import { useMemo, useState } from 'react';
+import { CaretRightIcon, FolderIcon, RowsIcon, StackIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { MethodLabel } from '@/components/workspace/method-label';
+import { cn } from '@/lib/utils';
 
 export type StoredEndpoint = {
   name: string;
@@ -37,11 +37,13 @@ function FolderRow({
       >
         <CaretRightIcon
           size={12}
-          className={cn("shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+          className={cn('shrink-0 text-muted-foreground transition-transform', open && 'rotate-90')}
         />
         <FolderIcon size={14} className="shrink-0 text-muted-foreground" />
         <span className="truncate font-medium">{folder.name}</span>
-        <span className="ml-auto shrink-0 text-xs text-muted-foreground">{folder.endpoints.length}</span>
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+          {folder.endpoints.length}
+        </span>
       </button>
 
       {open && (

@@ -7,8 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import type { PendingConfirmation } from "@/lib/types";
+} from '@/components/ui/alert-dialog';
+import type { PendingConfirmation } from '@/lib/types';
 
 export type { PendingConfirmation };
 
@@ -29,62 +29,68 @@ type ConfirmationCopy = {
 function describe(pending: PendingConfirmation, selectedCount: number): ConfirmationCopy {
   const isDirty = selectedCount > 0;
   const unsavedNote = isDirty
-    ? ` You have ${selectedCount} endpoint${selectedCount === 1 ? "" : "s"} selected that ${
+    ? ` You have ${selectedCount} endpoint${selectedCount === 1 ? '' : 's'} selected that ${
         selectedCount === 1 ? "hasn't" : "haven't"
-      } been saved — switching now will discard ${selectedCount === 1 ? "it" : "them"}.`
-    : "";
+      } been saved — switching now will discard ${selectedCount === 1 ? 'it' : 'them'}.`
+    : '';
 
   switch (pending.type) {
-    case "switch-collection":
+    case 'switch-collection':
       return {
-        title: "Switch collection?",
+        title: 'Switch collection?',
         description: `Switching to "${pending.target.name}" will close the current projection and clear the endpoint list.${unsavedNote}`,
-        confirmLabel: "Switch collection",
+        confirmLabel: 'Switch collection',
       };
 
-    case "create-collection-and-move":
+    case 'create-collection-and-move':
       return {
-        title: "Move to new collection?",
+        title: 'Move to new collection?',
         description: `"${pending.created.name}" was created and is ready to use. Moving to it will close the current projection and clear the endpoint list.${unsavedNote}`,
-        confirmLabel: "Switch to new collection",
+        confirmLabel: 'Switch to new collection',
       };
 
-    case "switch-profile":
+    case 'switch-profile':
       return {
-        title: "Switch profile?",
+        title: 'Switch profile?',
         description: `Switching to "${pending.target.name}" will close the current projection and reset the endpoint search.${unsavedNote}`,
-        confirmLabel: "Switch profile",
+        confirmLabel: 'Switch profile',
       };
 
-    case "delete-active-profile":
+    case 'delete-active-profile':
       return {
-        title: "Delete active profile?",
+        title: 'Delete active profile?',
         description: isDirty
           ? `"${pending.target.name}" is the active profile and you have ${selectedCount} endpoint${
-              selectedCount === 1 ? "" : "s"
+              selectedCount === 1 ? '' : 's'
             } selected that ${
               selectedCount === 1 ? "hasn't" : "haven't"
             } been saved. Deleting it will discard ${
-              selectedCount === 1 ? "it" : "them"
+              selectedCount === 1 ? 'it' : 'them'
             } and clear the current projection. This cannot be undone.`
           : `"${pending.target.name}" is the active profile. Deleting it will clear the current projection. This cannot be undone.`,
-        confirmLabel: "Delete profile",
+        confirmLabel: 'Delete profile',
         destructive: true,
       };
 
-    case "switch-source":
+    case 'switch-source':
       return {
-        title: pending.target === "spec" ? "Load a spec file instead?" : "Switch to a profile instead?",
+        title:
+          pending.target === 'spec' ? 'Load a spec file instead?' : 'Switch to a profile instead?',
         description:
-          pending.target === "spec"
+          pending.target === 'spec'
             ? `Loading a spec file will replace the active profile-based projection and clear the endpoint list.${unsavedNote}`
             : `Selecting a profile will replace the loaded spec file and clear the endpoint list.${unsavedNote}`,
-        confirmLabel: pending.target === "spec" ? "Load spec file" : "Switch to profile",
+        confirmLabel: pending.target === 'spec' ? 'Load spec file' : 'Switch to profile',
       };
   }
 }
 
-export function ConfirmationDialog({ pending, selectedCount, onConfirm, onCancel }: ConfirmationDialogProps) {
+export function ConfirmationDialog({
+  pending,
+  selectedCount,
+  onConfirm,
+  onCancel,
+}: ConfirmationDialogProps) {
   const copy = pending ? describe(pending, selectedCount) : null;
 
   return (
@@ -97,7 +103,10 @@ export function ConfirmationDialog({ pending, selectedCount, onConfirm, onCancel
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant={copy.destructive ? "destructive" : "default"} onClick={onConfirm}>
+            <AlertDialogAction
+              variant={copy.destructive ? 'destructive' : 'default'}
+              onClick={onConfirm}
+            >
               {copy.confirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,5 +1,5 @@
-import { FolderIcon } from "@phosphor-icons/react";
-import type { CollectionEntry } from "@/lib/types";
+import { FolderIcon } from '@phosphor-icons/react';
+import type { CollectionEntry } from '@/lib/types';
 
 export type CollectionDetails = {
   realm: string;
@@ -12,18 +12,10 @@ export type CollectionDetailsPanelProps = {
   details: CollectionDetails | null;
 };
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {title}
-      </h3>
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</h3>
       {children}
     </div>
   );
@@ -40,10 +32,7 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function CollectionDetailsPanel({
-  collection,
-  details,
-}: CollectionDetailsPanelProps) {
+export function CollectionDetailsPanel({ collection, details }: CollectionDetailsPanelProps) {
   if (!collection || !details) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border bg-card p-4 text-center text-xs text-muted-foreground">
@@ -59,16 +48,13 @@ export function CollectionDetailsPanel({
         <p className="truncate text-sm font-semibold" title={collection.name}>
           {collection.name}
         </p>
-        <p
-          className="truncate font-mono text-xs text-muted-foreground"
-          title={collection.path}
-        >
+        <p className="truncate font-mono text-xs text-muted-foreground" title={collection.path}>
           {collection.path}
         </p>
       </div>
 
       <Section title="Connection">
-        <Row label="Base host" value={collection.baseHost ?? "—"} />
+        <Row label="Base host" value={collection.baseHost ?? '—'} />
         <Row label="Realm" value={details.realm} />
         <Row label="Client ID" value={details.clientId} />
         <Row label="Keycloak path" value={details.keycloakBasePath} />

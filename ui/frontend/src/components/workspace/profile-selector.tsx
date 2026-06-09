@@ -1,5 +1,5 @@
-import { CaretDownIcon, PlusIcon, TrashIcon, UserCircleIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { CaretDownIcon, PlusIcon, TrashIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { ProfileOption } from "@/lib/types";
+} from '@/components/ui/dropdown-menu';
+import type { ProfileOption } from '@/lib/types';
 
 export type { ProfileOption };
 
@@ -33,7 +33,7 @@ export function ProfileSelector({
         <Button variant="outline" className="w-56 justify-between">
           <span className="flex items-center gap-2 truncate">
             <UserCircleIcon size={16} className="shrink-0 text-muted-foreground" />
-            <span className="truncate">{active ? active.name : "Select a profile…"}</span>
+            <span className="truncate">{active ? active.name : 'Select a profile…'}</span>
           </span>
           <CaretDownIcon size={14} className="shrink-0 text-muted-foreground" />
         </Button>

@@ -1,10 +1,10 @@
-import type { SwaggerSpec } from "../../../src/types/spec.types.ts";
-import { fetchOpenApiSpec } from "../../../src/core/ifs-client.ts";
-import { buildEndpointDetail, buildEndpointList } from "../../../src/core/endpoint-list.ts";
-import { getProfile } from "../../../src/core/profile-store.ts";
-import { loadSpec } from "../../../src/core/spec-loader.ts";
-import { checkAddArgs } from "../../../src/validate-args.ts";
-import { err, ok, route } from "../json.ts";
+import type { SwaggerSpec } from '../../../src/types/spec.types.ts';
+import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
+import { buildEndpointDetail, buildEndpointList } from '../../../src/core/endpoint-list.ts';
+import { getProfile } from '../../../src/core/profile-store.ts';
+import { loadSpec } from '../../../src/core/spec-loader.ts';
+import { checkAddArgs } from '../../../src/validate-args.ts';
+import { err, ok, route } from '../json.ts';
 
 interface RemoteSpecBody {
   profileName?: string;
@@ -30,7 +30,7 @@ export const postSpecRemote = route(async (req) => {
   const { profileName, projectionName } = body;
 
   if (!profileName || !projectionName) {
-    return err("profileName and projectionName are required", 400);
+    return err('profileName and projectionName are required', 400);
   }
 
   const profile = getProfile(profileName);
@@ -49,12 +49,12 @@ export const postSpecLocal = route(async (req) => {
   const { specPath } = body;
 
   if (!specPath) {
-    return err("specPath is required", 400);
+    return err('specPath is required', 400);
   }
 
   const { ok: valid, errors } = checkAddArgs({ spec: specPath });
   if (!valid) {
-    return err(errors.join("; "), 400);
+    return err(errors.join('; '), 400);
   }
 
   const spec = loadSpec(specPath);
@@ -68,11 +68,11 @@ export const postSpecEntry = route(async (req) => {
   const { path: pathTemplate, method } = body;
 
   if (!pathTemplate || !method) {
-    return err("path and method are required", 400);
+    return err('path and method are required', 400);
   }
 
   if (!lastResolvedSpec) {
-    return err("No spec loaded — fetch a spec via /spec/remote or /spec/local first", 409);
+    return err('No spec loaded — fetch a spec via /spec/remote or /spec/local first', 409);
   }
 
   const detail = buildEndpointDetail(lastResolvedSpec, pathTemplate, method);
