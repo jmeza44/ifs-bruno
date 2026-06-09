@@ -1,10 +1,13 @@
 import { Store, useStore } from "@tanstack/react-store";
-import type { CollectionEntry, IfsProjection } from "@/lib/types";
-import type { ProfileOption } from "@/components/workspace/profile-selector";
-import type { LoadedSpec } from "@/components/workspace/spec-loader";
-import type { EndpointListEntry } from "@/components/workspace/endpoint-list-panel";
-import type { EndpointDetail } from "@/components/workspace/endpoint-detail-panel";
-import type { PendingConfirmation } from "@/components/workspace/confirmation-dialog";
+import type {
+  CollectionEntry,
+  EndpointDetail,
+  EndpointListEntry,
+  IfsProjection,
+  LoadedSpec,
+  PendingConfirmation,
+  ProfileOption,
+} from "@/lib/types";
 
 export type ProjectionSource =
   | { type: "none" }

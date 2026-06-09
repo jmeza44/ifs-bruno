@@ -18,6 +18,7 @@ import { deleteProfile as deleteProfileOnServer, fetchCollectionDetails, fetchCo
 import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } from "@/lib/types";
 import type { EndpointListEntry } from "@/components/workspace/endpoint-list-panel";
 import { useWorkspaceStore, workspaceActions } from "@/lib/workspace-store";
+import { toast } from "sonner";
 
 function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
   const keys = new Set<string>();
@@ -57,6 +58,7 @@ export function WorkspaceLayoutSkeleton() {
       workspaceActions.removeProfile(profile);
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
     },
+    onError: (err) => toast.error(`Failed to delete profile: ${err.message}`),
   });
 
   const activeCollectionPath = collection.active?.path;
@@ -123,6 +125,14 @@ export function WorkspaceLayoutSkeleton() {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
   });
+
+  function handleSaveSelection() {
+    toast.promise(saveSelectionMutation.mutateAsync(), {
+      loading: "Saving endpoints...",
+      success: "Endpoints saved",
+      error: (err) => `Failed to save: ${err.message}`,
+    });
+  }
 
   useEffect(() => {
     if (!collectionsQuery.data) return;
@@ -239,7 +249,7 @@ export function WorkspaceLayoutSkeleton() {
                       });
                       viewEndpointDetailMutation.mutate(entry);
                     }}
-                    onSave={() => saveSelectionMutation.mutate()}
+                    onSave={handleSaveSelection}
                     isSaving={saveSelectionMutation.isPending}
                   />
                 </Panel>

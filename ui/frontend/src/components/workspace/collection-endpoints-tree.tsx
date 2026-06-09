@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { CaretRightIcon, FolderIcon, RowsIcon, StackIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { methodTextStyle } from "@/lib/http-method-styles";
+import { MethodLabel } from "@/components/workspace/method-label";
 import { cn } from "@/lib/utils";
 
 export type StoredEndpoint = {
@@ -18,15 +18,6 @@ export type CollectionFolder = {
 export type CollectionEndpointsTreeProps = {
   folders: CollectionFolder[];
 };
-
-function MethodLabel({ method }: { method: string }) {
-  const upper = method.toUpperCase();
-  return (
-    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", methodTextStyle(upper))}>
-      {upper}
-    </span>
-  );
-}
 
 function FolderRow({
   folder,

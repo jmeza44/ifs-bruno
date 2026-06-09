@@ -4,16 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { METHOD_STYLES, methodTextStyle } from "@/lib/http-method-styles";
+import { METHOD_STYLES } from "@/lib/http-method-styles";
+import { MethodLabel } from "@/components/workspace/method-label";
+import type { EndpointListEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export type EndpointListEntry = {
-  id: string;
-  path: string;
-  method: string;
-  summary?: string;
-  operationId?: string;
-};
+export type { EndpointListEntry };
 
 export type EndpointListPanelProps = {
   entries: EndpointListEntry[];
@@ -29,15 +25,6 @@ export type EndpointListPanelProps = {
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
-
-function MethodLabel({ method }: { method: string }) {
-  const upper = method.toUpperCase();
-  return (
-    <span className={cn("w-12 shrink-0 font-mono text-[11px] font-semibold", methodTextStyle(upper))}>
-      {upper}
-    </span>
-  );
-}
 
 export function EndpointListPanel({
   entries,

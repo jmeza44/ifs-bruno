@@ -8,15 +8,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { CollectionEntry } from "@/lib/types";
-import type { ProfileOption } from "@/components/workspace/profile-selector";
+import type { PendingConfirmation } from "@/lib/types";
 
-export type PendingConfirmation =
-  | { type: "switch-collection"; target: CollectionEntry }
-  | { type: "create-collection-and-move"; created: CollectionEntry }
-  | { type: "switch-profile"; target: ProfileOption }
-  | { type: "delete-active-profile"; target: ProfileOption }
-  | { type: "switch-source"; target: "profile" | "spec" };
+export type { PendingConfirmation };
 
 export type ConfirmationDialogProps = {
   pending: PendingConfirmation | null;

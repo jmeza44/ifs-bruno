@@ -1,10 +1,8 @@
 import { useRef } from "react";
 import { FileCodeIcon, UploadSimpleIcon, XIcon } from "@phosphor-icons/react";
+import type { LoadedSpec } from "@/lib/types";
 
-export type LoadedSpec = {
-  fileName: string;
-  projectionName: string;
-};
+export type { LoadedSpec };
 
 export type SpecLoaderProps = {
   loaded: LoadedSpec | null;

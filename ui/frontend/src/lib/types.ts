@@ -55,6 +55,7 @@ export interface EndpointDetailResponse {
 }
 
 export interface EndpointDetail {
+  id: string;
   path: string;
   method: string;
   operationId?: string;
@@ -65,6 +66,32 @@ export interface EndpointDetail {
   parameters?: EndpointDetailParameter[];
   responses?: EndpointDetailResponse[];
 }
+
+export type EndpointListEntry = {
+  id: string;
+  path: string;
+  method: string;
+  summary?: string;
+  operationId?: string;
+};
+
+export type ProfileOption = {
+  id: string;
+  name: string;
+  environment: string;
+};
+
+export type LoadedSpec = {
+  fileName: string;
+  projectionName: string;
+};
+
+export type PendingConfirmation =
+  | { type: "switch-collection"; target: CollectionEntry }
+  | { type: "create-collection-and-move"; created: CollectionEntry }
+  | { type: "switch-profile"; target: ProfileOption }
+  | { type: "delete-active-profile"; target: ProfileOption }
+  | { type: "switch-source"; target: "profile" | "spec" };
 
 export interface CollectionEndpoint {
   name: string;

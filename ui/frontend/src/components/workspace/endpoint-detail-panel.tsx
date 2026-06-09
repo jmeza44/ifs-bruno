@@ -1,37 +1,10 @@
-import { CheckSquareIcon, SquareIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { methodTextStyle } from "@/lib/http-method-styles";
+import type { EndpointDetail, EndpointDetailParameter, EndpointDetailResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export type EndpointDetailParameter = {
-  name: string;
-  in: string;
-  required?: boolean;
-  description?: string;
-  type?: string;
-  enum?: string[];
-  example?: unknown;
-  schema?: unknown;
-};
-
-export type EndpointDetailResponse = {
-  status: string;
-  description?: string;
-  schema?: unknown;
-};
-
-export type EndpointDetail = {
-  id: string;
-  path: string;
-  method: string;
-  operationId?: string;
-  summary?: string;
-  description?: string;
-  tags?: string[];
-  produces?: string[];
-  parameters?: EndpointDetailParameter[];
-  responses?: EndpointDetailResponse[];
-};
+export type { EndpointDetail, EndpointDetailParameter, EndpointDetailResponse };
 
 export type EndpointDetailPanelProps = {
   endpoint: EndpointDetail | null;
@@ -72,7 +45,7 @@ function LinkedText({ text, className }: { text: string; className?: string }) {
 function Section({ title, children, wide }: { title: string; children: React.ReactNode; wide?: boolean }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-1.5 basis-full", !wide && "@lg:basis-[calc(50%-0.625rem)]")}>
-      <span className="text-xs font-semibold tracking-wide text-muted-foreground/80 uppercase">{title}</span>
+      <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase mb-1">{title}</span>
       {children}
     </div>
   );
@@ -105,7 +78,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
   return (
     <div className="@container scroll-discreet flex h-full flex-col gap-3 overflow-y-auto rounded-none border border-border bg-card p-3">
       {/* header */}
-      <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className={cn("font-mono text-xs font-semibold", methodTextStyle(method))}>
             {method}
@@ -115,37 +88,37 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
           </span>
         </div>
         {onToggleSelected && (
-          <Button
-            variant="outline"
-            size="xs"
-            disabled={alreadyInCollection}
-            onClick={() => onToggleSelected(endpoint.id)}
-          >
-            {selected || alreadyInCollection ? <CheckSquareIcon size={12} /> : <SquareIcon size={12} />}
+          <label className={cn(
+            "flex cursor-pointer items-center gap-2 rounded-none border px-2 py-1 text-xs transition-colors select-none",
+            alreadyInCollection
+              ? "cursor-default border-emerald-600/40 bg-emerald-600/5 text-emerald-600 dark:text-emerald-400"
+              : selected
+              ? "border-border bg-muted text-foreground"
+              : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}>
+            <Checkbox
+              checked={selected || alreadyInCollection}
+              disabled={alreadyInCollection}
+              onCheckedChange={() => onToggleSelected(endpoint.id)}
+              className={cn("pointer-events-none", alreadyInCollection && "border-emerald-600! data-checked:border-emerald-600! data-checked:bg-emerald-600! data-checked:text-white!")}
+            />
             {alreadyInCollection ? "In collection" : selected ? "Selected" : "Select"}
-          </Button>
+          </label>
         )}
       </div>
 
       <div className="flex flex-wrap gap-x-5 gap-y-4">
       {/* overview */}
-      {(endpoint.operationId || alreadyInCollection || (endpoint.tags && endpoint.tags.length > 0)) && (
+      {(endpoint.operationId || (endpoint.tags && endpoint.tags.length > 0)) && (
         <Section title="Overview">
           <div className="flex flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-1">
-              {endpoint.operationId && <span className="text-xs text-muted-foreground">ID: {endpoint.operationId}</span>}
-              {alreadyInCollection && (
-                <span className="rounded-none border border-emerald-600/40 px-1.5 py-0.5 text-[11px] text-emerald-600 dark:text-emerald-400">
-                  Already in collection
-                </span>
-              )}
-            </div>
+            {endpoint.operationId && (
+              <span className="text-xs text-muted-foreground">ID: {endpoint.operationId}</span>
+            )}
             {endpoint.tags && endpoint.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {endpoint.tags.map((tag) => (
-                  <span key={tag} className="rounded-none border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                    {tag}
-                  </span>
+                  <Badge key={tag} variant="outline">{tag}</Badge>
                 ))}
               </div>
             )}
@@ -168,9 +141,7 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
         <Section title="Produces">
           <div className="flex flex-wrap gap-1">
             {endpoint.produces.map((type) => (
-              <span key={type} className="rounded-none border border-border px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
-                {type}
-              </span>
+              <Badge key={type} variant="outline" className="font-mono">{type}</Badge>
             ))}
           </div>
         </Section>
@@ -224,21 +195,18 @@ export function EndpointDetailPanel({ endpoint, selected, alreadyInCollection, o
       {/* responses */}
       {endpoint.responses && endpoint.responses.length > 0 && (
         <Section title="Responses" wide>
-          <div className="flex flex-col">
-            {endpoint.responses.map((resp, i) => (
+          <div className="flex flex-col gap-y-3">
+            {endpoint.responses.map((resp) => (
               <div
                 key={resp.status}
-                className={cn(
-                  "flex flex-col gap-1 py-1.5",
-                  i > 0 && "border-t border-border/50"
-                )}
+                className="flex flex-col"
               >
                 <div className="flex flex-wrap items-start gap-x-2 gap-y-0.5 text-xs">
                   <span className="font-mono font-semibold">{resp.status}</span>
                   {resp.description && <LinkedText text={resp.description} className="text-muted-foreground" />}
                 </div>
                 {resp.schema !== undefined && (
-                  <div className="pl-4">
+                  <div className="mt-1">
                     <SchemaDetails schema={resp.schema} />
                   </div>
                 )}

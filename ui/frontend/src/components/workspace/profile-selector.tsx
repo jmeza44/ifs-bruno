@@ -8,12 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { ProfileOption } from "@/lib/types";
 
-export type ProfileOption = {
-  id: string;
-  name: string;
-  environment: string;
-};
+export type { ProfileOption };
 
 export type ProfileSelectorProps = {
   active: ProfileOption | null;
