@@ -4,6 +4,8 @@ import { initCollection, type InitOptions } from '../../../src/core/bruno-writer
 import {
   readCollectionDetails,
   readCollectionFolders,
+  readPostmanCollectionDetails,
+  readPostmanCollectionFolders,
 } from '../../../src/core/collection-reader.ts';
 import { listCollections, resolveCollectionsBasePath, saveCollection } from '../../../src/core/profile-store.ts';
 import { checkInitArgs } from '../../../src/validate-args.ts';
@@ -25,7 +27,11 @@ export const getCollectionEndpoints = route((req) => {
     return err(`Collection not found: ${resolvedPath}`, 404);
   }
 
-  return ok({ folders: readCollectionFolders(resolvedPath) });
+  const isPostman = fs.existsSync(path.join(resolvedPath, '.resources'));
+  const folders = isPostman
+    ? readPostmanCollectionFolders(resolvedPath)
+    : readCollectionFolders(resolvedPath);
+  return ok({ folders });
 });
 
 export const getCollectionDetails = route((req) => {
@@ -40,7 +46,11 @@ export const getCollectionDetails = route((req) => {
     return err(`Collection not found: ${resolvedPath}`, 404);
   }
 
-  const details = readCollectionDetails(resolvedPath);
+  const isPostman = fs.existsSync(path.join(resolvedPath, '.resources', 'definition.yaml'));
+  const details = isPostman
+    ? readPostmanCollectionDetails(resolvedPath)
+    : readCollectionDetails(resolvedPath);
+
   if (!details) {
     return err(`Collection details not found: ${resolvedPath}`, 404);
   }
@@ -58,11 +68,14 @@ export const postCollectionSelect = route(async (req) => {
   if (!fs.existsSync(resolvedPath)) {
     return err(`Collection not found: ${resolvedPath}`, 404);
   }
-  if (!fs.existsSync(path.join(resolvedPath, 'opencollection.yml'))) {
-    return err(`Not a Bruno collection — opencollection.yml not found in: ${resolvedPath}`, 404);
+
+  const isBruno = fs.existsSync(path.join(resolvedPath, 'opencollection.yml'));
+  const isPostman = !isBruno && fs.existsSync(path.join(resolvedPath, '.resources'));
+  if (!isBruno && !isPostman) {
+    return err(`Not a recognized collection — no opencollection.yml or .resources found in: ${resolvedPath}`, 404);
   }
 
-  saveCollection(resolvedPath);
+  saveCollection(resolvedPath, isBruno ? 'bruno' : 'postman');
   return ok({ path: resolvedPath });
 });
 

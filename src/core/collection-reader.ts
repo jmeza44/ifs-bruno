@@ -94,6 +94,52 @@ export function readCollectionFolders(collectionPath: string): CollectionFolder[
   return folders;
 }
 
+type PostmanRequest = { name: string; method: string; url: string };
+
+function readPostmanRequest(filePath: string): PostmanRequest | null {
+  try {
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const doc = yaml.load(raw) as PostmanRequest;
+    if (!doc?.method || !doc?.name || !doc?.url) return null;
+    return doc;
+  } catch {
+    return null;
+  }
+}
+
+export function readPostmanCollectionFolders(collectionPath: string): CollectionFolder[] {
+  const absPath = path.resolve(collectionPath);
+  if (!fs.existsSync(absPath)) return [];
+
+  const folders: CollectionFolder[] = [];
+
+  for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
+    if (!entry.isDirectory() || POSTMAN_RESERVED.has(entry.name)) continue;
+
+    const folderPath = path.join(absPath, entry.name);
+    const endpoints: CollectionEndpoint[] = [];
+
+    for (const file of fs.readdirSync(folderPath)) {
+      if (!file.endsWith('.request.yaml')) continue;
+
+      const request = readPostmanRequest(path.join(folderPath, file));
+      if (!request) continue;
+
+      endpoints.push({
+        name: request.name,
+        method: request.method.toUpperCase(),
+        path: urlToPathTemplate(request.url),
+      });
+    }
+
+    if (endpoints.length > 0) {
+      folders.push({ name: entry.name, endpoints });
+    }
+  }
+
+  return folders;
+}
+
 /**
  * Reads `realm`, `clientId` and `keycloakBasePath` from a collection's
  * `environments/default.yml` — the auth variables `bruno-writer.ts` writes
@@ -114,6 +160,30 @@ export function readCollectionDetails(collectionPath: string): CollectionDetails
     const clientId = find('clientId');
     const keycloakBasePath = find('keycloakBasePath');
     if (!realm || !clientId || !keycloakBasePath) return null;
+
+    return { realm, clientId, keycloakBasePath };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reads `realm`, `clientId` and `keycloakBasePath` from a Postman collection's
+ * `.resources/definition.yaml` top-level `variables` map.
+ */
+export function readPostmanCollectionDetails(collectionPath: string): CollectionDetails | null {
+  try {
+    const defPath = path.join(path.resolve(collectionPath), '.resources', 'definition.yaml');
+    const raw = fs.readFileSync(defPath, 'utf-8');
+    const doc = yaml.load(raw) as
+      | { variables?: Record<string, string> }
+      | undefined;
+
+    const vars = doc?.variables ?? {};
+    const realm = vars['realm'];
+    const clientId = vars['clientId'];
+    const keycloakBasePath = vars['keycloakBasePath'] ?? '';
+    if (!realm || !clientId) return null;
 
     return { realm, clientId, keycloakBasePath };
   } catch {
