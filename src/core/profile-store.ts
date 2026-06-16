@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import yaml from 'js-yaml';
-import { countPostmanEndpoints, readCollectionFolders } from './collection-reader';
+import { resolveAdapter } from './collection-adapters';
 
 export interface IfsProfile {
   host: string;
@@ -88,55 +87,15 @@ function normalizeCollections(raw: Array<StoredCollectionEntry | string>): Store
   return result;
 }
 
-function countEndpoints(collectionPath: string): number {
-  return readCollectionFolders(collectionPath).reduce(
-    (total, folder) => total + folder.endpoints.length,
-    0,
-  );
-}
-
-function readCollectionName(collectionPath: string, format: 'bruno' | 'postman' = 'bruno'): string | null {
-  try {
-    if (format === 'postman') {
-      const raw = fs.readFileSync(path.join(collectionPath, '.resources', 'definition.yaml'), 'utf-8');
-      const doc = yaml.load(raw) as { name?: string } | undefined;
-      return doc?.name ?? null;
-    }
-    const raw = fs.readFileSync(path.join(collectionPath, 'opencollection.yml'), 'utf-8');
-    const doc = yaml.load(raw) as { info?: { name?: string } } | undefined;
-    return doc?.info?.name ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function readCollectionBaseHost(collectionPath: string, format: 'bruno' | 'postman' = 'bruno'): string | null {
-  try {
-    if (format === 'postman') {
-      const raw = fs.readFileSync(path.join(collectionPath, '.resources', 'definition.yaml'), 'utf-8');
-      const doc = yaml.load(raw) as { variables?: Record<string, string> } | undefined;
-      return doc?.variables?.['baseHost'] ?? null;
-    }
-    const envPath = path.join(collectionPath, 'environments', 'default.yml');
-    const raw = fs.readFileSync(envPath, 'utf-8');
-    const doc = yaml.load(raw) as
-      | { variables?: Array<{ name?: string; value?: string }> }
-      | undefined;
-    const baseHost = doc?.variables?.find((v) => v.name === 'baseHost');
-    return baseHost?.value ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function enrichCollection(entry: StoredCollectionEntry): CollectionEntry {
   const format = entry.format ?? 'bruno';
+  const adapter = resolveAdapter(entry.path);
   return {
     ...entry,
     format,
-    name: readCollectionName(entry.path, format) ?? path.basename(entry.path),
-    baseHost: readCollectionBaseHost(entry.path, format),
-    endpointCount: format === 'postman' ? countPostmanEndpoints(entry.path) : countEndpoints(entry.path),
+    name: adapter?.readName(entry.path) ?? path.basename(entry.path),
+    baseHost: adapter?.readBaseHost(entry.path) ?? null,
+    endpointCount: adapter?.countEndpoints(entry.path) ?? 0,
   };
 }
 
@@ -176,12 +135,7 @@ export function resolveCollectionsBasePath(format: 'bruno' | 'postman'): string 
 export function listCollections(): CollectionEntry[] {
   const config = readConfig();
   const all = normalizeCollections(config.collections ?? []);
-  const valid = all.filter((c) => {
-    if (c.format === 'postman') {
-      return fs.existsSync(path.join(c.path, '.resources', 'definition.yaml'));
-    }
-    return fs.existsSync(path.join(c.path, 'opencollection.yml'));
-  });
+  const valid = all.filter((c) => resolveAdapter(c.path) !== null);
   if (valid.length !== all.length) {
     config.collections = valid;
     writeConfig(config);

@@ -1,12 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { initCollection, type InitOptions } from '../../../src/core/bruno-writer.ts';
-import {
-  readCollectionDetails,
-  readCollectionFolders,
-  readPostmanCollectionDetails,
-  readPostmanCollectionFolders,
-} from '../../../src/core/collection-reader.ts';
+import { resolveAdapter } from '../../../src/core/collection-adapters/index.ts';
 import { listCollections, resolveCollectionsBasePath, saveCollection } from '../../../src/core/profile-store.ts';
 import { checkInitArgs } from '../../../src/validate-args.ts';
 import { err, fieldErr, ok, route } from '../json.ts';
@@ -18,64 +13,45 @@ export const getCollections = route(() => {
 export const getCollectionEndpoints = route((req) => {
   const url = new URL(req.url);
   const collectionPath = url.searchParams.get('path');
-  if (!collectionPath) {
-    return err('path query parameter is required', 400);
-  }
+  if (!collectionPath) return err('path query parameter is required', 400);
 
   const resolvedPath = path.resolve(collectionPath);
-  if (!fs.existsSync(resolvedPath)) {
-    return err(`Collection not found: ${resolvedPath}`, 404);
-  }
+  if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const isPostman = fs.existsSync(path.join(resolvedPath, '.resources'));
-  const folders = isPostman
-    ? readPostmanCollectionFolders(resolvedPath)
-    : readCollectionFolders(resolvedPath);
-  return ok({ folders });
+  const adapter = resolveAdapter(resolvedPath);
+  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
+
+  return ok({ folders: adapter.readFolders(resolvedPath) });
 });
 
 export const getCollectionDetails = route((req) => {
   const url = new URL(req.url);
   const collectionPath = url.searchParams.get('path');
-  if (!collectionPath) {
-    return err('path query parameter is required', 400);
-  }
+  if (!collectionPath) return err('path query parameter is required', 400);
 
   const resolvedPath = path.resolve(collectionPath);
-  if (!fs.existsSync(resolvedPath)) {
-    return err(`Collection not found: ${resolvedPath}`, 404);
-  }
+  if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const isPostman = fs.existsSync(path.join(resolvedPath, '.resources', 'definition.yaml'));
-  const details = isPostman
-    ? readPostmanCollectionDetails(resolvedPath)
-    : readCollectionDetails(resolvedPath);
+  const adapter = resolveAdapter(resolvedPath);
+  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
 
-  if (!details) {
-    return err(`Collection details not found: ${resolvedPath}`, 404);
-  }
+  const details = adapter.readDetails(resolvedPath);
+  if (!details) return err(`Collection details not found: ${resolvedPath}`, 404);
 
   return ok(details);
 });
 
 export const postCollectionSelect = route(async (req) => {
   const body = (await req.json()) as { path?: string };
-  if (!body.path) {
-    return err('path is required', 400);
-  }
+  if (!body.path) return err('path is required', 400);
 
   const resolvedPath = path.resolve(body.path);
-  if (!fs.existsSync(resolvedPath)) {
-    return err(`Collection not found: ${resolvedPath}`, 404);
-  }
+  if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const isBruno = fs.existsSync(path.join(resolvedPath, 'opencollection.yml'));
-  const isPostman = !isBruno && fs.existsSync(path.join(resolvedPath, '.resources'));
-  if (!isBruno && !isPostman) {
-    return err(`Not a recognized collection — no opencollection.yml or .resources found in: ${resolvedPath}`, 404);
-  }
+  const adapter = resolveAdapter(resolvedPath);
+  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
 
-  saveCollection(resolvedPath, isBruno ? 'bruno' : 'postman');
+  saveCollection(resolvedPath, adapter.format);
   return ok({ path: resolvedPath });
 });
 
