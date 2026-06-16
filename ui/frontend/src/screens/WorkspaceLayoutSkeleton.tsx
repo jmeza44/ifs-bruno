@@ -14,6 +14,7 @@ import { EndpointListPanel } from '@/components/workspace/endpoint-list-panel';
 import { EndpointDetailPanel } from '@/components/workspace/endpoint-detail-panel';
 import { ProjectionSearchPanel } from '@/components/workspace/projection-search-panel';
 import { ConfirmationDialog } from '@/components/workspace/confirmation-dialog';
+import { SettingsDialog } from '@/components/workspace/settings-dialog';
 import {
   deleteProfile as deleteProfileOnServer,
   fetchCollectionDetails,
@@ -30,7 +31,8 @@ import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } fro
 import type { EndpointListEntry } from '@/components/workspace/endpoint-list-panel';
 import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
 import { toast } from 'sonner';
-import { DotsSixVerticalIcon } from '@phosphor-icons/react';
+import { DotsSixVerticalIcon, GearIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 
 function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
   const keys = new Set<string>();
@@ -52,6 +54,7 @@ export function WorkspaceLayoutSkeleton() {
 
   const [newProfileOpen, setNewProfileOpen] = useState(false);
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchedProjection, setSearchedProjection] = useState<IfsProjection | null>(null);
 
   const queryClient = useQueryClient();
@@ -207,13 +210,14 @@ export function WorkspaceLayoutSkeleton() {
         <NewCollectionDialog
           open={newCollectionOpen}
           onOpenChange={setNewCollectionOpen}
-          onCreated={(path) => {
+          onCreated={(path, format) => {
             const entry: CollectionEntry = {
               path,
               name: path.split(/[\\/]/).pop() ?? path,
               baseHost: null,
               endpointCount: 0,
               lastUsed: new Date().toISOString(),
+              format,
             };
             workspaceActions.createCollection(entry);
           }}
@@ -241,6 +245,14 @@ export function WorkspaceLayoutSkeleton() {
             onLoad={() => {}}
             onClear={workspaceActions.closeProjection}
           />
+          <Button
+            variant="outline"
+            size="icon"
+            title="Settings"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <GearIcon size={18} />
+          </Button>
         </div>
       </div>
 
@@ -332,6 +344,8 @@ export function WorkspaceLayoutSkeleton() {
           </Panel>
         </Group>
       </div>
+
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       <ConfirmationDialog
         pending={pendingConfirmation}

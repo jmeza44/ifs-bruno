@@ -4,6 +4,7 @@ import yaml from 'js-yaml';
 import type { BrunoRequest } from '../types/bruno.types';
 
 const RESERVED_ENTRIES = new Set(['environments', 'opencollection.yml', 'Auth.yml', '.gitignore']);
+const POSTMAN_RESERVED = new Set(['.resources']);
 
 export interface CollectionEndpoint {
   name: string;
@@ -124,6 +125,19 @@ export function readCollectionDetails(collectionPath: string): CollectionDetails
  * Builds the `method:path` key set for endpoints already present in the collection,
  * suitable for cross-referencing against spec entries (which key the same way).
  */
+export function countPostmanEndpoints(collectionPath: string): number {
+  const absPath = path.resolve(collectionPath);
+  if (!fs.existsSync(absPath)) return 0;
+
+  let count = 0;
+  for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
+    if (!entry.isDirectory() || POSTMAN_RESERVED.has(entry.name)) continue;
+    const folderPath = path.join(absPath, entry.name);
+    count += fs.readdirSync(folderPath).filter((f) => f.endsWith('.request.yaml')).length;
+  }
+  return count;
+}
+
 export function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
   const keys = new Set<string>();
   for (const folder of folders) {

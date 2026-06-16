@@ -1,8 +1,10 @@
+import path from 'path';
 import type { SwaggerSpec, Operation } from '../../../src/types/spec.types.ts';
 import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
-import { getProfile } from '../../../src/core/profile-store.ts';
+import { getProfile, listCollections } from '../../../src/core/profile-store.ts';
 import { loadSpec } from '../../../src/core/spec-loader.ts';
 import { loadCollection, upsertRequests } from '../../../src/core/bruno-writer.ts';
+import { loadPostmanCollection, upsertPostmanRequests } from '../../../src/core/postman-writer.ts';
 import { RequestBuilder } from '../../../src/core/request-builder.ts';
 import { checkAddArgs } from '../../../src/validate-args.ts';
 import { err, ok, route } from '../json.ts';
@@ -54,11 +56,14 @@ export const postWrite = route(async (req) => {
     }
   }
 
+  const absPath = path.resolve(collectionPath);
+  const collection = listCollections().find((c) => c.path === absPath);
+  if (!collection) return err(`Collection not found: ${collectionPath}`, 404);
+  const format = collection.format;
+
   const specOrError = await resolveSpec(source);
   if (specOrError instanceof Response) return specOrError;
   const spec = specOrError;
-
-  loadCollection(collectionPath);
 
   const builder = new RequestBuilder(spec);
   const builtRequests = selected.map((entry, index) => {
@@ -70,6 +75,13 @@ export const postWrite = route(async (req) => {
     return builder.build(entry.path!, entry.method!, operation, index + 1);
   });
 
+  if (format === 'postman') {
+    loadPostmanCollection(collectionPath);
+    const result = upsertPostmanRequests(collectionPath, spec.info.title, builtRequests);
+    return ok({ created: result.created, updated: result.updated, folder: spec.info.title });
+  }
+
+  loadCollection(collectionPath);
   const result = upsertRequests(collectionPath, spec.info.title, builtRequests);
   return ok({ created: result.created, updated: result.updated, folder: spec.info.title });
 });

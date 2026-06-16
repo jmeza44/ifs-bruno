@@ -5,7 +5,12 @@ import {
   postCollectionInit,
   postCollectionSelect,
 } from './handlers/collections.ts';
+import {
+  postPostmanCollectionInit,
+  postPostmanCollectionSelect,
+} from './handlers/postman-collections.ts';
 import { getHealth } from './handlers/health.ts';
+import { getPreferencesHandler, patchPreferencesHandler } from './handlers/preferences.ts';
 import {
   deleteProfileByName,
   getProfiles,
@@ -53,6 +58,12 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (pathname === '/api/collections/init' && method === 'POST') {
     return postCollectionInit(req);
   }
+  if (pathname === '/api/collections/postman/init' && method === 'POST') {
+    return postPostmanCollectionInit(req);
+  }
+  if (pathname === '/api/collections/postman/select' && method === 'POST') {
+    return postPostmanCollectionSelect(req);
+  }
 
   if (pathname === '/api/projections' && method === 'POST') {
     return postProjections(req);
@@ -70,6 +81,13 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   if (pathname === '/api/write' && method === 'POST') {
     return postWrite(req);
+  }
+
+  if (pathname === '/api/preferences' && method === 'GET') {
+    return getPreferencesHandler(req);
+  }
+  if (pathname === '/api/preferences' && method === 'PATCH') {
+    return patchPreferencesHandler(req);
   }
 
   return serveStatic(req);

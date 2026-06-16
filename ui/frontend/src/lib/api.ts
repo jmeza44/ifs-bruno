@@ -110,6 +110,22 @@ export function initCollection(
   return postJson('/collections/init', input, overwrite ? { overwrite: 'true' } : undefined);
 }
 
+export interface InitPostmanCollectionInput {
+  name: string;
+  host: string;
+  realm: string;
+  clientId: string;
+  workspaceId: string;
+}
+
+export function initPostmanCollection(input: InitPostmanCollectionInput): Promise<{ path: string }> {
+  return postJson('/collections/postman/init', input);
+}
+
+export function selectPostmanCollection(path: string): Promise<{ path: string }> {
+  return postJson('/collections/postman/select', { path });
+}
+
 // Projections
 
 export function fetchProjections(profileName: string): Promise<{ projections: IfsProjection[] }> {
@@ -130,12 +146,27 @@ export function fetchSpecEntry(path: string, method: string): Promise<EndpointDe
   return postJson('/spec/entry', { path, method });
 }
 
+// Preferences
+
+export interface AppPreferences {
+  collectionsBasePath?: string;
+}
+
+export function getPreferences(): Promise<AppPreferences> {
+  return request('/preferences');
+}
+
+export function patchPreferences(prefs: Partial<AppPreferences>): Promise<AppPreferences> {
+  return request('/preferences', { method: 'PATCH', body: JSON.stringify(prefs) });
+}
+
 // Write
 
 export interface WriteInput {
   collectionPath: string;
   source: SpecSource;
   selected: { path: string; method: string }[];
+  format?: 'bruno' | 'postman';
 }
 
 export function writeEndpoints(input: WriteInput): Promise<WriteResult> {

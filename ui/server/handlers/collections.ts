@@ -5,7 +5,7 @@ import {
   readCollectionDetails,
   readCollectionFolders,
 } from '../../../src/core/collection-reader.ts';
-import { listCollections, saveCollection } from '../../../src/core/profile-store.ts';
+import { listCollections, resolveCollectionsBasePath, saveCollection } from '../../../src/core/profile-store.ts';
 import { checkInitArgs } from '../../../src/validate-args.ts';
 import { err, fieldErr, ok, route } from '../json.ts';
 
@@ -71,16 +71,11 @@ interface InitBody {
   host?: string;
   realm?: string;
   clientId?: string;
-  output?: string;
 }
 
 export const postCollectionInit = route(async (req) => {
-  const url = new URL(req.url);
-  const overwrite = url.searchParams.get('overwrite') === 'true';
-
   const body = (await req.json()) as InitBody;
   const { name, host, realm, clientId } = body;
-  const output = body.output ?? name;
 
   const fieldErrors: Record<string, string> = {};
   if (!name) fieldErrors.name = 'Required';
@@ -89,19 +84,19 @@ export const postCollectionInit = route(async (req) => {
     fieldErrors.host = 'Must be a valid URL, e.g. https://acme.ifs.cloud';
   if (!realm) fieldErrors.realm = 'Required';
   if (!clientId) fieldErrors.clientId = 'Required';
-  if (output && !checkInitArgs({ output }).ok) fieldErrors.output = 'Parent folder does not exist';
 
   if (Object.keys(fieldErrors).length > 0) {
     return fieldErr(fieldErrors);
   }
 
-  const outputPath = path.resolve(output);
-  if (fs.existsSync(outputPath) && !overwrite) {
+  const outputPath = path.join(resolveCollectionsBasePath('bruno'), name!);
+  if (fs.existsSync(outputPath)) {
     return err(`Output already exists: ${outputPath}`, 409);
   }
 
-  const options: InitOptions = { host: host.replace(/\/$/, ''), realm, clientId, name };
+  const options: InitOptions = { host: host!.replace(/\/$/, ''), realm: realm!, clientId: clientId!, name: name! };
   initCollection(outputPath, options);
+  saveCollection(outputPath, 'bruno');
 
   return ok({ path: outputPath }, 201);
 });

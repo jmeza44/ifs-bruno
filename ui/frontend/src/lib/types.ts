@@ -11,6 +11,7 @@ export interface CollectionEntry {
   name: string;
   baseHost: string | null;
   endpointCount: number;
+  format: 'bruno' | 'postman';
 }
 
 export interface IfsProjection {
