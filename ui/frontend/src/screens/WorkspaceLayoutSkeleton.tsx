@@ -1,7 +1,4 @@
-// Single-view workspace layout, wired to the global workspace store.
-
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { CollectionSelector } from '@/components/workspace/collection-selector';
 import { ProfileSelector, type ProfileOption } from '@/components/workspace/profile-selector';
@@ -15,35 +12,14 @@ import { EndpointDetailPanel } from '@/components/workspace/endpoint-detail-pane
 import { ProjectionSearchPanel } from '@/components/workspace/projection-search-panel';
 import { ConfirmationDialog } from '@/components/workspace/confirmation-dialog';
 import { SettingsDialog } from '@/components/workspace/settings-dialog';
-import {
-  deleteProfile as deleteProfileOnServer,
-  fetchCollectionDetails,
-  fetchCollectionEndpoints,
-  fetchProjections,
-  fetchRemoteSpec,
-  fetchSpecEntry,
-  listCollections,
-  listProfiles,
-  selectCollection as selectCollectionOnServer,
-  writeEndpoints,
-} from '@/lib/api';
-import type { CollectionEntry, CollectionFolder, IfsProjection, SpecSource } from '@/lib/types';
-import type { EndpointListEntry } from '@/components/workspace/endpoint-list-panel';
+import type { CollectionEntry, IfsProjection } from '@/lib/types';
 import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
-import { toast } from 'sonner';
+import { useCollections } from '@/hooks/useCollections';
+import { useProfiles } from '@/hooks/useProfiles';
+import { useProjection } from '@/hooks/useProjection';
+import { useEndpointSave } from '@/hooks/useEndpointSave';
 import { DotsSixVerticalIcon, GearIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-
-function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {
-  const keys = new Set<string>();
-  for (const folder of folders) {
-    for (const endpoint of folder.endpoints) {
-      if (endpoint.path === null) continue;
-      keys.add(`${endpoint.method}:${endpoint.path}`);
-    }
-  }
-  return keys;
-}
 
 export function WorkspaceLayoutSkeleton() {
   const collection = useWorkspaceStore((state) => state.collection);
@@ -57,138 +33,31 @@ export function WorkspaceLayoutSkeleton() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchedProjection, setSearchedProjection] = useState<IfsProjection | null>(null);
 
-  const queryClient = useQueryClient();
-
-  const collectionsQuery = useQuery({ queryKey: ['collections'], queryFn: listCollections });
-  const profilesQuery = useQuery({ queryKey: ['profiles'], queryFn: listProfiles });
-
-  const selectCollectionMutation = useMutation({
-    mutationFn: (path: string) => selectCollectionOnServer(path),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['collections'] }),
-  });
-
-  const deleteProfileMutation = useMutation({
-    mutationFn: (profile: ProfileOption) => deleteProfileOnServer(profile.name),
-    onSuccess: (_result, profile) => {
-      workspaceActions.removeProfile(profile);
-      queryClient.invalidateQueries({ queryKey: ['profiles'] });
-    },
-    onError: (err) => toast.error(`Failed to delete profile: ${err.message}`),
-  });
-
   const activeCollectionPath = collection.active?.path;
-  const collectionEndpointsQuery = useQuery({
-    queryKey: ['collection-endpoints', activeCollectionPath],
-    queryFn: () => fetchCollectionEndpoints(activeCollectionPath!),
-    enabled: activeCollectionPath !== undefined,
-  });
-  const collectionDetailsQuery = useQuery({
-    queryKey: ['collection-details', activeCollectionPath],
-    queryFn: () => fetchCollectionDetails(activeCollectionPath!),
-    enabled: activeCollectionPath !== undefined,
-  });
-
-  const loadProjectionMutation = useMutation({
-    mutationFn: async (projection: IfsProjection) => {
-      if (source.type !== 'profile') throw new Error('No active profile');
-      const spec = await fetchRemoteSpec(source.profile.name, projection.ProjectionName);
-      return { projection, spec };
-    },
-    onSuccess: ({ projection, spec }) => {
-      const endpoints: EndpointListEntry[] = spec.entries.map((entry) => ({
-        id: `${entry.method.toUpperCase()}:${entry.path}`,
-        path: entry.path,
-        method: entry.method.toUpperCase(),
-        summary: entry.summary,
-        operationId: entry.operationId,
-      }));
-      const alreadyInCollection = buildAlreadyInCollectionKeys(
-        collectionEndpointsQuery.data?.folders ?? [],
-      );
-      workspaceActions.selectProjection(projection, endpoints, alreadyInCollection);
-    },
-  });
-
-  const viewEndpointDetailMutation = useMutation({
-    mutationFn: async (entry: EndpointListEntry) => ({
-      entry,
-      detail: await fetchSpecEntry(entry.path, entry.method),
-    }),
-    onSuccess: ({ entry, detail }) =>
-      workspaceActions.viewEndpointDetail({ ...detail, id: entry.id }),
-  });
-
-  const saveSelectionMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeCollectionPath) throw new Error('No active collection');
-
-      if (!(source.type === 'profile' && source.projection.state === 'resolved')) {
-        throw new Error('No remote projection loaded to save endpoints from');
-      }
-      const specSource: SpecSource = {
-        kind: 'remote',
-        profileName: source.profile.name,
-        projectionName: source.projection.projection.ProjectionName,
-      };
-
-      const selected = endpoints.available
-        .filter((entry) => endpoints.selectedToAdd.has(entry.id))
-        .map((entry) => ({ path: entry.path, method: entry.method }));
-
-      return writeEndpoints({
-        collectionPath: activeCollectionPath,
-        source: specSource,
-        selected,
-      });
-    },
-    onSuccess: () => {
-      workspaceActions.saveSelection();
-      queryClient.invalidateQueries({
-        queryKey: ['collection-endpoints', activeCollectionPath],
-      });
-      queryClient.invalidateQueries({ queryKey: ['collections'] });
-    },
-  });
-
-  function handleSaveSelection() {
-    toast.promise(saveSelectionMutation.mutateAsync(), {
-      loading: 'Saving endpoints...',
-      success: 'Endpoints saved',
-      error: (err) => `Failed to save: ${err.message}`,
-    });
-  }
-
-  useEffect(() => {
-    if (!collectionsQuery.data) return;
-    workspaceActions.setAvailableCollections(collectionsQuery.data.collections);
-  }, [collectionsQuery.data]);
-
-  useEffect(() => {
-    if (!profilesQuery.data) return;
-    workspaceActions.setAvailableProfiles(
-      profilesQuery.data.profiles.map((profile) => ({
-        id: profile.name,
-        name: profile.name,
-        environment: profile.host,
-      })),
-    );
-  }, [profilesQuery.data]);
-
-  useEffect(() => {
-    if (!activeCollectionPath) return;
-    selectCollectionMutation.mutate(activeCollectionPath);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCollectionPath]);
-
   const activeProfile = source.type === 'profile' ? source.profile : null;
   const loadedSpec = source.type === 'spec' ? source.spec : null;
   const isSearchingProjection =
     source.type === 'profile' && source.projection.state === 'searching';
+  const resolvedProjection =
+    source.type === 'profile' && source.projection.state === 'resolved'
+      ? source.projection.projection
+      : null;
 
-  const projectionsQuery = useQuery({
-    queryKey: ['projections', activeProfile?.name],
-    queryFn: () => fetchProjections(activeProfile!.name),
-    enabled: isSearchingProjection && activeProfile !== null,
+  const { folders, details } = useCollections(activeCollectionPath);
+  const { deleteProfile } = useProfiles();
+  const {
+    projections,
+    isLoadingProjections,
+    loadProjection,
+    isLoadingProjection,
+    viewEndpointDetail,
+  } = useProjection(activeProfile?.name ?? null, isSearchingProjection, folders);
+  const { handleSave, isSaving } = useEndpointSave({
+    activeCollectionPath,
+    profileName: activeProfile?.name ?? null,
+    projectionName: resolvedProjection?.ProjectionName ?? null,
+    selectedIds: endpoints.selectedToAdd,
+    availableEntries: endpoints.available,
   });
 
   useEffect(() => {
@@ -228,9 +97,9 @@ export function WorkspaceLayoutSkeleton() {
             active={activeProfile}
             available={profiles.available}
             onSelect={workspaceActions.selectProfile}
-            onDelete={(profile) => {
+            onDelete={(profile: ProfileOption) => {
               if (workspaceActions.requestDeleteProfile(profile) === 'delete') {
-                deleteProfileMutation.mutate(profile);
+                deleteProfile(profile);
               }
             }}
             onAddNew={() => setNewProfileOpen(true)}
@@ -264,12 +133,12 @@ export function WorkspaceLayoutSkeleton() {
             {isSearchingProjection && activeProfile ? (
               <ProjectionSearchPanel
                 profileName={activeProfile.name}
-                projections={projectionsQuery.data?.projections ?? []}
-                isLoading={projectionsQuery.isLoading}
+                projections={projections}
+                isLoading={isLoadingProjections}
                 selected={searchedProjection}
                 onSelect={setSearchedProjection}
-                onContinue={(projection) => loadProjectionMutation.mutate(projection)}
-                isContinuing={loadProjectionMutation.isPending}
+                onContinue={(projection) => loadProjection(projection)}
+                isContinuing={isLoadingProjection}
               />
             ) : (
               <Group className="gap-x-2">
@@ -281,18 +150,9 @@ export function WorkspaceLayoutSkeleton() {
                     activeId={activeEndpointId}
                     onToggleSelected={workspaceActions.toggleEndpointSelection}
                     onChangeProjection={workspaceActions.closeProjection}
-                    onViewDetail={(entry) => {
-                      workspaceActions.viewEndpointDetail({
-                        id: entry.id,
-                        path: entry.path,
-                        method: entry.method,
-                        operationId: entry.operationId,
-                        summary: entry.summary,
-                      });
-                      viewEndpointDetailMutation.mutate(entry);
-                    }}
-                    onSave={handleSaveSelection}
-                    isSaving={saveSelectionMutation.isPending}
+                    onViewDetail={viewEndpointDetail}
+                    onSave={handleSave}
+                    isSaving={isSaving}
                   />
                 </Panel>
                 <Separator className="group relative w-px bg-transparent transition-colors hover:bg-border data-active:bg-primary h-full">
@@ -332,13 +192,10 @@ export function WorkspaceLayoutSkeleton() {
           <Panel defaultSize="20%" minSize="0%" maxSize="30%" collapsible>
             <div className="flex h-full flex-col gap-2">
               <div className="flex-initial overflow-hidden">
-                <CollectionDetailsPanel
-                  collection={collection.active}
-                  details={collectionDetailsQuery.data ?? null}
-                />
+                <CollectionDetailsPanel collection={collection.active} details={details} />
               </div>
               <div className="flex-2 overflow-hidden">
-                <CollectionEndpointsTree folders={collectionEndpointsQuery.data?.folders ?? []} />
+                <CollectionEndpointsTree folders={folders} />
               </div>
             </div>
           </Panel>
@@ -352,7 +209,7 @@ export function WorkspaceLayoutSkeleton() {
         selectedCount={endpoints.selectedToAdd.size}
         onConfirm={() => {
           if (pendingConfirmation?.type === 'delete-active-profile') {
-            deleteProfileMutation.mutate(pendingConfirmation.target);
+            deleteProfile(pendingConfirmation.target);
             return;
           }
           workspaceActions.confirmPending();
