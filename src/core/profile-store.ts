@@ -99,7 +99,10 @@ function enrichCollection(entry: StoredCollectionEntry): CollectionEntry {
   };
 }
 
-export function saveCollection(collectionPath: string, format: 'bruno' | 'postman' = 'bruno'): void {
+export function saveCollection(
+  collectionPath: string,
+  format: 'bruno' | 'postman' = 'bruno',
+): void {
   const abs = path.resolve(collectionPath);
   const now = new Date().toISOString();
   const config = readConfig();
@@ -126,9 +129,7 @@ function defaultCollectionsBase(): string {
 
 export function resolveCollectionsBasePath(format: 'bruno' | 'postman'): string {
   const base = getPreferences().collectionsBasePath;
-  const resolved = base
-    ? path.resolve(base.replace(/^~/, os.homedir()))
-    : defaultCollectionsBase();
+  const resolved = base ? path.resolve(base.replace(/^~/, os.homedir())) : defaultCollectionsBase();
   return path.join(resolved, format);
 }
 

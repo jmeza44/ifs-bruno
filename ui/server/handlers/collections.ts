@@ -2,7 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import { initCollection, type InitOptions } from '../../../src/core/bruno-writer.ts';
 import { resolveAdapter } from '../../../src/core/collection-adapters/index.ts';
-import { listCollections, resolveCollectionsBasePath, saveCollection } from '../../../src/core/profile-store.ts';
+import {
+  initPostmanCollection,
+  type PostmanInitOptions,
+} from '../../../src/core/postman-writer.ts';
+import {
+  listCollections,
+  resolveCollectionsBasePath,
+  saveCollection,
+} from '../../../src/core/profile-store.ts';
 import { checkInitArgs } from '../../../src/validate-args.ts';
 import { err, fieldErr, ok, route } from '../json.ts';
 
@@ -56,15 +64,17 @@ export const postCollectionSelect = route(async (req) => {
 });
 
 interface InitBody {
+  format?: 'bruno' | 'postman';
   name?: string;
   host?: string;
   realm?: string;
   clientId?: string;
+  workspaceId?: string;
 }
 
 export const postCollectionInit = route(async (req) => {
   const body = (await req.json()) as InitBody;
-  const { name, host, realm, clientId } = body;
+  const { format = 'bruno', name, host, realm, clientId, workspaceId } = body;
 
   const fieldErrors: Record<string, string> = {};
   if (!name) fieldErrors.name = 'Required';
@@ -73,19 +83,33 @@ export const postCollectionInit = route(async (req) => {
     fieldErrors.host = 'Must be a valid URL, e.g. https://acme.ifs.cloud';
   if (!realm) fieldErrors.realm = 'Required';
   if (!clientId) fieldErrors.clientId = 'Required';
+  if (format === 'postman' && !workspaceId) fieldErrors.workspaceId = 'Required';
 
-  if (Object.keys(fieldErrors).length > 0) {
-    return fieldErr(fieldErrors);
+  if (Object.keys(fieldErrors).length > 0) return fieldErr(fieldErrors);
+
+  const outputPath = path.join(resolveCollectionsBasePath(format), name!);
+  if (fs.existsSync(outputPath)) return err(`Output already exists: ${outputPath}`, 409);
+
+  if (format === 'postman') {
+    const options: PostmanInitOptions = {
+      name: name!,
+      baseHost: host!,
+      realm: realm!,
+      clientId: clientId!,
+      workspaceId: workspaceId!,
+      repoRoot: process.cwd(),
+    };
+    initPostmanCollection(outputPath, options);
+  } else {
+    const options: InitOptions = {
+      host: host!.replace(/\/$/, ''),
+      realm: realm!,
+      clientId: clientId!,
+      name: name!,
+    };
+    initCollection(outputPath, options);
   }
 
-  const outputPath = path.join(resolveCollectionsBasePath('bruno'), name!);
-  if (fs.existsSync(outputPath)) {
-    return err(`Output already exists: ${outputPath}`, 409);
-  }
-
-  const options: InitOptions = { host: host!.replace(/\/$/, ''), realm: realm!, clientId: clientId!, name: name! };
-  initCollection(outputPath, options);
-  saveCollection(outputPath, 'bruno');
-
+  saveCollection(outputPath, format);
   return ok({ path: outputPath }, 201);
 });

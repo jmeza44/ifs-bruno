@@ -96,7 +96,10 @@ export function CollectionSelector({
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="flex items-center gap-1.5 truncate text-sm leading-none">
                     {collection.name}
-                    <Badge variant="outline" className="shrink-0 text-[10px] py-0 px-1 leading-none">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 text-[10px] py-0 px-1 leading-none"
+                    >
                       {collection.format}
                     </Badge>
                   </span>

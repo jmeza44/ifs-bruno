@@ -41,7 +41,13 @@ export const brunoAdapter: CollectionAdapter = {
         .flatMap((f) => {
           const req = readRequest(path.join(folderPath, f));
           if (!req) return [];
-          return [{ name: req.info.name, method: req.http.method.toUpperCase(), path: urlToPathTemplate(req.http.url) }];
+          return [
+            {
+              name: req.info.name,
+              method: req.http.method.toUpperCase(),
+              path: urlToPathTemplate(req.http.url),
+            },
+          ];
         });
 
       if (endpoints.length > 0) folders.push({ name: entry.name, endpoints });
@@ -53,7 +59,9 @@ export const brunoAdapter: CollectionAdapter = {
     try {
       const envPath = path.join(path.resolve(collectionPath), 'environments', 'default.yml');
       const raw = fs.readFileSync(envPath, 'utf-8');
-      const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
+      const doc = yaml.load(raw) as
+        | { variables?: Array<{ name?: string; value?: string }> }
+        | undefined;
       const variables = doc?.variables ?? [];
       const find = (name: string) => variables.find((v) => v.name === name)?.value;
       const realm = find('realm');
@@ -68,7 +76,10 @@ export const brunoAdapter: CollectionAdapter = {
 
   readName(collectionPath) {
     try {
-      const raw = fs.readFileSync(path.join(path.resolve(collectionPath), 'opencollection.yml'), 'utf-8');
+      const raw = fs.readFileSync(
+        path.join(path.resolve(collectionPath), 'opencollection.yml'),
+        'utf-8',
+      );
       const doc = yaml.load(raw) as { info?: { name?: string } } | undefined;
       return doc?.info?.name ?? null;
     } catch {
@@ -80,7 +91,9 @@ export const brunoAdapter: CollectionAdapter = {
     try {
       const envPath = path.join(path.resolve(collectionPath), 'environments', 'default.yml');
       const raw = fs.readFileSync(envPath, 'utf-8');
-      const doc = yaml.load(raw) as { variables?: Array<{ name?: string; value?: string }> } | undefined;
+      const doc = yaml.load(raw) as
+        | { variables?: Array<{ name?: string; value?: string }> }
+        | undefined;
       return doc?.variables?.find((v) => v.name === 'baseHost')?.value ?? null;
     } catch {
       return null;

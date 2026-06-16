@@ -1,5 +1,11 @@
 import type { BrunoRequest, BrunoParam } from '../types/bruno.types';
-import type { PostmanBody, PostmanHeader, PostmanQueryParam, PostmanRequest, PostmanRequestAuth } from '../types/postman.types';
+import type {
+  PostmanBody,
+  PostmanHeader,
+  PostmanQueryParam,
+  PostmanRequest,
+  PostmanRequestAuth,
+} from '../types/postman.types';
 
 export function adaptToPostman(request: BrunoRequest, order: number): PostmanRequest {
   const info = request.info as Record<string, unknown>;

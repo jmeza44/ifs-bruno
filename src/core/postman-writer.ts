@@ -25,10 +25,7 @@ function dumpYaml(obj: unknown): string {
   });
 }
 
-export function initPostmanCollection(
-  collectionPath: string,
-  options: PostmanInitOptions,
-): void {
+export function initPostmanCollection(collectionPath: string, options: PostmanInitOptions): void {
   const absCollection = path.resolve(collectionPath);
 
   fs.mkdirSync(path.join(absCollection, '.resources'), { recursive: true });

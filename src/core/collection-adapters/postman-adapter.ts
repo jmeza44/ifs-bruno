@@ -20,7 +20,9 @@ function readRequest(filePath: string): PostmanRequest | null {
   }
 }
 
-function readDefinition(collectionPath: string): Record<string, string> & { name?: string } | null {
+function readDefinition(
+  collectionPath: string,
+): (Record<string, string> & { name?: string }) | null {
   try {
     const defPath = path.join(path.resolve(collectionPath), '.resources', 'definition.yaml');
     const raw = fs.readFileSync(defPath, 'utf-8');
@@ -53,7 +55,9 @@ export const postmanAdapter: CollectionAdapter = {
         .flatMap((f) => {
           const req = readRequest(path.join(folderPath, f));
           if (!req) return [];
-          return [{ name: req.name, method: req.method.toUpperCase(), path: urlToPathTemplate(req.url) }];
+          return [
+            { name: req.name, method: req.method.toUpperCase(), path: urlToPathTemplate(req.url) },
+          ];
         });
 
       if (endpoints.length > 0) folders.push({ name: entry.name, endpoints });
@@ -83,7 +87,9 @@ export const postmanAdapter: CollectionAdapter = {
     let count = 0;
     for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
       if (!entry.isDirectory() || RESERVED.has(entry.name)) continue;
-      count += fs.readdirSync(path.join(absPath, entry.name)).filter((f) => f.endsWith('.request.yaml')).length;
+      count += fs
+        .readdirSync(path.join(absPath, entry.name))
+        .filter((f) => f.endsWith('.request.yaml')).length;
     }
     return count;
   },

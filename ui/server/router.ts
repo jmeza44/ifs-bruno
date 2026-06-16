@@ -5,10 +5,6 @@ import {
   postCollectionInit,
   postCollectionSelect,
 } from './handlers/collections.ts';
-import {
-  postPostmanCollectionInit,
-  postPostmanCollectionSelect,
-} from './handlers/postman-collections.ts';
 import { getHealth } from './handlers/health.ts';
 import { getPreferencesHandler, patchPreferencesHandler } from './handlers/preferences.ts';
 import {
@@ -22,73 +18,39 @@ import { postSpecEntry, postSpecLocal, postSpecRemote } from './handlers/spec.ts
 import { postWrite } from './handlers/write.ts';
 import { serveStatic } from './static.ts';
 
+type Handler = (req: Request) => Response | Promise<Response>;
+type RouteEntry = { method: string; pathname: string; handler: Handler; prefix?: boolean };
+
+const routes: RouteEntry[] = [
+  { method: 'GET', pathname: '/api/health', handler: getHealth },
+  { method: 'GET', pathname: '/api/profiles', handler: getProfiles },
+  { method: 'POST', pathname: '/api/profiles', handler: postProfile },
+  { method: 'POST', pathname: '/api/profiles/test', handler: postProfileTest },
+  { method: 'DELETE', pathname: '/api/profiles/', handler: deleteProfileByName, prefix: true },
+  { method: 'GET', pathname: '/api/collections', handler: getCollections },
+  { method: 'GET', pathname: '/api/collections/endpoints', handler: getCollectionEndpoints },
+  { method: 'GET', pathname: '/api/collections/details', handler: getCollectionDetails },
+  { method: 'POST', pathname: '/api/collections/select', handler: postCollectionSelect },
+  { method: 'POST', pathname: '/api/collections/init', handler: postCollectionInit },
+  { method: 'POST', pathname: '/api/projections', handler: postProjections },
+  { method: 'POST', pathname: '/api/spec/remote', handler: postSpecRemote },
+  { method: 'POST', pathname: '/api/spec/local', handler: postSpecLocal },
+  { method: 'POST', pathname: '/api/spec/entry', handler: postSpecEntry },
+  { method: 'POST', pathname: '/api/write', handler: postWrite },
+  { method: 'GET', pathname: '/api/preferences', handler: getPreferencesHandler },
+  { method: 'PATCH', pathname: '/api/preferences', handler: patchPreferencesHandler },
+];
+
 export async function handleRequest(req: Request): Promise<Response> {
   const { pathname } = new URL(req.url);
   const method = req.method;
 
-  if (pathname === '/api/health' && method === 'GET') {
-    return getHealth(req);
-  }
+  const match = routes.find(
+    (r) =>
+      r.method === method && (r.prefix ? pathname.startsWith(r.pathname) : pathname === r.pathname),
+  );
 
-  if (pathname === '/api/profiles' && method === 'GET') {
-    return getProfiles(req);
-  }
-  if (pathname === '/api/profiles' && method === 'POST') {
-    return postProfile(req);
-  }
-  if (pathname === '/api/profiles/test' && method === 'POST') {
-    return postProfileTest(req);
-  }
-  if (pathname.startsWith('/api/profiles/') && method === 'DELETE') {
-    return deleteProfileByName(req);
-  }
-
-  if (pathname === '/api/collections' && method === 'GET') {
-    return getCollections(req);
-  }
-  if (pathname === '/api/collections/endpoints' && method === 'GET') {
-    return getCollectionEndpoints(req);
-  }
-  if (pathname === '/api/collections/details' && method === 'GET') {
-    return getCollectionDetails(req);
-  }
-  if (pathname === '/api/collections/select' && method === 'POST') {
-    return postCollectionSelect(req);
-  }
-  if (pathname === '/api/collections/init' && method === 'POST') {
-    return postCollectionInit(req);
-  }
-  if (pathname === '/api/collections/postman/init' && method === 'POST') {
-    return postPostmanCollectionInit(req);
-  }
-  if (pathname === '/api/collections/postman/select' && method === 'POST') {
-    return postPostmanCollectionSelect(req);
-  }
-
-  if (pathname === '/api/projections' && method === 'POST') {
-    return postProjections(req);
-  }
-
-  if (pathname === '/api/spec/remote' && method === 'POST') {
-    return postSpecRemote(req);
-  }
-  if (pathname === '/api/spec/local' && method === 'POST') {
-    return postSpecLocal(req);
-  }
-  if (pathname === '/api/spec/entry' && method === 'POST') {
-    return postSpecEntry(req);
-  }
-
-  if (pathname === '/api/write' && method === 'POST') {
-    return postWrite(req);
-  }
-
-  if (pathname === '/api/preferences' && method === 'GET') {
-    return getPreferencesHandler(req);
-  }
-  if (pathname === '/api/preferences' && method === 'PATCH') {
-    return patchPreferencesHandler(req);
-  }
+  if (match) return match.handler(req);
 
   return serveStatic(req);
 }

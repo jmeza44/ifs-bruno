@@ -96,34 +96,16 @@ export function fetchCollectionDetails(collectionPath: string): Promise<Collecti
 }
 
 export interface InitCollectionInput {
+  format: 'bruno' | 'postman';
   name: string;
   host: string;
   realm: string;
   clientId: string;
-  output?: string;
+  workspaceId?: string;
 }
 
-export function initCollection(
-  input: InitCollectionInput,
-  overwrite = false,
-): Promise<{ path: string }> {
-  return postJson('/collections/init', input, overwrite ? { overwrite: 'true' } : undefined);
-}
-
-export interface InitPostmanCollectionInput {
-  name: string;
-  host: string;
-  realm: string;
-  clientId: string;
-  workspaceId: string;
-}
-
-export function initPostmanCollection(input: InitPostmanCollectionInput): Promise<{ path: string }> {
-  return postJson('/collections/postman/init', input);
-}
-
-export function selectPostmanCollection(path: string): Promise<{ path: string }> {
-  return postJson('/collections/postman/select', { path });
+export function initCollection(input: InitCollectionInput): Promise<{ path: string }> {
+  return postJson('/collections/init', input);
 }
 
 // Projections

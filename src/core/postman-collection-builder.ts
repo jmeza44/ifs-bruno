@@ -25,7 +25,8 @@ function buildCollectionAuth(options: PostmanInitOptions): PostmanCollectionAuth
       addTokenTo: 'header',
       tokenName: 'accessToken',
       grant_type: 'client_credentials',
-      accessTokenUrl: '{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token',
+      accessTokenUrl:
+        '{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token',
       clientId: options.clientId,
       scope: 'openid microprofile-jwt',
     },
@@ -48,7 +49,9 @@ export function buildPostmanRequestDoc(req: PostmanRequest): PostmanRequestDoc {
     method: req.method,
     url: req.url,
     order: req.order,
-    ...(req.queryParams && Object.keys(req.queryParams).length ? { queryParams: req.queryParams } : {}),
+    ...(req.queryParams && Object.keys(req.queryParams).length
+      ? { queryParams: req.queryParams }
+      : {}),
     ...(req.auth ? { auth: req.auth } : {}),
     ...(req.headers.length ? { headers: req.headers } : {}),
     ...(req.body !== undefined ? { body: req.body } : {}),
