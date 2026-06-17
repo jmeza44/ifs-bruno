@@ -8,13 +8,41 @@ export interface BrunoCollection {
   info: {
     name: string;
   };
+  config?: {
+    proxy?: {
+      inherit: boolean;
+      disabled: boolean;
+      config: {
+        protocol: string;
+        hostname: string;
+        port: string;
+        auth: { username: string; password: string };
+        bypassProxy: string;
+      };
+    };
+  };
   bundled: false;
   request?: {
     auth?: {
-      type: 'bearer';
-      token: string;
+      type: 'oauth2';
+      flow: 'client_credentials';
+      accessTokenUrl: string;
+      credentials: {
+        clientId: string;
+        clientSecret: string;
+        placement: 'body';
+      };
+      scope: string;
+      tokenConfig: {
+        id: string;
+        placement: { header: string };
+        source: string;
+      };
+      settings: {
+        autoFetchToken: boolean;
+        autoRefreshToken: boolean;
+      };
     };
-    scripts?: BrunoScript[];
   };
   extensions: {
     bruno: {

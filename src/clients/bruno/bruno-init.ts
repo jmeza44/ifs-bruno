@@ -2,49 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { CollectionInitOptions } from '@core/collection/collection-client';
 import { dumpYaml } from '@core/shared/yaml';
-import { BrunoCollection, BrunoEnvironment, BrunoRequest } from '@types-app/bruno.types';
+import { BrunoCollection, BrunoEnvironment } from '@types-app/bruno.types';
 
 export type BrunoInitOptions = CollectionInitOptions;
-
-const COLLECTION_PRE_REQUEST_SCRIPT = `
-const token = bru.getEnvVar("accessToken");
-
-if (token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const expiresIn = payload.exp - Math.floor(Date.now() / 1000);
-    if (expiresIn > 60) return;
-  } catch (_) {
-    // malformed token — fall through to re-authenticate
-  }
-}
-
-const base = bru.getEnvVar("baseHost");
-const keycloakPath = bru.getEnvVar("keycloakBasePath") ?? "/auth";
-const realm = bru.getEnvVar("realm");
-const clientId = bru.getEnvVar("clientId");
-const clientSecret = bru.getEnvVar("clientSecret");
-
-const body = [
-  "grant_type=client_credentials",
-  \`client_id=\${encodeURIComponent(clientId)}\`,
-  \`client_secret=\${encodeURIComponent(clientSecret)}\`,
-  "scope=openid%20microprofile-jwt",
-].join("&");
-
-await bru.sendRequest(
-  {
-    method: "POST",
-    url: \`\${base}\${keycloakPath}/realms/\${realm}/protocol/openid-connect/token\`,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    data: body,
-  },
-  (err, res) => {
-    if (err) throw new Error("Auto-auth failed: " + err.message);
-    bru.setEnvVar("accessToken", res.data.access_token);
-    bru.setEnvVar("xsrfToken", res.data.session_state);
-  }
-);`.trim();
 
 export const GITIGNORE_CONTENT = `# Secrets
 .env*
@@ -61,17 +21,41 @@ function buildCollectionManifest(name: string): BrunoCollection {
   return {
     opencollection: '1.0.0',
     info: { name },
+    config: {
+      proxy: {
+        inherit: false,
+        disabled: true,
+        config: {
+          protocol: 'http',
+          hostname: '',
+          port: '',
+          auth: { username: '', password: '' },
+          bypassProxy: '',
+        },
+      },
+    },
     request: {
       auth: {
-        type: 'bearer',
-        token: '{{accessToken}}',
-      },
-      scripts: [
-        {
-          type: 'before-request',
-          code: COLLECTION_PRE_REQUEST_SCRIPT,
+        type: 'oauth2',
+        flow: 'client_credentials',
+        accessTokenUrl:
+          '{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token',
+        credentials: {
+          clientId: '{{clientId}}',
+          clientSecret: '{{clientSecret}}',
+          placement: 'body',
         },
-      ],
+        scope: 'openid microprofile-jwt',
+        tokenConfig: {
+          id: 'credentials',
+          placement: { header: 'Bearer' },
+          source: 'access_token',
+        },
+        settings: {
+          autoFetchToken: true,
+          autoRefreshToken: false,
+        },
+      },
     },
     bundled: false,
     extensions: {
@@ -87,51 +71,11 @@ function buildEnvironment(options: BrunoInitOptions): BrunoEnvironment {
     name: 'default',
     variables: [
       { name: 'baseHost', value: options.host },
+      { name: 'keycloakBasePath', value: '/auth' },
       { name: 'realm', value: options.realm },
       { name: 'clientId', value: options.clientId },
       { name: 'clientSecret', secret: true as const },
-      { name: 'keycloakBasePath', value: '/auth' },
-      { name: 'accessToken', secret: true as const },
-      { name: 'xsrfToken', value: '' },
     ],
-  };
-}
-
-function buildAuthRequest(): BrunoRequest {
-  return {
-    info: {
-      name: 'Auth',
-      type: 'http',
-      seq: 1,
-    },
-    http: {
-      method: 'POST',
-      url: '{{baseHost}}{{keycloakBasePath}}/realms/{{realm}}/protocol/openid-connect/token',
-      auth: 'none',
-      body: {
-        type: 'form-urlencoded',
-        data: [
-          { name: 'grant_type', value: 'client_credentials' },
-          { name: 'scope', value: 'openid microprofile-jwt' },
-          { name: 'client_id', value: '{{clientId}}' },
-          { name: 'client_secret', value: '{{clientSecret}}' },
-        ],
-      },
-    },
-    runtime: {
-      scripts: [
-        {
-          type: 'after-response',
-          code: 'bru.setEnvVar("accessToken", res.body.access_token);\nbru.setEnvVar("xsrfToken", res.body.session_state);',
-        },
-      ],
-    },
-    settings: {
-      encodeUrl: true,
-      timeout: 0,
-      followRedirects: true,
-      maxRedirects: 5,
-    },
   };
 }
 
@@ -151,8 +95,4 @@ export function brunoInit(collectionPath: string, options: BrunoInitOptions): vo
   // environments/default.yml
   const env: BrunoEnvironment = buildEnvironment(options);
   fs.writeFileSync(path.join(absPath, 'environments', 'default.yml'), dumpYaml(env), 'utf-8');
-
-  // Auth.yml
-  const authRequest: BrunoRequest = buildAuthRequest();
-  fs.writeFileSync(path.join(absPath, 'Auth.yml'), dumpYaml(authRequest), 'utf-8');
 }

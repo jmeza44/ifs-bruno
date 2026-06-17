@@ -26,7 +26,7 @@ export class RequestBuilder {
 
   build(pathTemplate: string, method: string, operation: Operation, seq: number): CanonicalRequest {
     const operationId = operation.operationId ?? '';
-    const name = (operation.summary ?? operationId) || pathTemplate.trim();
+    const name = operationId || operation.summary || pathTemplate.trim();
 
     const resolvedParams = (operation.parameters ?? []).map((p) =>
       this.resolver.resolveParameter(p as ParameterObject),
