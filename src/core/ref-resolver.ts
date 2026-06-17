@@ -2,9 +2,9 @@ import type {
   SwaggerSpec,
   SchemaObject,
   ParameterObject,
-  RefObject,
   ResponseObject,
-} from '../types/spec.types';
+  RefObject,
+} from '@types-app/spec.types';
 import { SKIP_KEYS } from './constants';
 
 export class RefResolver {

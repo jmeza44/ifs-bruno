@@ -1,5 +1,5 @@
-import { brunoClient } from '../../clients/bruno/bruno-client';
-import { postmanClient } from '../../clients/postman/postman-client';
+import { brunoClient } from '@clients/bruno/bruno-client';
+import { postmanClient } from '@clients/postman/postman-client';
 import type { CollectionClient } from './collection-client';
 
 const clients: CollectionClient[] = [brunoClient, postmanClient];

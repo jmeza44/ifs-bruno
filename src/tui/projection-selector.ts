@@ -1,6 +1,6 @@
 import * as p from '@clack/prompts';
 import { t } from '../i18n';
-import type { IfsProjection } from '../core/ifs-client';
+import { IfsProjection } from '@core/ifs-client';
 
 export async function selectProjection(projections: IfsProjection[]): Promise<IfsProjection> {
   const searchTerm = await p.text({

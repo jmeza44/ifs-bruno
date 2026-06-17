@@ -4,8 +4,8 @@ import type {
   Operation,
   ParameterObject,
   ResponseObject,
-} from '../types/spec.types';
-import type { EndpointDetail, EndpointEntry } from '../types/tool.types';
+} from '@types-app/spec.types';
+import type { EndpointEntry, EndpointDetail } from '@types-app/tool.types';
 import { RefResolver } from './ref-resolver';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;

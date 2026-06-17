@@ -1,5 +1,6 @@
-import type { IfsProfile } from './profile-store';
-import type { SwaggerSpec } from '../types/spec.types';
+import type { SwaggerSpec } from "@types-app/spec.types";
+import type { IfsProfile } from "./profile-store";
+
 
 export interface IfsProjection {
   ProjectionName: string;

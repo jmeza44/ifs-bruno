@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
-import type { EndpointEntry } from '../types/tool.types';
-import type { Operation, ParameterObject, SwaggerSpec, PathItem } from '../types/spec.types';
+import { SwaggerSpec, Operation, PathItem, ParameterObject } from '@types-app/spec.types';
+import { EndpointEntry } from '@types-app/tool.types';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];

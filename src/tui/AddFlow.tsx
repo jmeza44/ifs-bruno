@@ -1,25 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput, useApp, useStdout } from 'ink';
-import { Select, TextInput, Spinner, ConfirmInput } from '@inkjs/ui';
-import fs from 'fs';
+import { brunoClient } from '@clients/bruno/bruno-client';
+import { buildEndpointList } from '@core/endpoint-list';
+import { IfsProjection, fetchProjections, fetchOpenApiSpec } from '@core/ifs-client';
+import { listCollections, CollectionEntry, getProfile, saveCollection } from '@core/profile-store';
+import { RequestBuilder } from '@core/request-builder';
+import { loadSpec } from '@core/spec-loader';
+import { Select, TextInput, ConfirmInput, Spinner } from '@inkjs/ui';
+import { SwaggerSpec, Operation } from '@types-app/spec.types';
+import { EndpointEntry } from '@types-app/tool.types';
+import { t } from 'i18next';
+import { Box, useStdout, useInput, useApp, Text } from 'ink';
 import path from 'path';
-import { t } from '../i18n';
-import { loadSpec } from '../core/spec-loader';
-import { RequestBuilder } from '../core/request-builder';
-import { brunoClient } from '../clients/bruno/bruno-client';
-import { buildEndpointList } from './endpoint-selector';
+import { useState, useEffect } from 'react';
 import { EndpointSelector } from './EndpointSelector';
-import {
-  getProfile,
-  listCollections,
-  saveCollection,
-  type CollectionEntry,
-} from '../core/profile-store';
-import { fetchProjections, fetchOpenApiSpec, type IfsProjection } from '../core/ifs-client';
-import type { SwaggerSpec, Operation } from '../types/spec.types';
-import type { EndpointEntry } from '../types/tool.types';
-// ─── Types ───────────────────────────────────────────────────────────────────
+import fs from 'fs';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 type Phase =
   | { id: 'collection' }
   | { id: 'collection-input' }

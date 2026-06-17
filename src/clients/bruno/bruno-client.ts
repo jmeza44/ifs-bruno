@@ -1,5 +1,4 @@
-import { CollectionClient } from '@core/collection/collection-client';
-import { BrunoInitOptions, brunoInit } from './bruno-init';
+import type { BrunoInitOptions } from './bruno-init';
 import {
   brunoDetect,
   brunoReadFolders,
@@ -8,7 +7,9 @@ import {
   brunoReadBaseHost,
   brunoCountEndpoints,
 } from './bruno-reader';
+import { brunoInit } from './bruno-init';
 import { brunoWrite } from './bruno-writer';
+import { CollectionClient } from '@core/collection/collection-client';
 
 export class BrunoClient implements CollectionClient<BrunoInitOptions> {
   readonly format = 'bruno' as const;

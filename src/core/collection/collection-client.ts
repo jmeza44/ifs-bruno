@@ -1,4 +1,4 @@
-import type { CanonicalRequest, WriteResult } from '../request/canonical-request';
+import { CanonicalRequest, WriteResult } from '@core/request/canonical-request';
 
 export interface CollectionFolder {
   name: string;

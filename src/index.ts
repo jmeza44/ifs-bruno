@@ -1,11 +1,11 @@
 import minimist from 'minimist';
 import pc from 'picocolors';
 import { initI18n, t } from './i18n';
+import { getProfile } from '@core/profile-store';
 import { runAdd } from './commands/add';
 import { runInit } from './commands/init';
 import { runProfileAdd, runProfileList, runProfileDelete } from './commands/profile';
-import { getProfile } from './core/profile-store';
-import { validateAddArgs, validateInitArgs, validateProfileAddArgs } from './validate-args';
+import { validateInitArgs, validateProfileAddArgs, validateAddArgs } from './validate-args';
 
 const argv = minimist(process.argv.slice(2), {
   string: [

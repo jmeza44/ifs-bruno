@@ -1,12 +1,9 @@
 import React from 'react';
 import process from 'process';
 import { render } from 'ink';
-import type { SwaggerSpec } from '../types/spec.types';
-import type { EndpointEntry } from '../types/tool.types';
+import { SwaggerSpec } from '@types-app/spec.types';
+import { EndpointEntry } from '@types-app/tool.types';
 import { EndpointSelector } from './EndpointSelector';
-import { buildEndpointList } from '../core/endpoint-list';
-
-export { buildEndpointList } from '../core/endpoint-list';
 
 export function selectEndpoints(
   entries: EndpointEntry[],

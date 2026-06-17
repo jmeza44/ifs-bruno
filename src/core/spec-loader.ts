@@ -1,5 +1,5 @@
+import { SwaggerSpec } from '@types-app/spec.types';
 import fs from 'fs';
-import type { SwaggerSpec } from '../types/spec.types';
 
 export function loadSpec(specPath: string): SwaggerSpec {
   if (!fs.existsSync(specPath)) {

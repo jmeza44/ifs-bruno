@@ -1,4 +1,3 @@
-import type { SwaggerSpec, Operation, ParameterObject } from '../types/spec.types';
 import type {
   CanonicalRequest,
   CanonicalHeader,
@@ -7,6 +6,7 @@ import type {
 } from './request/canonical-request';
 import { RefResolver } from './ref-resolver';
 import { HAS_BODY_METHODS, NEEDS_XSRF_METHODS } from './constants';
+import type { SwaggerSpec, Operation, ParameterObject } from '@types-app/spec.types';
 
 function extractPathParams(pathTemplate: string): string[] {
   const matches = pathTemplate.match(/\{([^}]+)\}/g) ?? [];
