@@ -26,7 +26,8 @@ export function WorkspaceLayoutSkeleton() {
   const activeCollectionPath = collection.active?.path;
   const activeProfile = source.type === 'profile' ? source.profile : null;
   const loadedSpec = source.type === 'spec' ? source.spec : null;
-  const isSearchingProjection = source.type === 'profile' && source.projection.state === 'searching';
+  const isSearchingProjection =
+    source.type === 'profile' && source.projection.state === 'searching';
   const resolvedProjection =
     source.type === 'profile' && source.projection.state === 'resolved'
       ? source.projection.projection
@@ -34,8 +35,13 @@ export function WorkspaceLayoutSkeleton() {
 
   const { folders, details } = useCollections(activeCollectionPath);
   const { deleteProfile } = useProfiles();
-  const { projections, isLoadingProjections, loadProjection, isLoadingProjection, viewEndpointDetail } =
-    useProjection(activeProfile?.name ?? null, isSearchingProjection, folders);
+  const {
+    projections,
+    isLoadingProjections,
+    loadProjection,
+    isLoadingProjection,
+    viewEndpointDetail,
+  } = useProjection(activeProfile?.name ?? null, isSearchingProjection, folders);
   const { handleSave, isSaving } = useEndpointSave({
     activeCollectionPath,
     profileName: activeProfile?.name ?? null,

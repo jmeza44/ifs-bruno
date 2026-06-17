@@ -98,7 +98,9 @@ export function CollectionSelector({
                     <img
                       src={collection.format === 'bruno' ? '/bruno-icon.svg' : '/postman-icon.svg'}
                       role="img"
-                      aria-label={collection.format === 'bruno' ? 'Bruno collection' : 'Postman collection'}
+                      aria-label={
+                        collection.format === 'bruno' ? 'Bruno collection' : 'Postman collection'
+                      }
                       className="size-3.5 shrink-0"
                     />
                   </span>

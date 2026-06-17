@@ -97,7 +97,9 @@ export function WorkspaceCanvas({
                 <EndpointDetailPanel
                   endpoint={activeEndpointDetail}
                   selected={activeEndpointId ? selectedToAdd.has(activeEndpointId) : false}
-                  alreadyInCollection={activeEndpointId ? alreadyInCollection.has(activeEndpointId) : false}
+                  alreadyInCollection={
+                    activeEndpointId ? alreadyInCollection.has(activeEndpointId) : false
+                  }
                   onToggleSelected={workspaceActions.toggleEndpointSelection}
                 />
               </Panel>
