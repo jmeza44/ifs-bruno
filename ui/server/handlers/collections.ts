@@ -1,17 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { brunoClient } from '../../../src/clients/bruno/bruno-client.ts';
-import { postmanClient } from '../../../src/clients/postman/postman-client.ts';
-import type { PostmanInitOptions } from '../../../src/clients/postman/postman-init.ts';
-import type { BrunoInitOptions } from '../../../src/clients/bruno/bruno-init.ts';
-import { resolveClient } from '../../../src/core/collection/collection-registry.ts';
-import {
-  listCollections,
-  resolveCollectionsBasePath,
-  saveCollection,
-} from '../../../src/core/profile-store.ts';
-import { checkInitArgs } from '../../../src/validate-args.ts';
-import { err, fieldErr, ok, route } from '../json.ts';
+import { brunoClient } from '@clients/bruno/bruno-client';
+import { BrunoInitOptions } from '@clients/bruno/bruno-init';
+import { postmanClient } from '@clients/postman/postman-client';
+import { PostmanInitOptions } from '@clients/postman/postman-init';
+import { resolveClient } from '@core/collection/collection-registry';
+import { listCollections, saveCollection, resolveCollectionsBasePath } from '@core/profile-store';
+import { checkInitArgs } from '../../../src/validate-args';
+import { err, fieldErr, route, ok } from '../json';
 
 export const getCollections = route(() => {
   return ok({ collections: listCollections() });

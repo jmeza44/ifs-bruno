@@ -1,13 +1,13 @@
 import path from 'path';
-import type { SwaggerSpec, Operation } from '../../../src/types/spec.types.ts';
-import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
-import { getProfile, listCollections } from '../../../src/core/profile-store.ts';
-import { loadSpec } from '../../../src/core/spec-loader.ts';
-import { brunoClient } from '../../../src/clients/bruno/bruno-client.ts';
-import { postmanClient } from '../../../src/clients/postman/postman-client.ts';
-import { RequestBuilder } from '../../../src/core/request-builder.ts';
 import { checkAddArgs } from '../../../src/validate-args.ts';
 import { err, ok, route } from '../json.ts';
+import { brunoClient } from '@clients/bruno/bruno-client.ts';
+import { postmanClient } from '@clients/postman/postman-client.ts';
+import { fetchOpenApiSpec } from '@core/ifs-client.ts';
+import { getProfile, listCollections } from '@core/profile-store.ts';
+import { RequestBuilder } from '@core/request-builder.ts';
+import { loadSpec } from '@core/spec-loader.ts';
+import { SwaggerSpec, Operation } from '@types-app/spec.types.ts';
 
 type SpecSource =
   | { kind: 'remote'; profileName?: string; projectionName?: string }

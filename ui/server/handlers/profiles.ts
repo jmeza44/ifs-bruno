@@ -1,11 +1,11 @@
+import { fetchToken } from '@core/ifs-client.ts';
 import {
-  deleteProfile,
-  getProfile,
-  listProfiles,
-  saveProfile,
   type IfsProfile,
-} from '../../../src/core/profile-store.ts';
-import { fetchToken } from '../../../src/core/ifs-client.ts';
+  listProfiles,
+  getProfile,
+  saveProfile,
+  deleteProfile,
+} from '@core/profile-store.ts';
 import { checkProfileAddArgs } from '../../../src/validate-args.ts';
 import { err, fieldErr, ok, route } from '../json.ts';
 
@@ -56,11 +56,17 @@ export const postProfile = route(async (req) => {
     return fieldErr(fieldErrors);
   }
 
-  if (getProfile(name) && !overwrite) {
+  if (getProfile(name!) && !overwrite) {
     return err(`Profile already exists: ${name}`, 409);
   }
 
-  saveProfile(name, { host, realm, clientId, clientSecret, keycloakBasePath });
+  saveProfile(name!, {
+    host: host!,
+    realm: realm!,
+    clientId: clientId!,
+    clientSecret: clientSecret!,
+    keycloakBasePath,
+  });
   return ok({ name }, 201);
 });
 

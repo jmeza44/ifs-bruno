@@ -17,7 +17,7 @@ export type WorkspaceCanvasProps = {
   activeProfileName: string | null;
   isSearchingProjection: boolean;
   searchedProjection: IfsProjection | null;
-  onSelectSearchedProjection: (projection: IfsProjection) => void;
+  onSelectSearchedProjection: (projection: IfsProjection | null) => void;
   projections: IfsProjection[];
   isLoadingProjections: boolean;
   onContinueProjection: (projection: IfsProjection) => void;

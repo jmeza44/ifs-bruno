@@ -1,8 +1,8 @@
-import type { SwaggerSpec } from '../../../src/types/spec.types.ts';
-import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
-import { buildEndpointDetail, buildEndpointList } from '../../../src/core/endpoint-list.ts';
-import { getProfile } from '../../../src/core/profile-store.ts';
-import { loadSpec } from '../../../src/core/spec-loader.ts';
+import { buildEndpointList, buildEndpointDetail } from '@core/endpoint-list.ts';
+import { fetchOpenApiSpec } from '@core/ifs-client.ts';
+import { getProfile } from '@core/profile-store.ts';
+import { loadSpec } from '@core/spec-loader.ts';
+import { SwaggerSpec } from '@types-app/spec.types.ts';
 import { checkAddArgs } from '../../../src/validate-args.ts';
 import { err, ok, route } from '../json.ts';
 

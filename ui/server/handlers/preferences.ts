@@ -1,8 +1,4 @@
-import {
-  getPreferences,
-  savePreferences,
-  type AppPreferences,
-} from '../../../src/core/profile-store.ts';
+import { getPreferences, type AppPreferences, savePreferences } from '@core/profile-store.ts';
 import { err, ok, route } from '../json.ts';
 
 export const getPreferencesHandler = route(() => {

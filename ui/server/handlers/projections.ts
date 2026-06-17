@@ -1,5 +1,5 @@
-import { fetchProjections } from '../../../src/core/ifs-client.ts';
-import { getProfile } from '../../../src/core/profile-store.ts';
+import { fetchProjections } from '@core/ifs-client.ts';
+import { getProfile } from '@core/profile-store.ts';
 import { err, ok, route } from '../json.ts';
 
 interface ProjectionsBody {

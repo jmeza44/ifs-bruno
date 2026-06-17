@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "typeRoots": ["../node_modules", "../node_modules/@types", "../../node_modules/@types"],
+    "types": ["bun-types", "node"],
+    "paths": {
+      "@core/*": ["../../src/core/*"],
+      "@clients/*": ["../../src/clients/*"],
+      "@types-app/*": ["../../src/types/*"],
+      "@tui/*": ["../../src/tui/*"]
+    }
+  },
+  "include": ["./**/*", "../../src/**/*"],
+  "exclude": ["./static-assets.gen.ts"]
+}

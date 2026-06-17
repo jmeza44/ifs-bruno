@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — generated at build time, does not exist in dev
 const assetManifest: Record<string, Bun.BunFile> = await import('./static-assets.gen.ts')
   .then((mod) => mod.default)
   .catch(() => ({}));
