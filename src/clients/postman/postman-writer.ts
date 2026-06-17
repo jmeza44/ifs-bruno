@@ -5,6 +5,7 @@ import { CanonicalRequest, WriteResult } from '@core/request/canonical-request';
 import { dumpYaml } from '@core/shared/yaml';
 import { PostmanRequest, PostmanRequestDoc } from '@types-app/postman.types';
 import { postmanRequestMapper } from './postman-request-mapper';
+import { postmanReadName } from './postman-reader';
 
 function buildPostmanRequestDoc(req: PostmanRequest): PostmanRequestDoc {
   return {
@@ -27,7 +28,8 @@ export function postmanWrite(
   requests: CanonicalRequest[],
 ): WriteResult {
   const absCollection = path.resolve(collectionPath);
-  const folderPath = path.join(absCollection, 'postman', 'collections', folderName);
+  const collectionName = postmanReadName(collectionPath) ?? path.basename(absCollection);
+  const folderPath = path.join(absCollection, 'postman', 'collections', collectionName, folderName);
 
   fs.mkdirSync(folderPath, { recursive: true });
 

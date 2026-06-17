@@ -35,8 +35,21 @@ export interface PostmanCollectionAuth {
     grant_type: 'client_credentials';
     accessTokenUrl: string;
     clientId: string;
+    clientSecret: string;
     scope: string;
+    client_authentication: 'body';
   };
+}
+
+export interface PostmanEnvironmentVariable {
+  key: string;
+  value: string;
+}
+
+export interface PostmanEnvironment {
+  name: string;
+  values: PostmanEnvironmentVariable[];
+  color?: number;
 }
 
 export interface PostmanRequest {
@@ -67,7 +80,6 @@ export interface PostmanRequestDoc {
 export interface PostmanCollection {
   $kind: 'collection';
   name: string;
-  variables: Record<string, string>;
   auth?: PostmanCollectionAuth[];
 }
 
