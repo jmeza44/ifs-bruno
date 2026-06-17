@@ -1,8 +1,8 @@
+import fs from 'fs';
+import path from 'path';
 import { CollectionInitOptions } from '@core/collection/collection-client';
 import { dumpYaml } from '@core/shared/yaml';
 import { BrunoCollection, BrunoEnvironment, BrunoRequest } from '@types-app/bruno.types';
-import fs from 'fs';
-import path from 'path';
 
 export type BrunoInitOptions = CollectionInitOptions;
 

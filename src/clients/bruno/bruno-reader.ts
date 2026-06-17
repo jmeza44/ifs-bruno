@@ -1,9 +1,9 @@
-import { CollectionFolder, CollectionDetails } from '@core/collection/collection-client';
-import { urlToPathTemplate } from '@core/shared/collection-utils';
-import { BrunoRequest } from '@types-app/bruno.types';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
+import { CollectionFolder, CollectionDetails } from '@core/collection/collection-client';
+import { urlToPathTemplate } from '@core/shared/collection-utils';
+import { BrunoRequest } from '@types-app/bruno.types';
 
 const BRUNO_RESERVED = new Set(['environments', 'opencollection.yml', 'Auth.yml', '.gitignore']);
 

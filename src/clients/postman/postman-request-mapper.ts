@@ -1,11 +1,11 @@
-import type { CanonicalRequest } from '../../core/request/canonical-request';
-import type {
-  PostmanBody,
-  PostmanHeader,
+import { CanonicalRequest } from '@core/request/canonical-request';
+import {
   PostmanQueryParam,
+  PostmanBody,
   PostmanRequest,
+  PostmanHeader,
   PostmanRequestAuth,
-} from '../../types/postman.types';
+} from '@types-app/postman.types';
 
 function buildQueryParams(params: CanonicalRequest['queryParams']): PostmanQueryParam[] {
   return params.map((p) => ({
