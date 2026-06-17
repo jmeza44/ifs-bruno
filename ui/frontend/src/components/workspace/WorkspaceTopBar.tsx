@@ -58,7 +58,9 @@ export function WorkspaceTopBar({
           workspaceActions.createCollection(entry);
         }}
       />
-      <span className="text-sm font-semibold tracking-wide text-muted-foreground">IFS Bruno</span>
+      <span className="text-sm font-semibold tracking-wide text-muted-foreground">
+        {activeCollection?.format === 'postman' ? 'IFS Postman' : 'IFS Bruno'}
+      </span>
       <div className="flex gap-2">
         <ProfileSelector
           active={activeProfile}

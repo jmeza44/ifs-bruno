@@ -49,9 +49,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
       if (err instanceof ApiError && err.fieldErrors) {
         setFieldErrors(err.fieldErrors);
       } else if (err instanceof ApiError && err.status === 409) {
-        setFieldErrors({
-          output: 'A collection already exists at that location. Choose a different output path.',
-        });
+        setFieldErrors({ name: 'A collection with this name already exists.' });
       } else {
         setError(err.message);
       }
@@ -79,6 +77,7 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
 
   function set<K extends keyof InitCollectionInput>(key: K, value: InitCollectionInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors((prev) => ({ ...prev, [key]: '' }));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -104,10 +103,22 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
             value={form.format}
             onValueChange={handleFormatChange}
             variant="outline"
-            spacing={0}
+            spacing={2}
           >
-            <ToggleGroupItem value="bruno">Bruno</ToggleGroupItem>
-            <ToggleGroupItem value="postman">Postman</ToggleGroupItem>
+            <ToggleGroupItem
+              value="bruno"
+              className="gap-1.5 data-[state=on]:border-bruno data-[state=on]:text-bruno"
+            >
+              <img src="/bruno-icon.svg" alt="" aria-hidden="true" className="size-4" />
+              Bruno
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="postman"
+              className="gap-1.5 data-[state=on]:border-postman data-[state=on]:text-postman"
+            >
+              <img src="/postman-icon.svg" alt="" aria-hidden="true" className="size-4" />
+              Postman
+            </ToggleGroupItem>
           </ToggleGroup>
 
           <FieldGroup>

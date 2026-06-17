@@ -7,6 +7,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-bruno: var(--bruno);
+  --color-bruno-foreground: var(--bruno-foreground);
+  --color-postman: var(--postman);
+  --color-postman-foreground: var(--postman-foreground);
   --font-heading: 'Roboto Slab Variable', serif;
   --font-mono: Geist Mono, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -76,6 +80,10 @@
 }
 
 :root {
+  --bruno: oklch(0.72 0.18 46);
+  --bruno-foreground: oklch(0.98 0 0);
+  --postman: oklch(0.65 0.19 30);
+  --postman-foreground: oklch(0.98 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.1448 0 0);
   --card: oklch(1 0 0);
@@ -136,6 +144,10 @@
 }
 
 .dark {
+  --bruno: oklch(0.75 0.17 46);
+  --bruno-foreground: oklch(0.1 0 0);
+  --postman: oklch(0.68 0.18 30);
+  --postman-foreground: oklch(0.1 0 0);
   --background: oklch(0.1448 0 0);
   --foreground: oklch(0.9851 0 0);
   --card: oklch(0.2134 0 0);

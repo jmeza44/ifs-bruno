@@ -45,9 +45,17 @@ export function CollectionDetailsPanel({ collection, details }: CollectionDetail
   return (
     <div className="scroll-discreet flex flex-col gap-3 overflow-y-auto rounded-none border border-border bg-card p-3">
       <div className="space-y-1">
-        <p className="truncate text-sm font-semibold" title={collection.name}>
-          {collection.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <img
+            src={collection.format === 'bruno' ? '/bruno-icon.svg' : '/postman-icon.svg'}
+            role="img"
+            aria-label={collection.format === 'bruno' ? 'Bruno collection' : 'Postman collection'}
+            className="size-4 shrink-0"
+          />
+          <p className="truncate text-sm font-semibold" title={collection.name}>
+            {collection.name}
+          </p>
+        </div>
         <p className="truncate font-mono text-xs text-muted-foreground" title={collection.path}>
           {collection.path}
         </p>

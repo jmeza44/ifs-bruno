@@ -5,7 +5,8 @@ import type { CollectionDetails, CollectionFolder } from '../collection-reader';
 import { urlToPathTemplate } from '../collection-reader';
 import type { CollectionAdapter } from './types';
 
-const RESERVED = new Set(['.resources']);
+const RESERVED = new Set(['.resources', 'postman']);
+const COLLECTIONS_SUBDIR = path.join('postman', 'collections');
 
 type PostmanRequest = { name: string; method: string; url: string };
 
@@ -41,12 +42,12 @@ export const postmanAdapter: CollectionAdapter = {
   },
 
   readFolders(collectionPath) {
-    const absPath = path.resolve(collectionPath);
+    const absPath = path.join(path.resolve(collectionPath), COLLECTIONS_SUBDIR);
     if (!fs.existsSync(absPath)) return [];
 
     const folders: CollectionFolder[] = [];
     for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
-      if (!entry.isDirectory() || RESERVED.has(entry.name)) continue;
+      if (!entry.isDirectory()) continue;
 
       const folderPath = path.join(absPath, entry.name);
       const endpoints = fs
@@ -82,11 +83,11 @@ export const postmanAdapter: CollectionAdapter = {
   },
 
   countEndpoints(collectionPath) {
-    const absPath = path.resolve(collectionPath);
+    const absPath = path.join(path.resolve(collectionPath), COLLECTIONS_SUBDIR);
     if (!fs.existsSync(absPath)) return 0;
     let count = 0;
     for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
-      if (!entry.isDirectory() || RESERVED.has(entry.name)) continue;
+      if (!entry.isDirectory()) continue;
       count += fs
         .readdirSync(path.join(absPath, entry.name))
         .filter((f) => f.endsWith('.request.yaml')).length;

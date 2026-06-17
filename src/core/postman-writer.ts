@@ -67,7 +67,7 @@ export function upsertPostmanRequests(
   requests: BrunoRequest[],
 ): BuildResult {
   const absCollection = path.resolve(collectionPath);
-  const folderPath = path.join(absCollection, folderName);
+  const folderPath = path.join(absCollection, 'postman', 'collections', folderName);
 
   fs.mkdirSync(folderPath, { recursive: true });
 

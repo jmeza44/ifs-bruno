@@ -1,5 +1,4 @@
 import { FolderIcon, GlobeIcon, PlusIcon } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -94,14 +93,14 @@ export function CollectionSelector({
             {available.map((collection) => (
               <SelectItem key={collection.path} value={collection.path} className="py-2">
                 <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="flex items-center gap-1.5 truncate text-sm leading-none">
+                  <span className="flex items-center gap-2 truncate text-sm leading-none">
                     {collection.name}
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 text-[10px] py-0 px-1 leading-none"
-                    >
-                      {collection.format}
-                    </Badge>
+                    <img
+                      src={collection.format === 'bruno' ? '/bruno-icon.svg' : '/postman-icon.svg'}
+                      role="img"
+                      aria-label={collection.format === 'bruno' ? 'Bruno collection' : 'Postman collection'}
+                      className="size-3.5 shrink-0"
+                    />
                   </span>
                   <CollectionMeta collection={collection} />
                 </span>
