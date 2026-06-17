@@ -3,7 +3,8 @@ import path from 'path';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { t } from '../i18n';
-import { initCollection, type InitOptions } from '../core/bruno-writer';
+import { brunoClient } from '@clients/bruno/bruno-client';
+import type { BrunoInitOptions as InitOptions } from '@clients/bruno/bruno-init';
 
 export interface InitArgs {
   host?: string;
@@ -55,7 +56,7 @@ export async function runInit(args: InitArgs): Promise<void> {
     }
   }
 
-  initCollection(outputPath, options);
+  brunoClient.init(outputPath, options);
 
   p.outro(
     pc.green(t('init.outro_collection_created')) +

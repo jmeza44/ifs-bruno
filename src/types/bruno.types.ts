@@ -44,7 +44,7 @@ export interface BrunoRequest {
     params?: BrunoParam[];
     body?: BrunoBody;
   };
-  headers?: BrunoHeader[];
+  docs?: string;
   runtime?: {
     scripts?: BrunoScript[];
     variables?: BrunoVariable[];

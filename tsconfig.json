@@ -7,6 +7,13 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src",
+    "types": ["node"],
+    "paths": {
+      "@core/*": ["./src/core/*"],
+      "@clients/*": ["./src/clients/*"],
+      "@types-app/*": ["./src/types/*"],
+      "@tui/*": ["./src/tui/*"]
+    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "jsx": "react-jsx"

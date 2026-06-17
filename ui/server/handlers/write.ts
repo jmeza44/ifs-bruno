@@ -3,8 +3,8 @@ import type { SwaggerSpec, Operation } from '../../../src/types/spec.types.ts';
 import { fetchOpenApiSpec } from '../../../src/core/ifs-client.ts';
 import { getProfile, listCollections } from '../../../src/core/profile-store.ts';
 import { loadSpec } from '../../../src/core/spec-loader.ts';
-import { loadCollection, upsertRequests } from '../../../src/core/bruno-writer.ts';
-import { loadPostmanCollection, upsertPostmanRequests } from '../../../src/core/postman-writer.ts';
+import { brunoClient } from '../../../src/clients/bruno/bruno-client.ts';
+import { postmanClient } from '../../../src/clients/postman/postman-client.ts';
 import { RequestBuilder } from '../../../src/core/request-builder.ts';
 import { checkAddArgs } from '../../../src/validate-args.ts';
 import { err, ok, route } from '../json.ts';
@@ -75,13 +75,7 @@ export const postWrite = route(async (req) => {
     return builder.build(entry.path!, entry.method!, operation, index + 1);
   });
 
-  if (format === 'postman') {
-    loadPostmanCollection(collectionPath);
-    const result = upsertPostmanRequests(collectionPath, spec.info.title, builtRequests);
-    return ok({ created: result.created, updated: result.updated, folder: spec.info.title });
-  }
-
-  loadCollection(collectionPath);
-  const result = upsertRequests(collectionPath, spec.info.title, builtRequests);
+  const client = format === 'postman' ? postmanClient : brunoClient;
+  const result = client.write(absPath, spec.info.title, builtRequests);
   return ok({ created: result.created, updated: result.updated, folder: spec.info.title });
 });

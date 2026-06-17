@@ -1,8 +1,8 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { t } from '../i18n';
-import { saveProfile, getProfile, listProfiles, deleteProfile } from '../core/profile-store';
-import type { IfsProfile } from '../core/profile-store';
+import { saveProfile, getProfile, listProfiles, deleteProfile } from '@core/profile-store';
+import type { IfsProfile } from '@core/profile-store';
 
 export interface ProfileAddArgs {
   host?: string;

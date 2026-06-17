@@ -1,10 +1,9 @@
-import React from 'react';
-import process from 'process';
+import { listProfiles } from '@core/profile-store';
+import { AddFlow } from '@tui/AddFlow';
+import { t } from 'i18next';
 import { render } from 'ink';
 import pc from 'picocolors';
-import { t } from '../i18n';
-import { listProfiles } from '../core/profile-store';
-import { AddFlow } from '../tui/AddFlow';
+import React from 'react';
 
 export async function runAdd(
   specPath: string | undefined,

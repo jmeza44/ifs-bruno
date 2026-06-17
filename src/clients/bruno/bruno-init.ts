@@ -1,11 +1,10 @@
-import type { BrunoCollection, BrunoEnvironment, BrunoRequest } from '../types/bruno.types';
+import { CollectionInitOptions } from '@core/collection/collection-client';
+import { dumpYaml } from '@core/shared/yaml';
+import { BrunoCollection, BrunoEnvironment, BrunoRequest } from '@types-app/bruno.types';
+import fs from 'fs';
+import path from 'path';
 
-export interface InitOptions {
-  host: string;
-  realm: string;
-  clientId: string;
-  name: string;
-}
+export type BrunoInitOptions = CollectionInitOptions;
 
 const COLLECTION_PRE_REQUEST_SCRIPT = `
 const token = bru.getEnvVar("accessToken");
@@ -45,10 +44,20 @@ await bru.sendRequest(
     bru.setEnvVar("accessToken", res.data.access_token);
     bru.setEnvVar("xsrfToken", res.data.session_state);
   }
-);
-`.trim();
+);`.trim();
 
-export function buildCollectionManifest(name: string): BrunoCollection {
+export const GITIGNORE_CONTENT = `# Secrets
+.env*
+
+# Dependencies
+node_modules
+
+# OS files
+.DS_Store
+Thumbs.db
+`;
+
+function buildCollectionManifest(name: string): BrunoCollection {
   return {
     opencollection: '1.0.0',
     info: { name },
@@ -73,7 +82,7 @@ export function buildCollectionManifest(name: string): BrunoCollection {
   };
 }
 
-export function buildEnvironment(options: InitOptions): BrunoEnvironment {
+function buildEnvironment(options: BrunoInitOptions): BrunoEnvironment {
   return {
     name: 'default',
     variables: [
@@ -88,7 +97,7 @@ export function buildEnvironment(options: InitOptions): BrunoEnvironment {
   };
 }
 
-export function buildAuthRequest(): BrunoRequest {
+function buildAuthRequest(): BrunoRequest {
   return {
     info: {
       name: 'Auth',
@@ -126,13 +135,24 @@ export function buildAuthRequest(): BrunoRequest {
   };
 }
 
-export const GITIGNORE_CONTENT = `# Secrets
-.env*
+export function brunoInit(collectionPath: string, options: BrunoInitOptions): void {
+  const absPath = path.resolve(collectionPath);
 
-# Dependencies
-node_modules
+  fs.mkdirSync(absPath, { recursive: true });
+  fs.mkdirSync(path.join(absPath, 'environments'), { recursive: true });
 
-# OS files
-.DS_Store
-Thumbs.db
-`;
+  // opencollection.yml
+  const manifest: BrunoCollection = buildCollectionManifest(options.name);
+  fs.writeFileSync(path.join(absPath, 'opencollection.yml'), dumpYaml(manifest), 'utf-8');
+
+  // .gitignore
+  fs.writeFileSync(path.join(absPath, '.gitignore'), GITIGNORE_CONTENT, 'utf-8');
+
+  // environments/default.yml
+  const env: BrunoEnvironment = buildEnvironment(options);
+  fs.writeFileSync(path.join(absPath, 'environments', 'default.yml'), dumpYaml(env), 'utf-8');
+
+  // Auth.yml
+  const authRequest: BrunoRequest = buildAuthRequest();
+  fs.writeFileSync(path.join(absPath, 'Auth.yml'), dumpYaml(authRequest), 'utf-8');
+}

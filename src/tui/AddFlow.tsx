@@ -6,7 +6,7 @@ import path from 'path';
 import { t } from '../i18n';
 import { loadSpec } from '../core/spec-loader';
 import { RequestBuilder } from '../core/request-builder';
-import { loadCollection, upsertRequests } from '../core/bruno-writer';
+import { brunoClient } from '../clients/bruno/bruno-client';
 import { buildEndpointList } from './endpoint-selector';
 import { EndpointSelector } from './EndpointSelector';
 import {
@@ -18,7 +18,6 @@ import {
 import { fetchProjections, fetchOpenApiSpec, type IfsProjection } from '../core/ifs-client';
 import type { SwaggerSpec, Operation } from '../types/spec.types';
 import type { EndpointEntry } from '../types/tool.types';
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Phase =
@@ -339,7 +338,6 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
 
     if (phase.id === 'writing') {
       try {
-        loadCollection(phase.collection);
         const builder = new RequestBuilder(phase.spec);
         const builtRequests = phase.selected.map((entry, index) => {
           const operation = (phase.spec.paths[entry.path] as Record<string, Operation>)[
@@ -347,7 +345,7 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
           ];
           return builder.build(entry.path, entry.method, operation, index + 1);
         });
-        const result = upsertRequests(phase.collection, phase.spec.info.title, builtRequests);
+        const result = brunoClient.write(phase.collection, phase.spec.info.title, builtRequests);
         setPhase({
           id: 'done',
           collection: phase.collection,

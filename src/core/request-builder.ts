@@ -1,11 +1,10 @@
 import type { SwaggerSpec, Operation, ParameterObject } from '../types/spec.types';
 import type {
-  BrunoRequest,
-  BrunoHeader,
-  BrunoBody,
-  BrunoParam,
-  BrunoVariable,
-} from '../types/bruno.types';
+  CanonicalRequest,
+  CanonicalHeader,
+  CanonicalParam,
+  CanonicalBody,
+} from './request/canonical-request';
 import { RefResolver } from './ref-resolver';
 import { HAS_BODY_METHODS, NEEDS_XSRF_METHODS } from './constants';
 
@@ -25,15 +24,15 @@ export class RequestBuilder {
     this.resolver = new RefResolver(spec);
   }
 
-  build(pathTemplate: string, method: string, operation: Operation, seq: number): BrunoRequest {
+  build(pathTemplate: string, method: string, operation: Operation, seq: number): CanonicalRequest {
     const operationId = operation.operationId ?? '';
-    const name = operationId || (operation.summary ?? pathTemplate).trim();
+    const name = (operation.summary ?? operationId) || pathTemplate.trim();
 
     const resolvedParams = (operation.parameters ?? []).map((p) =>
       this.resolver.resolveParameter(p as ParameterObject),
     );
 
-    const pathParamNames = extractPathParams(pathTemplate);
+    const pathParams = extractPathParams(pathTemplate);
     const queryParams = this.buildQueryParams(resolvedParams);
     const headers = this.buildHeaders(method, resolvedParams);
     const body = HAS_BODY_METHODS.has(method.toLowerCase())
@@ -46,55 +45,24 @@ export class RequestBuilder {
       .join('&');
     const url = `{{baseHost}}${this.spec.basePath}${basePath}${queryString ? `?${queryString}` : ''}`;
 
-    const runtimeVariables: BrunoVariable[] = pathParamNames.map((name) => ({
+    const description = this.buildDocs(operation, resolvedParams);
+
+    return {
       name,
-      value: '',
-    }));
-
-    const docs = this.buildDocs(operation, resolvedParams);
-    const preRequestScript = this.buildETagPreRequest(method, pathTemplate, resolvedParams);
-
-    const request: BrunoRequest = {
-      info: {
-        name,
-        type: 'http',
-        seq,
-      },
-      http: {
-        method: method.toUpperCase(),
-        url,
-        auth: 'inherit',
-        ...(headers.length > 0 ? { headers } : {}),
-        ...(queryParams.length > 0 ? { params: queryParams } : {}),
-        ...(body ? { body } : {}),
-      },
-      settings: {
-        encodeUrl: true,
-        timeout: 0,
-        followRedirects: true,
-        maxRedirects: 5,
-      },
-      ...(docs ? { docs } : {}),
+      operationId,
+      method: method.toUpperCase(),
+      url,
+      pathParams,
+      headers,
+      queryParams,
+      ...(body ? { body } : {}),
+      ...(description ? { description } : {}),
+      order: seq,
     };
-
-    if (runtimeVariables.length > 0 || preRequestScript) {
-      request.runtime = {
-        ...(preRequestScript
-          ? { scripts: [{ type: 'before-request', code: preRequestScript }] }
-          : {}),
-        ...(runtimeVariables.length > 0 ? { variables: runtimeVariables } : {}),
-      };
-    }
-
-    // Store operationId in a way we can retrieve it for upsert — using info metadata
-    // Bruno doesn't have a description field at request level, so we extend info
-    (request.info as Record<string, unknown>)['operationId'] = operationId;
-
-    return request;
   }
 
-  private buildHeaders(method: string, params: ParameterObject[]): BrunoHeader[] {
-    const headers: BrunoHeader[] = [];
+  private buildHeaders(method: string, params: ParameterObject[]): CanonicalHeader[] {
+    const headers: CanonicalHeader[] = [];
     const m = method.toLowerCase();
     const isWriteMethod = m === 'patch' || m === 'put';
 
@@ -119,7 +87,7 @@ export class RequestBuilder {
     return headers;
   }
 
-  private buildBody(method: string, params: ParameterObject[]): BrunoBody | undefined {
+  private buildBody(method: string, params: ParameterObject[]): CanonicalBody | undefined {
     void method;
     const bodyParam = params.find((p) => p.in === 'body');
     if (!bodyParam?.schema) return undefined;
@@ -136,61 +104,17 @@ export class RequestBuilder {
 
     return {
       type: 'json',
-      data: JSON.stringify(exampleObj, null, 2),
+      content: JSON.stringify(exampleObj, null, 2),
     };
   }
 
-  private buildETagPreRequest(
-    method: string,
-    pathTemplate: string,
-    params: ParameterObject[],
-  ): string | undefined {
-    const m = method.toLowerCase();
-    if (m !== 'patch' && m !== 'put') return undefined;
-
-    const hasIfMatch = params.some((p) => p.in === 'header' && p.name.toLowerCase() === 'if-match');
-    if (!hasIfMatch) return undefined;
-
-    const getOperation = this.spec.paths[pathTemplate]?.get;
-    if (!getOperation) return undefined;
-
-    const pathParamNames = extractPathParams(pathTemplate);
-
-    // Replace {paramName} with ${paramName} — variables are already declared via bru.getRequestVar()
-    const scriptPath = pathTemplate.replace(/\{([^}]+)\}/g, (_, name) => `\${${name}}`);
-    const getUrl = `\${base}${this.spec.basePath}${scriptPath}`;
-
-    const paramAssignments = pathParamNames
-      .map((name) => `const ${name} = bru.getRequestVar("${name}");`)
-      .join('\n');
-
-    return [
-      paramAssignments,
-      `const base = bru.getEnvVar("baseHost");`,
-      ``,
-      `await bru.sendRequest(`,
-      `  {`,
-      `    method: "GET",`,
-      `    url: \`${getUrl}\`,`,
-      `    headers: { Authorization: \`Bearer \${bru.getEnvVar("accessToken")}\` },`,
-      `  },`,
-      `  (err, res) => {`,
-      `    if (err) throw new Error("ETag fetch failed: " + err.message);`,
-      `    const etag = res.headers["etag"] ?? res.headers["ETag"] ?? res.body?.["@odata.etag"];`,
-      `    if (!etag) throw new Error("No ETag in response");`,
-      `    bru.setVar("ifMatch", etag);`,
-      `  }`,
-      `);`,
-    ].join('\n');
-  }
-
-  private buildQueryParams(params: ParameterObject[]): BrunoParam[] {
+  private buildQueryParams(params: ParameterObject[]): CanonicalParam[] {
     return params
       .filter((p) => p.in === 'query')
       .map((p) => ({
         name: p.name,
         value: p.type === 'array' && p.items?.enum ? p.items.enum.join(',') : '',
-        type: 'query' as const,
+        enabled: true,
       }));
   }
 

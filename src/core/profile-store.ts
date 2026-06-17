@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { resolveAdapter } from './collection-adapters';
+import { resolveClient as resolveAdapter } from './collection/collection-registry';
 
 export interface IfsProfile {
   host: string;

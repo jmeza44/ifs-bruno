@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { initCollection, type InitOptions } from '../../../src/core/bruno-writer.ts';
-import { resolveAdapter } from '../../../src/core/collection-adapters/index.ts';
-import {
-  initPostmanCollection,
-  type PostmanInitOptions,
-} from '../../../src/core/postman-writer.ts';
+import { brunoClient } from '../../../src/clients/bruno/bruno-client.ts';
+import { postmanClient } from '../../../src/clients/postman/postman-client.ts';
+import type { PostmanInitOptions } from '../../../src/clients/postman/postman-init.ts';
+import type { BrunoInitOptions } from '../../../src/clients/bruno/bruno-init.ts';
+import { resolveClient } from '../../../src/core/collection/collection-registry.ts';
 import {
   listCollections,
   resolveCollectionsBasePath,
@@ -26,10 +25,10 @@ export const getCollectionEndpoints = route((req) => {
   const resolvedPath = path.resolve(collectionPath);
   if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const adapter = resolveAdapter(resolvedPath);
-  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
+  const client = resolveClient(resolvedPath);
+  if (!client) return err(`Not a recognized collection: ${resolvedPath}`, 404);
 
-  return ok({ folders: adapter.readFolders(resolvedPath) });
+  return ok({ folders: client.readFolders(resolvedPath) });
 });
 
 export const getCollectionDetails = route((req) => {
@@ -40,10 +39,10 @@ export const getCollectionDetails = route((req) => {
   const resolvedPath = path.resolve(collectionPath);
   if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const adapter = resolveAdapter(resolvedPath);
-  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
+  const client = resolveClient(resolvedPath);
+  if (!client) return err(`Not a recognized collection: ${resolvedPath}`, 404);
 
-  const details = adapter.readDetails(resolvedPath);
+  const details = client.readDetails(resolvedPath);
   if (!details) return err(`Collection details not found: ${resolvedPath}`, 404);
 
   return ok(details);
@@ -56,10 +55,10 @@ export const postCollectionSelect = route(async (req) => {
   const resolvedPath = path.resolve(body.path);
   if (!fs.existsSync(resolvedPath)) return err(`Collection not found: ${resolvedPath}`, 404);
 
-  const adapter = resolveAdapter(resolvedPath);
-  if (!adapter) return err(`Not a recognized collection: ${resolvedPath}`, 404);
+  const client = resolveClient(resolvedPath);
+  if (!client) return err(`Not a recognized collection: ${resolvedPath}`, 404);
 
-  saveCollection(resolvedPath, adapter.format);
+  saveCollection(resolvedPath, client.format);
   return ok({ path: resolvedPath });
 });
 
@@ -93,21 +92,21 @@ export const postCollectionInit = route(async (req) => {
   if (format === 'postman') {
     const options: PostmanInitOptions = {
       name: name!,
-      baseHost: host!,
+      host: host!,
       realm: realm!,
       clientId: clientId!,
       workspaceId: workspaceId!,
       repoRoot: process.cwd(),
     };
-    initPostmanCollection(outputPath, options);
+    postmanClient.init(outputPath, options);
   } else {
-    const options: InitOptions = {
+    const options: BrunoInitOptions = {
       host: host!.replace(/\/$/, ''),
       realm: realm!,
       clientId: clientId!,
       name: name!,
     };
-    initCollection(outputPath, options);
+    brunoClient.init(outputPath, options);
   }
 
   saveCollection(outputPath, format);

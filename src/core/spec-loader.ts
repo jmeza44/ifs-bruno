@@ -1,15 +1,12 @@
 import fs from 'fs';
-import path from 'path';
 import type { SwaggerSpec } from '../types/spec.types';
 
 export function loadSpec(specPath: string): SwaggerSpec {
-  const absolutePath = path.resolve(specPath);
-
-  if (!fs.existsSync(absolutePath)) {
-    throw new Error(`Spec file not found: ${absolutePath}`);
+  if (!fs.existsSync(specPath)) {
+    throw new Error(`Spec file not found: ${specPath}`);
   }
 
-  const raw = fs.readFileSync(absolutePath, 'utf-8');
+  const raw = fs.readFileSync(specPath, 'utf-8');
 
   let spec: SwaggerSpec;
   try {
