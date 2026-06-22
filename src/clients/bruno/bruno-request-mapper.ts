@@ -1,5 +1,12 @@
 import { CanonicalRequest } from '@core/request/canonical-request';
-import { BrunoRequest, BrunoVariable } from '@types-app/bruno.types';
+import { BrunoParam, BrunoRequest, BrunoVariable } from '@types-app/bruno.types';
+
+const QUERY_PARAM_DEFAULTS: Record<string, Partial<BrunoParam>> = {
+  $top: { value: '10' },
+  $skip: { value: '0' },
+  $count: { value: '', disabled: true },
+  $filter: { value: '', disabled: true },
+};
 
 /**
  * Builds the ETag pre-request script for PATCH/PUT requests that include an If-Match header.
@@ -77,11 +84,15 @@ export function brunoRequestMapper(req: CanonicalRequest): BrunoRequest {
         : {}),
       ...(req.queryParams.length > 0
         ? {
-            params: req.queryParams.map((p) => ({
-              name: p.name,
-              value: p.value,
-              type: 'query' as const,
-            })),
+            params: req.queryParams.map((p) => {
+              const defaults = QUERY_PARAM_DEFAULTS[p.name];
+              return {
+                name: p.name,
+                value: defaults?.value ?? p.value,
+                type: 'query' as const,
+                ...(defaults?.disabled ? { disabled: true as const } : {}),
+              };
+            }),
           }
         : {}),
       ...(req.body

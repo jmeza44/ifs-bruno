@@ -55,9 +55,10 @@ export function postmanDetect(collectionPath: string): boolean {
   if (!fs.existsSync(collectionsDir)) return false;
   return fs
     .readdirSync(collectionsDir, { withFileTypes: true })
-    .some((e) =>
-      e.isDirectory() &&
-      fs.existsSync(path.join(collectionsDir, e.name, '.resources', 'definition.yaml')),
+    .some(
+      (e) =>
+        e.isDirectory() &&
+        fs.existsSync(path.join(collectionsDir, e.name, '.resources', 'definition.yaml')),
     );
 }
 
@@ -81,7 +82,9 @@ export function postmanReadFolders(collectionPath: string): CollectionFolder[] {
         .flatMap((f) => {
           const req = readRequest(path.join(folderPath, f));
           if (!req) return [];
-          return [{ name: req.name, method: req.method.toUpperCase(), path: urlToPathTemplate(req.url) }];
+          return [
+            { name: req.name, method: req.method.toUpperCase(), path: urlToPathTemplate(req.url) },
+          ];
         });
 
       if (endpoints.length > 0) folders.push({ name: folderEntry.name, endpoints });

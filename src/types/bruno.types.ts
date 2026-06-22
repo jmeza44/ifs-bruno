@@ -99,6 +99,7 @@ export interface BrunoParam {
   name: string;
   value: string;
   type: 'query';
+  disabled?: true;
 }
 
 export interface BrunoRequestSettings {
