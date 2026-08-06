@@ -1,73 +1,42 @@
-# React + TypeScript + Vite
+# ifs-bruno UI — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript SPA for the [ifs-bruno](../../README.md) web UI. Talks to the `ui/server` backend via the `/api` proxy (see `vite.config.ts`). Built with Vite, Tailwind CSS v4, shadcn/radix-ui components, TanStack Query/Store for state.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Node.js 18+**
+- **pnpm** — this workspace uses pnpm
+- The `ui/server` backend running locally (requests to `/api` are proxied to it — see the root `ui/` folder)
 
-## React Compiler
+## Get Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The frontend has no data of its own — every screen calls the `/api/*` endpoints, which Vite proxies to the `ui/server` backend (see `vite.config.ts`). **Start the backend first, or the app will load with API calls failing.**
 
-## Expanding the ESLint configuration
+1. In `ui/`, start the backend:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+   ```bash
+   cd ../.. # to ui/
+   pnpm dev
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2. In a separate terminal, install frontend dependencies and start the dev server from `ui/frontend`:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+Vite will print the local URL (defaults to `http://localhost:5173`).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Useful commands
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+| Command        | Description                                  |
+| -------------- | --------------------------------------------- |
+| `pnpm dev`     | Start the Vite dev server with HMR            |
+| `pnpm build`   | Type-check and build for production (`../dist-spa`) |
+| `pnpm preview` | Preview the production build locally          |
+| `pnpm lint`    | Lint the codebase with ESLint                 |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+## Contributing
+
+Found a bug or want to add a feature? Open an issue or a pull request. Keep changes scoped, run `pnpm lint` before committing, and match the existing component/style conventions in `src/`.

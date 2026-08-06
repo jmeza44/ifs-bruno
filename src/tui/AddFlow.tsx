@@ -340,6 +340,9 @@ export function AddFlow({ specPath, collectionPath, profileName }: AddFlowProps)
           ];
           return builder.build(entry.path, entry.method, operation, index + 1);
         });
+        // TODO: hardcoded to brunoClient — doesn't use resolveClient/resolveAdapter,
+        // so `add` can't actually write to Postman collections despite collection-registry.ts
+        // supporting detection. Either wire resolveClient here or document `add` as Bruno-only.
         const result = brunoClient.write(phase.collection, phase.spec.info.title, builtRequests);
         setPhase({
           id: 'done',

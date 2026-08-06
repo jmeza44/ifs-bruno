@@ -1,8 +1,8 @@
 # ifs-bruno
 
-A CLI tool to import IFS Cloud OData endpoints into [Bruno](https://www.usebruno.com/) collections.
+A CLI tool to import IFS Cloud OData endpoints into [Bruno](https://www.usebruno.com/) collections. It reads IFS OpenAPI specs — either from a local file or directly from a live IFS instance — and generates Bruno request files ready to use, through an interactive terminal UI.
 
-It reads IFS OpenAPI specs — either from a local file or directly from a live IFS instance — and generates Bruno request files ready to use.
+The [web UI](./ui/README.md) covers the same workflow and additionally supports [Postman](https://www.postman.com/) collections.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ It reads IFS OpenAPI specs — either from a local file or directly from a live 
 ## Installation
 
 ```bash
-npm install -g ifs-bruno
+pnpm install -g ifs-bruno
 ```
 
 Or with pnpm:
@@ -26,7 +26,7 @@ pnpm add -g ifs-bruno
 
 ### 1. Create a collection
 
-Scaffolds a new Bruno collection with a pre-configured Keycloak auth request and a default environment.
+Scaffolds a new Bruno collection with a pre-configured Keycloak auth request and a default environment. The CLI only scaffolds Bruno collections — to create a Postman collection instead, use the [web UI](./ui/README.md).
 
 ```bash
 ifs-bruno init
@@ -50,11 +50,10 @@ ifs-bruno init --name IFS --host https://your-env.ifs.cloud --realm your-realm -
 
 ```
 my-collection/
-  opencollection.yml        ← Bruno collection manifest
+  opencollection.yml        ← Bruno collection manifest (includes native OAuth2 auth config)
   .gitignore
   environments/
-    default.yml             ← baseHost, realm, clientId, accessToken
-  Auth.yml                  ← Keycloak client_credentials request
+    default.yml             ← baseHost, keycloakBasePath, realm, clientId, clientSecret
 ```
 
 > **Note:** After running `init`, open the collection in Bruno, go to the `default` environment, and set `clientSecret` manually. It is intentionally not written to disk.
@@ -64,8 +63,18 @@ my-collection/
 If you want to browse and import endpoints directly from a live IFS instance, save a profile with your connection details:
 
 ```bash
-ifs-bruno profile add
+ifs-bruno profile add my-env --host https://your-env.ifs.cloud --realm your-realm --client-id IFS_postman
 ```
+
+| Flag                     | Description                                       |
+| ------------------------ | -------------------------------------------------- |
+| `--host`                 | IFS Cloud base URL, e.g. `https://acme.ifs.cloud` |
+| `--realm`                | Keycloak realm name                                |
+| `--client-id`            | OAuth2 client ID, e.g. `IFS_postman`               |
+| `--client-secret`        | OAuth2 client secret                               |
+| `--keycloak-base-path`   | Keycloak base path (defaults to `/auth`)           |
+
+Omit the flags to be prompted interactively instead.
 
 Profiles are stored at `~/.ifs-bruno/config.json`. You can manage them with:
 
@@ -78,11 +87,11 @@ Skip this step if you only need to import from local spec files.
 
 ### 3. Authenticate
 
-Open the collection in Bruno, select the `default` environment, and run the **Auth** request. This sets `accessToken` automatically — all subsequent requests use it via the environment variable.
+Nothing to run manually — the collection's auth is configured as native OAuth2 (`client_credentials`) in Bruno. Bruno fetches and refreshes the token automatically the first time you send a request, as long as `clientSecret` is set in the `default` environment.
 
 ### 4. Import endpoints
 
-Parse an IFS OpenAPI spec and pick which endpoints to add to the collection. Each endpoint becomes its own `.yml` file inside a subfolder named after the spec.
+Parse an IFS OpenAPI spec and pick which endpoints to add to the collection. This opens an interactive terminal UI to search projections/endpoints and select the ones you want.
 
 **From a local spec file:**
 
@@ -96,16 +105,27 @@ ifs-bruno add --spec ./WorkTaskHandling.json --collection ./my-collection
 ifs-bruno add --profile my-env --collection ./my-collection
 ```
 
+If `--collection` is omitted, the TUI shows a list of previously used collections to pick from (or lets you type a new path).
+
 | Flag                 | Description                                 |
 | -------------------- | ------------------------------------------- |
 | `--spec`, `-s`       | Path to a local IFS OpenAPI spec (JSON)     |
 | `--profile`, `-p`    | Name of a saved profile to fetch specs live |
 | `--collection`, `-c` | Path to the Bruno collection folder         |
 
-The CLI shows a searchable list of available projections and endpoints. Select the ones you want and confirm — the files are written immediately.
+> **Note:** `add` currently writes Bruno collections only, even when pointed at a Postman one. To import into a Postman collection, use the [web UI](./ui/README.md).
 
 Re-running `add` on an already-imported endpoint **updates it in place** instead of creating a duplicate.
 
+## Useful commands
+
+| Command          | Description                                  |
+| ---------------- | --------------------------------------------- |
+| `pnpm dev -- <args>` | Run the CLI from source, e.g. `pnpm dev -- init` |
+| `pnpm build`     | Build the CLI to `dist/`                     |
+| `pnpm typecheck` | Type-check without emitting files            |
+| `pnpm format`    | Format the codebase with Prettier            |
+
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+Found a bug or want to add a feature? Open an issue or a pull request. For local setup and the release process, see [CONTRIBUTING.md](./CONTRIBUTING.md).
