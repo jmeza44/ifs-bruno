@@ -19,6 +19,7 @@ export interface IfsProjection {
   Name: string | null;
   Description: string | null;
   Categories: string | null;
+  Component: string | null;
   ApiClass: string | null;
   Layer: string | null;
   Deprecated: string | null;

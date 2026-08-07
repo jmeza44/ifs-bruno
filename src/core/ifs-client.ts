@@ -7,6 +7,7 @@ export interface IfsProjection {
   Name: string | null;
   Description: string | null;
   Categories: string | null;
+  Component: string | null;
   ApiClass: string | null;
   Layer: string | null;
   Deprecated: string | null;
@@ -23,7 +24,7 @@ export async function fetchProjections(profile: IfsProfile): Promise<IfsProjecti
   const token = await cachedTokenProvider.getToken(profile);
   const params = new URLSearchParams({
     $format: 'json',
-    $select: 'ProjectionName,Name,Description,Categories,ApiClass,Layer,Deprecated',
+    $select: 'ProjectionName,Name,Description,Categories,Component,ApiClass,Layer,Deprecated',
     $orderby: 'ProjectionName',
   });
   const url = `${profile.host}/main/ifsapplications/projection/v1/AllProjections.svc/Projections?${params}`;
