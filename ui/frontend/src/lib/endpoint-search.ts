@@ -1,5 +1,8 @@
 import type { EndpointListEntry } from '@/lib/types';
 
+export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
+export type HttpMethod = (typeof HTTP_METHODS)[number];
+
 const RANK_EXACT = 0;
 const RANK_STARTS_WITH = 1;
 const RANK_CONTAINS = 2;

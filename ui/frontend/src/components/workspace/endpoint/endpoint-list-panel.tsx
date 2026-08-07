@@ -1,16 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowLeftIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { sortByRelevance } from '@/lib/endpoint-search';
-import { METHOD_STYLES } from '@/lib/http-method-styles';
-import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
-import { MethodLabel } from '@/components/workspace/shared/method-label';
+import { EndpointListFilters } from '@/components/workspace/endpoint/endpoint-list-filters';
+import { EndpointVirtualizedList } from '@/components/workspace/endpoint/endpoint-virtualized-list';
+import { HTTP_METHODS, sortByRelevance, type HttpMethod } from '@/lib/endpoint-search';
 import type { EndpointListEntry } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 export type { EndpointListEntry };
 
@@ -25,11 +18,6 @@ export type EndpointListPanelProps = {
   onSave?: () => void;
   isSaving?: boolean;
 };
-
-const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
-type HttpMethod = (typeof HTTP_METHODS)[number];
-
-const ENDPOINT_ROW_ESTIMATED_HEIGHT = 30;
 
 export function EndpointListPanel({
   entries,
@@ -59,143 +47,25 @@ export function EndpointListPanel({
     return sortByRelevance(matched, search);
   }, [entries, search, activeMethods]);
 
-  const scrollElementRef = useRef<HTMLDivElement | null>(null);
-  const virtualizer = useVirtualizer({
-    count: filtered.length,
-    getScrollElement: () => scrollElementRef.current,
-    estimateSize: () => ENDPOINT_ROW_ESTIMATED_HEIGHT,
-    overscan: 15,
-  });
-
-  const handleScrollElementRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      scrollElementRef.current = element;
-      if (element) {
-        virtualizer.measure();
-      }
-    },
-    [virtualizer],
-  );
-
   return (
     <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border bg-card">
-      {/* header: filters */}
-      <div className="flex shrink-0 flex-col gap-1.5 border-b border-border p-1.5">
-        <div className="flex items-center gap-1.5">
-          {onChangeProjection && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onChangeProjection}
-              title="Change projection"
-            >
-              <ArrowLeftIcon size={12} />
-            </Button>
-          )}
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon
-              size={12}
-              className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by path, summary or operation id..."
-              className="pl-7"
-            />
-          </div>
-        </div>
-        <ToggleGroup
-          type="multiple"
-          spacing={1}
-          value={Array.from(activeMethods)}
-          onValueChange={(value) => setActiveMethods(new Set(value as HttpMethod[]))}
-          className="flex-wrap"
-        >
-          {HTTP_METHODS.map((method) => {
-            const active = activeMethods.has(method);
-            return (
-              <ToggleGroupItem
-                key={method}
-                value={method}
-                size="sm"
-                className={cn(
-                  'h-auto rounded-none border px-1.5 py-0.5 font-mono text-[11px] font-semibold transition-colors',
-                  active
-                    ? cn('border-border bg-muted', METHOD_STYLES[method])
-                    : 'border-transparent text-muted-foreground/50 hover:bg-transparent hover:text-muted-foreground',
-                )}
-              >
-                {method}
-              </ToggleGroupItem>
-            );
-          })}
-        </ToggleGroup>
-      </div>
+      <EndpointListFilters
+        search={search}
+        onSearchChange={setSearch}
+        activeMethods={activeMethods}
+        onActiveMethodsChange={setActiveMethods}
+        onChangeProjection={onChangeProjection}
+      />
 
-      {/* middle: scrollable list */}
-      {filtered.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
-          No endpoints match.
-        </div>
-      ) : (
-        <div
-          ref={handleScrollElementRef}
-          className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1"
-        >
-          <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const entry = filtered[virtualItem.index];
-              if (!entry) {
-                return null;
-              }
-              const isSelected = selected.has(entry.id);
-              const isLocked = alreadyInCollection?.has(entry.id) ?? false;
-              const isActive = entry.id === activeId;
-              return (
-                <div
-                  key={entry.id}
-                  ref={virtualizer.measureElement}
-                  data-index={virtualItem.index}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onViewDetail(entry)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') onViewDetail(entry);
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
-                    isActive && 'bg-accent text-accent-foreground',
-                  )}
-                >
-                  <Checkbox
-                    checked={isSelected || isLocked}
-                    disabled={isLocked}
-                    onClick={(e) => e.stopPropagation()}
-                    onCheckedChange={() => onToggleSelected(entry.id)}
-                    className="shrink-0"
-                    title={isLocked ? 'Already in collection' : isSelected ? 'Deselect' : 'Select'}
-                  />
-                  <MethodLabel method={entry.method} />
-                  <HighlightedText
-                    text={entry.path}
-                    searchTerm={search}
-                    className="truncate"
-                    title={entry.path}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <EndpointVirtualizedList
+        entries={filtered}
+        searchTerm={search}
+        selected={selected}
+        alreadyInCollection={alreadyInCollection}
+        activeId={activeId}
+        onToggleSelected={onToggleSelected}
+        onViewDetail={onViewDetail}
+      />
 
       {/* footer: counters + save action */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-1.5 py-1 text-xs text-muted-foreground">
