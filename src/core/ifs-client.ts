@@ -1,5 +1,6 @@
 import type { SwaggerSpec } from '@types-app/spec.types';
 import type { IfsProfile } from './profile-store';
+import { KeycloakTokenFetcher, cachedTokenProvider } from './token-provider';
 
 export interface IfsProjection {
   ProjectionName: string;
@@ -11,46 +12,15 @@ export interface IfsProjection {
   Deprecated: string | null;
 }
 
+const uncachedTokenFetcher = new KeycloakTokenFetcher();
+
+/** Always hits Keycloak — use to validate credentials (e.g. a "test connection" action). */
 export async function fetchToken(profile: IfsProfile): Promise<string> {
-  const keycloakBase = profile.keycloakBasePath ?? '/auth';
-  const url = `${profile.host}${keycloakBase}/realms/${profile.realm}/protocol/openid-connect/token`;
-
-  const body = new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: profile.clientId,
-    client_secret: profile.clientSecret,
-    scope: 'openid microprofile-jwt',
-  });
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  }).catch((err: Error) => {
-    throw new Error(
-      `Cannot reach IFS host (${profile.host}): ${err.message}. Check your network connection and VPN.`,
-    );
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    let detail = body;
-    try {
-      const json = JSON.parse(body) as { error_description?: string; error?: string };
-      detail = json.error_description ?? json.error ?? body;
-    } catch {
-      /* not JSON — use raw body */
-    }
-    throw new Error(`Auth failed (${res.status}): ${detail}`);
-  }
-
-  const data = (await res.json()) as { access_token?: string };
-  if (!data.access_token) throw new Error('No access_token in auth response');
-  return data.access_token;
+  return uncachedTokenFetcher.getToken(profile);
 }
 
 export async function fetchProjections(profile: IfsProfile): Promise<IfsProjection[]> {
-  const token = await fetchToken(profile);
+  const token = await cachedTokenProvider.getToken(profile);
   const params = new URLSearchParams({
     $format: 'json',
     $select: 'ProjectionName,Name,Description,Categories,ApiClass,Layer,Deprecated',
@@ -75,7 +45,7 @@ export async function fetchOpenApiSpec(
   profile: IfsProfile,
   projectionName: string,
 ): Promise<SwaggerSpec> {
-  const token = await fetchToken(profile);
+  const token = await cachedTokenProvider.getToken(profile);
   const url = `${profile.host}/main/ifsapplications/projection/v1/${projectionName}.svc/$openapi?V2`;
 
   const res = await fetch(url, {
