@@ -10,7 +10,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { splitByMatch } from '@/lib/projection-search';
+import { HighlightedText } from '@/components/workspace/highlighted-text';
 import type { IfsProjection } from '@/lib/types';
 
 export type ProjectionComboboxProps = {
@@ -22,28 +22,16 @@ export type ProjectionComboboxProps = {
   isLoading?: boolean;
 };
 
-function HighlightedProjectionName({ name, searchTerm }: { name: string; searchTerm: string }) {
-  const segments = splitByMatch(name, searchTerm);
-  return (
-    <span className="font-mono text-xs">
-      {segments.map((segment, index) =>
-        segment.matched ? (
-          <span key={index} className="text-amber-600 dark:text-amber-400">
-            {segment.text}
-          </span>
-        ) : (
-          <span key={index}>{segment.text}</span>
-        ),
-      )}
-    </span>
-  );
-}
-
 function ProjectionItemContent({ item, searchTerm }: { item: IfsProjection; searchTerm: string }) {
   return (
+    // TODO: On Hover the HighlightedText does not highlight the text.
     <span className="flex flex-col gap-0.5">
       <span className="flex items-center gap-1.5">
-        <HighlightedProjectionName name={item.ProjectionName} searchTerm={searchTerm} />
+        <HighlightedText
+          text={item.ProjectionName}
+          searchTerm={searchTerm}
+          className="font-mono text-xs"
+        />
         {item.Component && (
           <Badge variant="outline" className="font-mono">
             {item.Component}

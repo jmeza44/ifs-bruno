@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowLeftIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { sortByRelevance } from '@/lib/endpoint-search';
 import { METHOD_STYLES } from '@/lib/http-method-styles';
+import { HighlightedText } from '@/components/workspace/highlighted-text';
 import { MethodLabel } from '@/components/workspace/method-label';
 import type { EndpointListEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -26,6 +29,8 @@ export type EndpointListPanelProps = {
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
 
+const ENDPOINT_ROW_ESTIMATED_HEIGHT = 30;
+
 export function EndpointListPanel({
   entries,
   selected,
@@ -42,7 +47,7 @@ export function EndpointListPanel({
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return entries.filter((entry) => {
+    const matched = entries.filter((entry) => {
       if (!activeMethods.has(entry.method.toUpperCase() as HttpMethod)) return false;
       if (!term) return true;
       return (
@@ -51,7 +56,26 @@ export function EndpointListPanel({
         (entry.operationId ?? '').toLowerCase().includes(term)
       );
     });
+    return sortByRelevance(matched, search);
   }, [entries, search, activeMethods]);
+
+  const scrollElementRef = useRef<HTMLDivElement | null>(null);
+  const virtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => scrollElementRef.current,
+    estimateSize: () => ENDPOINT_ROW_ESTIMATED_HEIGHT,
+    overscan: 15,
+  });
+
+  const handleScrollElementRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      scrollElementRef.current = element;
+      if (element) {
+        virtualizer.measure();
+      }
+    },
+    [virtualizer],
+  );
 
   return (
     <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border bg-card">
@@ -110,47 +134,68 @@ export function EndpointListPanel({
       </div>
 
       {/* middle: scrollable list */}
-      <div className="scroll-discreet flex-1 space-y-0.5 overflow-y-auto p-1.5 pt-1">
-        {filtered.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-            No endpoints match.
+      {filtered.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
+          No endpoints match.
+        </div>
+      ) : (
+        <div
+          ref={handleScrollElementRef}
+          className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1"
+        >
+          <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const entry = filtered[virtualItem.index];
+              if (!entry) {
+                return null;
+              }
+              const isSelected = selected.has(entry.id);
+              const isLocked = alreadyInCollection?.has(entry.id) ?? false;
+              const isActive = entry.id === activeId;
+              return (
+                <div
+                  key={entry.id}
+                  ref={virtualizer.measureElement}
+                  data-index={virtualItem.index}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onViewDetail(entry)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') onViewDetail(entry);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
+                    isActive && 'bg-accent text-accent-foreground',
+                  )}
+                >
+                  <Checkbox
+                    checked={isSelected || isLocked}
+                    disabled={isLocked}
+                    onClick={(e) => e.stopPropagation()}
+                    onCheckedChange={() => onToggleSelected(entry.id)}
+                    className="shrink-0"
+                    title={isLocked ? 'Already in collection' : isSelected ? 'Deselect' : 'Select'}
+                  />
+                  <MethodLabel method={entry.method} />
+                  <HighlightedText
+                    text={entry.path}
+                    searchTerm={search}
+                    className="truncate"
+                    title={entry.path}
+                  />
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          filtered.map((entry) => {
-            const isSelected = selected.has(entry.id);
-            const isLocked = alreadyInCollection?.has(entry.id) ?? false;
-            const isActive = entry.id === activeId;
-            return (
-              <div
-                key={entry.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onViewDetail(entry)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') onViewDetail(entry);
-                }}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
-                  isActive && 'bg-accent text-accent-foreground',
-                )}
-              >
-                <Checkbox
-                  checked={isSelected || isLocked}
-                  disabled={isLocked}
-                  onClick={(e) => e.stopPropagation()}
-                  onCheckedChange={() => onToggleSelected(entry.id)}
-                  className="shrink-0"
-                  title={isLocked ? 'Already in collection' : isSelected ? 'Deselect' : 'Select'}
-                />
-                <MethodLabel method={entry.method} />
-                <span className="truncate" title={entry.path}>
-                  {entry.path}
-                </span>
-              </div>
-            );
-          })
-        )}
-      </div>
+        </div>
+      )}
 
       {/* footer: counters + save action */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-1.5 py-1 text-xs text-muted-foreground">
