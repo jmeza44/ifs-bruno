@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { ProjectionCombobox } from '@/components/workspace/projection-combobox';
 import { ProjectionDetailCard } from '@/components/workspace/projection-detail-card';
@@ -25,6 +26,16 @@ export function ProjectionSearchPanel({
   isContinuing,
 }: ProjectionSearchPanelProps) {
   const filters = useProjectionFilters(projections);
+
+  // Keep the input text in sync when `selected` is set from outside this
+  // component (e.g. returning from the endpoint list with a projection
+  // already chosen) rather than through the combobox's own selection flow.
+  const selectedProjectionName = selected?.ProjectionName ?? null;
+  useEffect(() => {
+    filters.setSearchTerm(selectedProjectionName ?? '');
+    // filters.setSearchTerm is stable (from useState); only re-sync on selection change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectionName]);
 
   return (
     <div className="flex h-full w-full items-start justify-center p-4">
