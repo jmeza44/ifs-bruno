@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
-import { ProjectionCombobox } from '@/components/workspace/projection-combobox';
-import { ProjectionDetailCard } from '@/components/workspace/projection-detail-card';
-import { ProjectionFiltersBar } from '@/components/workspace/projection-filters-bar';
+import { ProjectionCombobox } from '@/components/workspace/projection/projection-combobox';
+import { ProjectionDetailCard } from '@/components/workspace/projection/projection-detail-card';
+import { ProjectionFiltersBar } from '@/components/workspace/projection/projection-filters-bar';
 import { useProjectionFilters } from '@/hooks/useProjectionFilters';
 import type { IfsProjection } from '@/lib/types';
 

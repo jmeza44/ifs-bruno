@@ -9,7 +9,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useProjection } from '@/hooks/useProjection';
 import { useEndpointSave } from '@/hooks/useEndpointSave';
-import type { ProfileOption } from '@/components/workspace/profile-selector';
+import type { ProfileOption } from '@/components/workspace/profile/profile-selector';
 
 export function WorkspaceLayoutSkeleton() {
   const collection = useWorkspaceStore((state) => state.collection);

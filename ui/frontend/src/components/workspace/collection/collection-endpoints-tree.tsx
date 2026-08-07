@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CaretRightIcon, FolderIcon, RowsIcon, StackIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { MethodLabel } from '@/components/workspace/method-label';
+import { MethodLabel } from '@/components/workspace/shared/method-label';
 import { cn } from '@/lib/utils';
 
 export type StoredEndpoint = {

@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { sortByRelevance } from '@/lib/endpoint-search';
 import { METHOD_STYLES } from '@/lib/http-method-styles';
-import { HighlightedText } from '@/components/workspace/highlighted-text';
-import { MethodLabel } from '@/components/workspace/method-label';
+import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
+import { MethodLabel } from '@/components/workspace/shared/method-label';
 import type { EndpointListEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 

@@ -10,7 +10,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { HighlightedText } from '@/components/workspace/highlighted-text';
+import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
 import type { IfsProjection } from '@/lib/types';
 
 export type ProjectionComboboxProps = {

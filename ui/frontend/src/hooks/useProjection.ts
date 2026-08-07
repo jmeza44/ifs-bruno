@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { fetchRemoteSpec, fetchSpecEntry, fetchProjections } from '@/lib/api';
 import type { CollectionFolder, IfsProjection } from '@/lib/types';
-import type { EndpointListEntry } from '@/components/workspace/endpoint-list-panel';
+import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { workspaceActions } from '@/lib/workspace-store';
 
 function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> {

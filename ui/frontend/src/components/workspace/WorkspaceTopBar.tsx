@@ -1,7 +1,10 @@
-import { CollectionSelector } from '@/components/workspace/collection-selector';
-import { ProfileSelector, type ProfileOption } from '@/components/workspace/profile-selector';
-import { NewProfileDialog } from '@/components/workspace/new-profile-dialog';
-import { NewCollectionDialog } from '@/components/workspace/new-collection-dialog';
+import { CollectionSelector } from '@/components/workspace/collection/collection-selector';
+import {
+  ProfileSelector,
+  type ProfileOption,
+} from '@/components/workspace/profile/profile-selector';
+import { NewProfileDialog } from '@/components/workspace/profile/new-profile-dialog';
+import { NewCollectionDialog } from '@/components/workspace/collection/new-collection-dialog';
 import { SpecLoader } from '@/components/workspace/spec-loader';
 import { Button } from '@/components/ui/button';
 import { GearIcon } from '@phosphor-icons/react';

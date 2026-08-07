@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { HintField } from '@/components/workspace/hint-field';
+import { HintField } from '@/components/workspace/shared/hint-field';
 
 type Format = 'bruno' | 'postman';
 

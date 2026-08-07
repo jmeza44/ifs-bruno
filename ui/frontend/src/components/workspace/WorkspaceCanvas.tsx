@@ -1,12 +1,12 @@
 import { Group, Panel, Separator } from 'react-resizable-panels';
-import { CollectionDetailsPanel } from '@/components/workspace/collection-details-panel';
-import { CollectionEndpointsTree } from '@/components/workspace/collection-endpoints-tree';
-import { EndpointListPanel } from '@/components/workspace/endpoint-list-panel';
-import { EndpointDetailPanel } from '@/components/workspace/endpoint-detail-panel';
-import { ProjectionSearchPanel } from '@/components/workspace/projection-search-panel';
+import { CollectionDetailsPanel } from '@/components/workspace/collection/collection-details-panel';
+import { CollectionEndpointsTree } from '@/components/workspace/collection/collection-endpoints-tree';
+import { EndpointListPanel } from '@/components/workspace/endpoint/endpoint-list-panel';
+import { EndpointDetailPanel } from '@/components/workspace/endpoint/endpoint-detail-panel';
+import { ProjectionSearchPanel } from '@/components/workspace/projection/projection-search-panel';
 import type { CollectionEntry, CollectionFolder, EndpointDetail, IfsProjection } from '@/lib/types';
-import type { CollectionDetails } from '@/components/workspace/collection-details-panel';
-import type { EndpointListEntry } from '@/components/workspace/endpoint-list-panel';
+import type { CollectionDetails } from '@/components/workspace/collection/collection-details-panel';
+import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { workspaceActions } from '@/lib/workspace-store';
 import { DotsSixVerticalIcon } from '@phosphor-icons/react';
 

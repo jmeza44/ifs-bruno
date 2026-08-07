@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
-import { HintField } from '@/components/workspace/hint-field';
+import { HintField } from '@/components/workspace/shared/hint-field';
 
 const EMPTY_FORM: ProfileInput = {
   name: '',
