@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Combobox as ComboboxNamespace } from '@base-ui/react/combobox';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,6 +64,93 @@ function FieldValue({ value }: { value: string | null }) {
     return <span className="text-xs text-muted-foreground/60 italic">—</span>;
   }
   return <span className="text-xs text-foreground">{value}</span>;
+}
+
+function ProjectionItemContent({ item }: { item: IfsProjection }) {
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span className="flex items-center gap-1.5">
+        <span className="font-mono text-xs">{item.ProjectionName}</span>
+        {item.Component && (
+          <Badge variant="outline" className="font-mono">
+            {item.Component}
+          </Badge>
+        )}
+        {item.Deprecated === 'TRUE' && <Badge variant="destructive">Deprecated</Badge>}
+      </span>
+      {item.Description && (
+        <span className="text-xs text-muted-foreground text-justify">{item.Description}</span>
+      )}
+    </span>
+  );
+}
+
+const PROJECTION_ITEM_ESTIMATED_HEIGHT = 52;
+
+function VirtualizedProjectionList() {
+  const filteredItems = ComboboxNamespace.useFilteredItems<IfsProjection>();
+  const scrollElementRef = useRef<HTMLDivElement | null>(null);
+
+  const virtualizer = useVirtualizer({
+    count: filteredItems.length,
+    getScrollElement: () => scrollElementRef.current,
+    estimateSize: () => PROJECTION_ITEM_ESTIMATED_HEIGHT,
+    overscan: 10,
+    paddingStart: 4,
+    paddingEnd: 4,
+  });
+
+  const handleScrollElementRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      scrollElementRef.current = element;
+      if (element) {
+        virtualizer.measure();
+      }
+    },
+    [virtualizer],
+  );
+
+  if (!filteredItems.length) {
+    return null;
+  }
+
+  const totalSize = virtualizer.getTotalSize();
+
+  return (
+    <div
+      ref={handleScrollElementRef}
+      className="no-scrollbar max-h-72 overflow-y-auto overscroll-contain scroll-py-1"
+    >
+      <div className="relative w-full" style={{ height: totalSize }}>
+        {virtualizer.getVirtualItems().map((virtualItem) => {
+          const item = filteredItems[virtualItem.index];
+          if (!item) {
+            return null;
+          }
+          return (
+            <ComboboxItem
+              key={virtualItem.key}
+              index={virtualItem.index}
+              ref={virtualizer.measureElement}
+              data-index={virtualItem.index}
+              value={item}
+              aria-setsize={filteredItems.length}
+              aria-posinset={virtualItem.index + 1}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <ProjectionItemContent item={item} />
+            </ComboboxItem>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function ProjectionSearchPanel({
@@ -175,7 +264,7 @@ export function ProjectionSearchPanel({
         <Combobox
           items={filteredProjections}
           itemToStringLabel={(item: IfsProjection) => item.ProjectionName}
-          limit={10}
+          virtualized
           value={selected}
           onValueChange={(value) => onSelect(value as IfsProjection | null)}
         >
@@ -185,29 +274,10 @@ export function ProjectionSearchPanel({
               disabled={isLoading}
               className="w-full max-w-md"
             >
-              <ComboboxContent side='bottom' sideOffset={2}>
+              <ComboboxContent side="bottom" sideOffset={2}>
                 <ComboboxEmpty>No projections match the current filters</ComboboxEmpty>
-                <ComboboxList>
-                  {(item: IfsProjection) => (
-                    <ComboboxItem key={item.ProjectionName} value={item}>
-                      <span className="flex flex-col gap-0.5">
-                        <span className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs">{item.ProjectionName}</span>
-                          {item.Component && (
-                            <Badge variant="outline" className="font-mono">
-                              {item.Component}
-                            </Badge>
-                          )}
-                          {item.Deprecated === 'TRUE' && (
-                            <Badge variant="destructive">Deprecated</Badge>
-                          )}
-                        </span>
-                        {item.Description && (
-                          <span className="text-xs text-muted-foreground">{item.Description}</span>
-                        )}
-                      </span>
-                    </ComboboxItem>
-                  )}
+                <ComboboxList className="max-h-none overflow-visible p-0">
+                  <VirtualizedProjectionList />
                 </ComboboxList>
               </ComboboxContent>
             </ComboboxInput>
