@@ -124,6 +124,10 @@ export function fetchLocalSpec(specPath: string): Promise<SpecResult> {
   return postJson('/spec/local', { specPath });
 }
 
+export function uploadSpec(fileName: string, content: string): Promise<SpecResult> {
+  return postJson('/spec/upload', { fileName, content });
+}
+
 export function fetchSpecEntry(path: string, method: string): Promise<EndpointDetail> {
   return postJson('/spec/entry', { path, method });
 }

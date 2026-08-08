@@ -40,6 +40,7 @@ export function WorkspaceLayoutSkeleton() {
     isLoadingProjections,
     loadProjection,
     isLoadingProjection,
+    loadLocalSpec,
     viewEndpointDetail,
   } = useProjection(activeProfile?.name ?? null, isSearchingProjection, folders);
   const { handleSave, isSaving } = useEndpointSave({
@@ -68,6 +69,7 @@ export function WorkspaceLayoutSkeleton() {
         activeProfile={activeProfile}
         availableProfiles={profiles.available}
         loadedSpec={loadedSpec}
+        onLoadSpec={loadLocalSpec}
         newCollectionOpen={newCollectionOpen}
         onNewCollectionOpenChange={setNewCollectionOpen}
         newProfileOpen={newProfileOpen}

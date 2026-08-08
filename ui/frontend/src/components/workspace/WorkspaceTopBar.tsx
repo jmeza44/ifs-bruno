@@ -17,6 +17,7 @@ export type WorkspaceTopBarProps = {
   activeProfile: ProfileOption | null;
   availableProfiles: ProfileOption[];
   loadedSpec: LoadedSpec | null;
+  onLoadSpec: (file: File) => void;
   newCollectionOpen: boolean;
   onNewCollectionOpenChange: (open: boolean) => void;
   newProfileOpen: boolean;
@@ -31,6 +32,7 @@ export function WorkspaceTopBar({
   activeProfile,
   availableProfiles,
   loadedSpec,
+  onLoadSpec,
   newCollectionOpen,
   onNewCollectionOpenChange,
   newProfileOpen,
@@ -77,11 +79,7 @@ export function WorkspaceTopBar({
           onOpenChange={onNewProfileOpenChange}
           onCreated={(name) => workspaceActions.addProfile({ id: name, name, environment: '' })}
         />
-        <SpecLoader
-          loaded={loadedSpec}
-          onLoad={() => {}}
-          onClear={workspaceActions.closeProjection}
-        />
+        <SpecLoader loaded={loadedSpec} onLoad={onLoadSpec} onClear={workspaceActions.closeProjection} />
         <Button variant="outline" size="icon" title="Settings" onClick={onSettingsOpen}>
           <GearIcon size={18} />
         </Button>

@@ -1,7 +1,7 @@
 import { buildEndpointList, buildEndpointDetail } from '@core/endpoint-list.ts';
 import { fetchOpenApiSpec } from '@core/ifs-client.ts';
 import { getProfile } from '@core/profile-store.ts';
-import { loadSpec } from '@core/spec-loader.ts';
+import { loadSpec, parseSpec } from '@core/spec-loader.ts';
 import { SwaggerSpec } from '@types-app/spec.types.ts';
 import { checkAddArgs } from '../../../src/validate-args.ts';
 import { err, ok, route } from '../json.ts';
@@ -13,6 +13,11 @@ interface RemoteSpecBody {
 
 interface LocalSpecBody {
   specPath?: string;
+}
+
+interface UploadSpecBody {
+  fileName?: string;
+  content?: string;
 }
 
 interface SpecEntryBody {
@@ -58,6 +63,20 @@ export const postSpecLocal = route(async (req) => {
   }
 
   const spec = loadSpec(specPath);
+  lastResolvedSpec = spec;
+  const entries = buildEndpointList(spec);
+  return ok({ specTitle: spec.info.title, entries });
+});
+
+export const postSpecUpload = route(async (req) => {
+  const body = (await req.json()) as UploadSpecBody;
+  const { content } = body;
+
+  if (!content) {
+    return err('content is required', 400);
+  }
+
+  const spec = parseSpec(content);
   lastResolvedSpec = spec;
   const entries = buildEndpointList(spec);
   return ok({ specTitle: spec.info.title, entries });

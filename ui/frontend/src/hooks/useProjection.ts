@@ -1,9 +1,20 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRef } from 'react';
-import { fetchRemoteSpec, fetchSpecEntry, fetchProjections } from '@/lib/api';
-import type { CollectionFolder, IfsProjection } from '@/lib/types';
+import { fetchRemoteSpec, fetchSpecEntry, fetchProjections, uploadSpec } from '@/lib/api';
+import type { CollectionFolder, IfsProjection, SpecResult } from '@/lib/types';
 import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { workspaceActions } from '@/lib/workspace-store';
+
+function toEndpointListEntries(entries: SpecResult['entries']): EndpointListEntry[] {
+  return entries.map((entry) => ({
+    id: `${entry.method.toUpperCase()}:${entry.path}`,
+    path: entry.path,
+    method: entry.method.toUpperCase(),
+    summary: entry.summary,
+    operationId: entry.operationId,
+    tier: entry.tier,
+  }));
+}
 
 // Debounces the detail fetch when the user is navigating quickly (e.g. holding an
 // arrow key), so we don't fire one HTTP request per keydown — only once the
@@ -40,16 +51,31 @@ export function useProjection(
       return { projection, spec };
     },
     onSuccess: ({ projection, spec }) => {
-      const endpoints: EndpointListEntry[] = spec.entries.map((entry) => ({
-        id: `${entry.method.toUpperCase()}:${entry.path}`,
-        path: entry.path,
-        method: entry.method.toUpperCase(),
-        summary: entry.summary,
-        operationId: entry.operationId,
-        tier: entry.tier,
-      }));
+      const endpoints = toEndpointListEntries(spec.entries);
       const alreadyInCollection = buildAlreadyInCollectionKeys(folders);
       workspaceActions.selectProjection(projection, endpoints, alreadyInCollection);
+    },
+  });
+
+  const loadLocalSpecMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const content = await file.text();
+      const spec = await uploadSpec(file.name, content);
+      return { file, spec };
+    },
+    onSuccess: ({ file, spec }) => {
+      const endpoints = toEndpointListEntries(spec.entries);
+      const projection: IfsProjection = {
+        ProjectionName: spec.specTitle,
+        Name: spec.specTitle,
+        Description: null,
+        Categories: null,
+        Component: null,
+        ApiClass: null,
+        Layer: null,
+        Deprecated: null,
+      };
+      workspaceActions.loadSpec({ fileName: file.name, projectionName: spec.specTitle }, projection, endpoints);
     },
   });
 
@@ -74,6 +100,8 @@ export function useProjection(
     isLoadingProjections: projectionsQuery.isLoading,
     loadProjection: loadProjectionMutation.mutate,
     isLoadingProjection: loadProjectionMutation.isPending,
+    loadLocalSpec: loadLocalSpecMutation.mutate,
+    isLoadingLocalSpec: loadLocalSpecMutation.isPending,
     viewEndpointDetail: (entry: EndpointListEntry) => {
       // Lightweight — updates only which row is highlighted, so this is instant
       // even while holding an arrow key. The (heavier) full detail payload is

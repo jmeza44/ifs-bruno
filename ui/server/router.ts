@@ -14,7 +14,7 @@ import {
   postProfileTest,
 } from './handlers/profiles.ts';
 import { postProjections } from './handlers/projections.ts';
-import { postSpecEntry, postSpecLocal, postSpecRemote } from './handlers/spec.ts';
+import { postSpecEntry, postSpecLocal, postSpecRemote, postSpecUpload } from './handlers/spec.ts';
 import { postWrite } from './handlers/write.ts';
 import { serveStatic } from './static.ts';
 
@@ -35,6 +35,7 @@ const routes: RouteEntry[] = [
   { method: 'POST', pathname: '/api/projections', handler: postProjections },
   { method: 'POST', pathname: '/api/spec/remote', handler: postSpecRemote },
   { method: 'POST', pathname: '/api/spec/local', handler: postSpecLocal },
+  { method: 'POST', pathname: '/api/spec/upload', handler: postSpecUpload },
   { method: 'POST', pathname: '/api/spec/entry', handler: postSpecEntry },
   { method: 'POST', pathname: '/api/write', handler: postWrite },
   { method: 'GET', pathname: '/api/preferences', handler: getPreferencesHandler },

@@ -1,13 +1,8 @@
 import { SwaggerSpec } from '@types-app/spec.types';
 import fs from 'fs';
 
-export function loadSpec(specPath: string): SwaggerSpec {
-  if (!fs.existsSync(specPath)) {
-    throw new Error(`Spec file not found: ${specPath}`);
-  }
-
-  const raw = fs.readFileSync(specPath, 'utf-8');
-
+/** Parses and validates spec JSON already read into memory (e.g. an uploaded file's contents). */
+export function parseSpec(raw: string): SwaggerSpec {
   let spec: SwaggerSpec;
   try {
     spec = JSON.parse(raw) as SwaggerSpec;
@@ -20,4 +15,14 @@ export function loadSpec(specPath: string): SwaggerSpec {
   }
 
   return spec;
+}
+
+/** Reads and parses a spec file from disk — only valid when caller and server share a filesystem (e.g. the TUI). */
+export function loadSpec(specPath: string): SwaggerSpec {
+  if (!fs.existsSync(specPath)) {
+    throw new Error(`Spec file not found: ${specPath}`);
+  }
+
+  const raw = fs.readFileSync(specPath, 'utf-8');
+  return parseSpec(raw);
 }
