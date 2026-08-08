@@ -49,6 +49,7 @@ export interface ParameterObject {
 export interface SchemaObject {
   type?: string;
   properties?: Record<string, SchemaObject | RefObject>;
+  items?: SchemaObject | RefObject;
   example?: unknown;
   enum?: string[];
   $ref?: string;
