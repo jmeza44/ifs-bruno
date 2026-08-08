@@ -39,7 +39,7 @@ export function EndpointListRow({
       aria-selected={isActive}
       onClick={() => onViewDetail(entry)}
       className={cn(
-        'col-span-full grid grid-cols-subgrid items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
+        'col-span-full grid grid-cols-subgrid items-start gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
         'cursor-pointer',
         isActive && 'bg-accent text-accent-foreground',
       )}
@@ -56,8 +56,8 @@ export function EndpointListRow({
       <HighlightedText
         text={entry.path}
         searchTerm={searchTerm}
-        className="truncate"
         title={entry.path}
+        className="min-w-0 break-all"
       />
     </div>
   );

@@ -48,7 +48,7 @@ export function EndpointListPanel({
   }, [entries, search, activeMethods]);
 
   return (
-    <div className="flex h-full flex-col gap-1 overflow-hidden rounded-none border border-border bg-card">
+    <div className="flex h-full flex-col gap-1 overflow-y-hidden rounded-none border border-border bg-card">
       <EndpointListFilters
         search={search}
         onSearchChange={setSearch}

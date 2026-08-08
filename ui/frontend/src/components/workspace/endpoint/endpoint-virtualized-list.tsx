@@ -95,7 +95,7 @@ export function EndpointVirtualizedList({
       role="listbox"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1 outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+      className="w-full scroll-discreet flex-1 overflow-x-hidden overflow-y-auto p-1.5 pt-1 outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
     >
       {/* Rows render in normal flow (not position:absolute) so the grid can size
           the checkbox/method columns from their real rendered content via subgrid. */}
