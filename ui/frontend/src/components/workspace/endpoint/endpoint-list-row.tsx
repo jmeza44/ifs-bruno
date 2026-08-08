@@ -2,6 +2,7 @@ import type { Ref } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
 import { MethodLabel } from '@/components/workspace/shared/method-label';
+import { basePathSegment, countPathKeys, shouldCollapsePathKeys } from '@/lib/endpoint-path';
 import type { EndpointListEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,8 @@ export function EndpointListRow({
   ref,
   'data-index': dataIndex,
 }: EndpointListRowProps) {
+  const collapseKeys = shouldCollapsePathKeys(entry.path);
+
   return (
     <div
       ref={ref}
@@ -53,12 +56,21 @@ export function EndpointListRow({
         title={isLocked ? 'Already in collection' : isSelected ? 'Deselect' : 'Select'}
       />
       <MethodLabel method={entry.method} />
-      <HighlightedText
-        text={entry.path}
-        searchTerm={searchTerm}
-        title={entry.path}
-        className="min-w-0 break-all"
-      />
+      {collapseKeys ? (
+        <span className="flex min-w-0 items-baseline gap-1.5" title={entry.path}>
+          <span className="truncate font-mono text-xs">{basePathSegment(entry.path)}</span>
+          <span className="shrink-0 rounded-none border border-border px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
+            {countPathKeys(entry.path)} keys
+          </span>
+        </span>
+      ) : (
+        <HighlightedText
+          text={entry.path}
+          searchTerm={searchTerm}
+          title={entry.path}
+          className="min-w-0 break-all"
+        />
+      )}
     </div>
   );
 }

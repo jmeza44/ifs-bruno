@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { shouldCollapsePathKeys } from '@/lib/endpoint-path';
 import { methodTextStyle } from '@/lib/http-method-styles';
 import type { EndpointDetail, EndpointDetailParameter, EndpointDetailResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -94,6 +95,8 @@ export function EndpointDetailPanel({
   }
 
   const method = endpoint.method.toUpperCase();
+  const keyParams = (endpoint.parameters ?? []).filter((param) => param.in === 'path');
+  const collapseKeys = shouldCollapsePathKeys(endpoint.path);
 
   return (
     <div className="@container scroll-discreet flex h-full flex-col gap-3 overflow-y-auto rounded-none border border-border bg-card p-3">
@@ -103,9 +106,15 @@ export function EndpointDetailPanel({
           <span className={cn('font-mono text-xs font-semibold', methodTextStyle(method))}>
             {method}
           </span>
-          <span className="font-mono text-xs break-all" title={endpoint.path}>
-            {endpoint.path}
-          </span>
+          {collapseKeys ? (
+            <span className="font-mono text-xs" title={endpoint.path}>
+              {keyParams.length} key parameters
+            </span>
+          ) : (
+            <span className="font-mono text-xs break-all" title={endpoint.path}>
+              {endpoint.path}
+            </span>
+          )}
         </div>
         {onToggleSelected && (
           <label
