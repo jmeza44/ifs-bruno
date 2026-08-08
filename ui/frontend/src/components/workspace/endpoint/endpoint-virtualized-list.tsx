@@ -1,6 +1,10 @@
 import { useCallback, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { EndpointListRow } from '@/components/workspace/endpoint/endpoint-list-row';
+import {
+  ENDPOINT_ROW_GRID_COLUMNS,
+  EndpointListRow,
+} from '@/components/workspace/endpoint/endpoint-list-row';
+import { cn } from '@/lib/utils';
 import type { EndpointListEntry } from '@/lib/types';
 
 export type EndpointVirtualizedListProps = {
@@ -50,37 +54,39 @@ export function EndpointVirtualizedList({
     );
   }
 
+  const virtualItems = virtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom =
+    virtualItems.length > 0
+      ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
+      : 0;
+
   return (
     <div ref={handleScrollElementRef} className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1">
-      <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
-        {virtualizer.getVirtualItems().map((virtualItem) => {
+      {/* Rows render in normal flow (not position:absolute) so the grid can size
+          the checkbox/method columns from their real rendered content via subgrid. */}
+      <div
+        className={cn('grid w-full', ENDPOINT_ROW_GRID_COLUMNS)}
+        style={{ paddingTop, paddingBottom }}
+      >
+        {virtualItems.map((virtualItem) => {
           const entry = entries[virtualItem.index];
           if (!entry) {
             return null;
           }
           return (
-            <div
+            <EndpointListRow
               key={entry.id}
               ref={virtualizer.measureElement}
               data-index={virtualItem.index}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            >
-              <EndpointListRow
-                entry={entry}
-                searchTerm={searchTerm}
-                isSelected={selected.has(entry.id)}
-                isLocked={alreadyInCollection?.has(entry.id) ?? false}
-                isActive={entry.id === activeId}
-                onToggleSelected={onToggleSelected}
-                onViewDetail={onViewDetail}
-              />
-            </div>
+              entry={entry}
+              searchTerm={searchTerm}
+              isSelected={selected.has(entry.id)}
+              isLocked={alreadyInCollection?.has(entry.id) ?? false}
+              isActive={entry.id === activeId}
+              onToggleSelected={onToggleSelected}
+              onViewDetail={onViewDetail}
+            />
           );
         })}
       </div>

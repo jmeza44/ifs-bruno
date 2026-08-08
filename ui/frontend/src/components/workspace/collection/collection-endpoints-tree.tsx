@@ -19,6 +19,10 @@ export type CollectionEndpointsTreeProps = {
   folders: CollectionFolder[];
 };
 
+/** Shared across the scroll container, each folder's <ul>, and each <li> row via subgrid,
+ *  so the method column lines up at the same width across every folder in the tree. */
+const ENDPOINT_TREE_GRID_COLUMNS = 'grid-cols-[auto_1fr]';
+
 function FolderRow({
   folder,
   open,
@@ -29,11 +33,11 @@ function FolderRow({
   onToggle: (name: string) => void;
 }) {
   return (
-    <div>
+    <div className="col-span-full grid grid-cols-subgrid">
       <button
         type="button"
         onClick={() => onToggle(folder.name)}
-        className="flex w-full items-center gap-1.5 rounded-none px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="col-span-full flex w-full items-center gap-1.5 rounded-none px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
       >
         <CaretRightIcon
           size={12}
@@ -47,11 +51,11 @@ function FolderRow({
       </button>
 
       {open && (
-        <ul className="ml-5 space-y-0.5 border-l border-border pl-2">
+        <ul className="col-span-full ml-5 grid grid-cols-subgrid space-y-0.5 border-l border-border pl-2">
           {folder.endpoints.map((endpoint) => (
             <li
               key={endpoint.operationId ?? endpoint.name}
-              className="flex items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="col-span-full grid grid-cols-subgrid items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
             >
               <MethodLabel method={endpoint.method} />
               <span className="truncate" title={endpoint.name}>
@@ -110,7 +114,12 @@ export function CollectionEndpointsTree({ folders }: CollectionEndpointsTreeProp
         </Button>
       </div>
 
-      <div className="scroll-discreet flex-1 space-y-0.5 overflow-y-auto p-2 pt-0">
+      <div
+        className={cn(
+          'scroll-discreet grid flex-1 gap-y-0.5 overflow-y-auto p-2 pt-0',
+          ENDPOINT_TREE_GRID_COLUMNS,
+        )}
+      >
         {folders.map((folder) => (
           <FolderRow
             key={folder.name}
