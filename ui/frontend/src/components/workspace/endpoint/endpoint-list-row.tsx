@@ -35,12 +35,9 @@ export function EndpointListRow({
     <div
       ref={ref}
       data-index={dataIndex}
-      role="button"
-      tabIndex={0}
+      role="option"
+      aria-selected={isActive}
       onClick={() => onViewDetail(entry)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onViewDetail(entry);
-      }}
       className={cn(
         'col-span-full grid grid-cols-subgrid items-center gap-2 rounded-none px-1.5 py-1 text-xs transition-colors hover:bg-accent hover:text-accent-foreground',
         'cursor-pointer',
@@ -50,6 +47,7 @@ export function EndpointListRow({
       <Checkbox
         checked={isSelected || isLocked}
         disabled={isLocked}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         onCheckedChange={() => onToggleSelected(entry.id)}
         title={isLocked ? 'Already in collection' : isSelected ? 'Deselect' : 'Select'}

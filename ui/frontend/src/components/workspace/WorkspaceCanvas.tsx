@@ -25,6 +25,7 @@ export type WorkspaceCanvasProps = {
   availableEndpoints: EndpointListEntry[];
   selectedToAdd: Set<string>;
   alreadyInCollection: Set<string>;
+  activeEndpointId: string | null;
   activeEndpointDetail: EndpointDetail | null;
   onViewDetail: (entry: EndpointListEntry) => void;
   onSave: () => void;
@@ -56,13 +57,12 @@ export function WorkspaceCanvas({
   availableEndpoints,
   selectedToAdd,
   alreadyInCollection,
+  activeEndpointId,
   activeEndpointDetail,
   onViewDetail,
   onSave,
   isSaving,
 }: WorkspaceCanvasProps) {
-  const activeEndpointId = activeEndpointDetail?.id;
-
   return (
     <div className="min-h-0 flex-1 p-2 relative">
       <Group className="gap-x-2">
@@ -84,7 +84,7 @@ export function WorkspaceCanvas({
                   entries={availableEndpoints}
                   selected={selectedToAdd}
                   alreadyInCollection={alreadyInCollection}
-                  activeId={activeEndpointId}
+                  activeId={activeEndpointId ?? undefined}
                   onToggleSelected={workspaceActions.toggleEndpointSelection}
                   onChangeProjection={workspaceActions.closeProjection}
                   onViewDetail={onViewDetail}

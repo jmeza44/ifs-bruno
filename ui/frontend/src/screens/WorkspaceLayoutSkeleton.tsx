@@ -90,6 +90,7 @@ export function WorkspaceLayoutSkeleton() {
         availableEndpoints={endpoints.available}
         selectedToAdd={endpoints.selectedToAdd}
         alreadyInCollection={endpoints.alreadyInCollection}
+        activeEndpointId={endpoints.activeEndpointId}
         activeEndpointDetail={endpoints.detail}
         onViewDetail={viewEndpointDetail}
         onSave={handleSave}

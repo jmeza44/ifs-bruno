@@ -31,6 +31,10 @@ export type WorkspaceState = {
     available: EndpointListEntry[];
     alreadyInCollection: Set<string>;
     selectedToAdd: Set<string>;
+    // Kept separate from `detail` so the active-row highlight can update instantly
+    // (e.g. arrow-key navigation) without waiting on — or re-rendering alongside —
+    // the heavier detail payload.
+    activeEndpointId: string | null;
     detail: EndpointDetail | null;
   };
   ui: {
@@ -46,6 +50,7 @@ const initialState: WorkspaceState = {
     available: [],
     alreadyInCollection: new Set(),
     selectedToAdd: new Set(),
+    activeEndpointId: null,
     detail: null,
   },
   ui: { pendingConfirmation: null },
@@ -62,6 +67,7 @@ function resetEndpoints(): WorkspaceState['endpoints'] {
     available: [],
     alreadyInCollection: new Set(),
     selectedToAdd: new Set(),
+    activeEndpointId: null,
     detail: null,
   };
 }
@@ -224,10 +230,18 @@ export const workspaceActions = {
     });
   },
 
+  /** Lightweight — only updates which row is highlighted as active. */
+  setActiveEndpointId(id: string | null) {
+    workspaceStore.setState((state) => ({
+      ...state,
+      endpoints: { ...state.endpoints, activeEndpointId: id },
+    }));
+  },
+
   viewEndpointDetail(detail: EndpointDetail | null) {
     workspaceStore.setState((state) => ({
       ...state,
-      endpoints: { ...state.endpoints, detail },
+      endpoints: { ...state.endpoints, activeEndpointId: detail?.id ?? null, detail },
     }));
   },
 

@@ -46,6 +46,34 @@ export function EndpointVirtualizedList({
     [virtualizer],
   );
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+
+      const currentIndex = activeId ? entries.findIndex((entry) => entry.id === activeId) : -1;
+      const delta = event.key === 'ArrowDown' ? 1 : -1;
+      const nextIndex =
+        currentIndex === -1
+          ? delta === 1
+            ? 0
+            : entries.length - 1
+          : Math.min(Math.max(currentIndex + delta, 0), entries.length - 1);
+
+      const nextEntry = entries[nextIndex];
+      if (!nextEntry) return;
+
+      virtualizer.scrollToIndex(nextIndex, { align: 'auto' });
+      onViewDetail(nextEntry);
+      return;
+    }
+
+    if (event.key === ' ' || event.key === 'Enter') {
+      if (!activeId || (alreadyInCollection?.has(activeId) ?? false)) return;
+      event.preventDefault();
+      onToggleSelected(activeId);
+    }
+  };
+
   if (entries.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
@@ -62,7 +90,13 @@ export function EndpointVirtualizedList({
       : 0;
 
   return (
-    <div ref={handleScrollElementRef} className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1">
+    <div
+      ref={handleScrollElementRef}
+      role="listbox"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      className="scroll-discreet flex-1 overflow-y-auto p-1.5 pt-1 outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+    >
       {/* Rows render in normal flow (not position:absolute) so the grid can size
           the checkbox/method columns from their real rendered content via subgrid. */}
       <div
