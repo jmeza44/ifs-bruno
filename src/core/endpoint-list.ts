@@ -5,12 +5,37 @@ import type {
   ParameterObject,
   ResponseObject,
 } from '@types-app/spec.types';
-import type { EndpointEntry, EndpointDetail } from '@types-app/tool.types';
+import type { EndpointEntry, EndpointDetail, EndpointTier } from '@types-app/tool.types';
 import { RefResolver } from './ref-resolver';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
+const WRITE_METHODS = new Set<(typeof HTTP_METHODS)[number]>(['post', 'put', 'patch', 'delete']);
+
+/**
+ * Classifies a tag by which HTTP methods its operations support: tags with any
+ * write method are `core` entities; the rest are read-only reference/lookup
+ * data, distinguished from IFS's own naming convention for those (`Reference_*`,
+ * `Lookup_*`). `Service Operations - *` tags group business actions/functions,
+ * which are always POST-only but aren't CRUD on an entity.
+ */
+function classifyTier(tag: string, writableTags: Set<string>): EndpointTier {
+  if (tag.startsWith('Service Operations')) return 'service-ops';
+  if (writableTags.has(tag)) return 'core';
+  if (tag.startsWith('Lookup_')) return 'lookup';
+  return 'reference';
+}
 
 export function buildEndpointList(spec: SwaggerSpec): EndpointEntry[] {
+  const writableTags = new Set<string>();
+  for (const pathItem of Object.values(spec.paths)) {
+    for (const method of HTTP_METHODS) {
+      if (!WRITE_METHODS.has(method)) continue;
+      const operation = (pathItem as PathItem)[method] as Operation | undefined;
+      if (!operation) continue;
+      for (const tag of operation.tags ?? []) writableTags.add(tag);
+    }
+  }
+
   const entries: EndpointEntry[] = [];
 
   for (const [pathTemplate, pathItem] of Object.entries(spec.paths)) {
@@ -22,8 +47,9 @@ export function buildEndpointList(spec: SwaggerSpec): EndpointEntry[] {
       const summary = (operation.summary ?? operation.operationId ?? pathTemplate).trim();
       const operationId = operation.operationId ?? '';
       const displayLabel = `[${method.toUpperCase()}] ${pathTemplate} — ${summary}`;
+      const tier = classifyTier(tag, writableTags);
 
-      entries.push({ path: pathTemplate, method, tag, summary, operationId, displayLabel });
+      entries.push({ path: pathTemplate, method, tag, summary, operationId, displayLabel, tier });
     }
   }
 

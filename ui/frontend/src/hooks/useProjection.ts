@@ -46,6 +46,7 @@ export function useProjection(
         method: entry.method.toUpperCase(),
         summary: entry.summary,
         operationId: entry.operationId,
+        tier: entry.tier,
       }));
       const alreadyInCollection = buildAlreadyInCollectionKeys(folders);
       workspaceActions.selectProjection(projection, endpoints, alreadyInCollection);

@@ -25,6 +25,8 @@ export interface IfsProjection {
   Deprecated: string | null;
 }
 
+export type EndpointTier = 'core' | 'service-ops' | 'reference' | 'lookup';
+
 export interface EndpointEntry {
   path: string;
   method: string;
@@ -32,6 +34,7 @@ export interface EndpointEntry {
   summary: string;
   operationId: string;
   displayLabel: string;
+  tier: EndpointTier;
 }
 
 export interface SpecResult {
@@ -75,6 +78,7 @@ export type EndpointListEntry = {
   method: string;
   summary?: string;
   operationId?: string;
+  tier: EndpointTier;
 };
 
 export type ProfileOption = {

@@ -2,8 +2,13 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EndpointListFilters } from '@/components/workspace/endpoint/endpoint-list-filters';
 import { EndpointVirtualizedList } from '@/components/workspace/endpoint/endpoint-virtualized-list';
-import { HTTP_METHODS, sortByRelevance, type HttpMethod } from '@/lib/endpoint-search';
-import type { EndpointListEntry } from '@/lib/types';
+import {
+  ENDPOINT_TIERS,
+  HTTP_METHODS,
+  sortByRelevance,
+  type HttpMethod,
+} from '@/lib/endpoint-search';
+import type { EndpointListEntry, EndpointTier } from '@/lib/types';
 
 export type { EndpointListEntry };
 
@@ -32,11 +37,13 @@ export function EndpointListPanel({
 }: EndpointListPanelProps) {
   const [search, setSearch] = useState('');
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(new Set(HTTP_METHODS));
+  const [activeTiers, setActiveTiers] = useState<Set<EndpointTier>>(new Set(ENDPOINT_TIERS));
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const matched = entries.filter((entry) => {
       if (!activeMethods.has(entry.method.toUpperCase() as HttpMethod)) return false;
+      if (!activeTiers.has(entry.tier)) return false;
       if (!term) return true;
       return (
         entry.path.toLowerCase().includes(term) ||
@@ -45,7 +52,7 @@ export function EndpointListPanel({
       );
     });
     return sortByRelevance(matched, search);
-  }, [entries, search, activeMethods]);
+  }, [entries, search, activeMethods, activeTiers]);
 
   return (
     <div className="flex h-full flex-col gap-1 overflow-y-hidden rounded-none border border-border bg-card">
@@ -54,6 +61,8 @@ export function EndpointListPanel({
         onSearchChange={setSearch}
         activeMethods={activeMethods}
         onActiveMethodsChange={setActiveMethods}
+        activeTiers={activeTiers}
+        onActiveTiersChange={setActiveTiers}
         onChangeProjection={onChangeProjection}
       />
 

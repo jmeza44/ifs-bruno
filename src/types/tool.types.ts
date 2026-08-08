@@ -1,3 +1,10 @@
+/**
+ * Coarse relevance grouping derived from which HTTP methods a tag's operations
+ * support: `core` entities accept writes, `service-ops` are business actions,
+ * `reference`/`lookup` are read-only data used to populate core entities.
+ */
+export type EndpointTier = 'core' | 'service-ops' | 'reference' | 'lookup';
+
 export interface EndpointEntry {
   path: string;
   method: string;
@@ -5,6 +12,7 @@ export interface EndpointEntry {
   summary: string;
   operationId: string;
   displayLabel: string;
+  tier: EndpointTier;
 }
 
 export interface EndpointDetailParameter {

@@ -2,8 +2,15 @@ import { ArrowLeftIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { HTTP_METHODS, type HttpMethod } from '@/lib/endpoint-search';
+import { EndpointTierHelpDialog } from '@/components/workspace/endpoint/endpoint-tier-help-dialog';
+import {
+  ENDPOINT_TIER_LABELS,
+  ENDPOINT_TIERS,
+  HTTP_METHODS,
+  type HttpMethod,
+} from '@/lib/endpoint-search';
 import { METHOD_STYLES } from '@/lib/http-method-styles';
+import type { EndpointTier } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export type EndpointListFiltersProps = {
@@ -11,6 +18,8 @@ export type EndpointListFiltersProps = {
   onSearchChange: (value: string) => void;
   activeMethods: Set<HttpMethod>;
   onActiveMethodsChange: (methods: Set<HttpMethod>) => void;
+  activeTiers: Set<EndpointTier>;
+  onActiveTiersChange: (tiers: Set<EndpointTier>) => void;
   onChangeProjection?: () => void;
 };
 
@@ -19,6 +28,8 @@ export function EndpointListFilters({
   onSearchChange,
   activeMethods,
   onActiveMethodsChange,
+  activeTiers,
+  onActiveTiersChange,
   onChangeProjection,
 }: EndpointListFiltersProps) {
   return (
@@ -73,6 +84,35 @@ export function EndpointListFilters({
           );
         })}
       </ToggleGroup>
+      <div className="flex items-center gap-1.5">
+        <ToggleGroup
+          type="multiple"
+          spacing={1}
+          value={Array.from(activeTiers)}
+          onValueChange={(value) => onActiveTiersChange(new Set(value as EndpointTier[]))}
+          className="flex-1 flex-wrap"
+        >
+          {ENDPOINT_TIERS.map((tier) => {
+            const active = activeTiers.has(tier);
+            return (
+              <ToggleGroupItem
+                key={tier}
+                value={tier}
+                size="sm"
+                className={cn(
+                  'h-auto rounded-none border px-1.5 py-0.5 text-[11px] font-semibold transition-colors',
+                  active
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-transparent text-muted-foreground/50 hover:bg-transparent hover:text-muted-foreground',
+                )}
+              >
+                {ENDPOINT_TIER_LABELS[tier]}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
+        <EndpointTierHelpDialog />
+      </div>
     </div>
   );
 }
