@@ -1,0 +1,24 @@
+/* Success/warning status colors — kept out of the shadcn-managed theme blocks
+   in index.css so a `shadcn add <theme-url>` re-run can't drop them. Mapped in
+   @theme inline (same pattern as --color-destructive) so bg-success/text-warning
+   etc. work as Tailwind utilities, not just raw var(--success). */
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+}
+
+:root {
+  --success: oklch(0.596 0.145 163.225);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.75 0.183 76);
+  --warning-foreground: oklch(0.145 0.008 326);
+}
+
+.dark {
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(0.145 0.008 326);
+  --warning: oklch(0.82 0.17 76);
+  --warning-foreground: oklch(0.145 0.008 326);
+}

@@ -4,13 +4,17 @@
 @import '@fontsource-variable/jetbrains-mono';
 @import '@fontsource-variable/roboto-slab';
 
+/* Hand-written customizations, kept out of the shadcn-managed theme blocks
+   below so `shadcn add <theme-url>` can safely regenerate this file without
+   silently dropping them. */
+@import './styles/brand-colors.css';
+@import './styles/semantic-status.css';
+@import './styles/scroll-discreet.css';
+@import './styles/json-tree.css';
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-bruno: var(--bruno);
-  --color-bruno-foreground: var(--bruno-foreground);
-  --color-postman: var(--postman);
-  --color-postman-foreground: var(--postman-foreground);
   --font-heading: 'Roboto Slab Variable', serif;
   --font-mono: Geist Mono, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -80,10 +84,6 @@
 }
 
 :root {
-  --bruno: oklch(0.72 0.18 46);
-  --bruno-foreground: oklch(0.98 0 0);
-  --postman: oklch(0.65 0.19 30);
-  --postman-foreground: oklch(0.98 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.1448 0 0);
   --card: oklch(1 0 0);
@@ -99,10 +99,6 @@
   --accent: oklch(0.9702 0 0);
   --accent-foreground: oklch(0.2046 0 0);
   --destructive: oklch(0.583 0.2387 28.4765);
-  --success: oklch(0.596 0.145 163.225);
-  --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.75 0.183 76);
-  --warning-foreground: oklch(0.145 0.008 326);
   --border: oklch(0.9219 0 0);
   --input: oklch(0.9219 0 0);
   --ring: oklch(0.709 0 0);
@@ -144,10 +140,6 @@
 }
 
 .dark {
-  --bruno: oklch(0.75 0.17 46);
-  --bruno-foreground: oklch(0.1 0 0);
-  --postman: oklch(0.68 0.18 30);
-  --postman-foreground: oklch(0.1 0 0);
   --background: oklch(0.1448 0 0);
   --foreground: oklch(0.9851 0 0);
   --card: oklch(0.2134 0 0);
@@ -163,10 +155,6 @@
   --accent: oklch(0.3715 0 0);
   --accent-foreground: oklch(0.9851 0 0);
   --destructive: oklch(0.7022 0.1892 22.2279);
-  --success: oklch(0.696 0.17 162.48);
-  --success-foreground: oklch(0.145 0.008 326);
-  --warning: oklch(0.82 0.17 76);
-  --warning-foreground: oklch(0.145 0.008 326);
   --border: oklch(0.3407 0 0);
   --input: oklch(0.4386 0 0);
   --ring: oklch(0.5555 0 0);
@@ -216,43 +204,5 @@
   }
   html {
     @apply font-mono;
-  }
-}
-
-@layer utilities {
-  /* Discreet scrollbar: invisible at rest, fades in on hover, fades out with a short delay on leave. */
-  .scroll-discreet {
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    transition: scrollbar-color 200ms ease 400ms;
-  }
-  .scroll-discreet:hover,
-  .scroll-discreet:focus-within {
-    scrollbar-color: oklch(from var(--foreground) l c h / 20%) transparent;
-    transition-delay: 0ms;
-  }
-
-  .scroll-discreet::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  .scroll-discreet::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scroll-discreet::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-    transition: background-color 200ms ease 400ms;
-  }
-  .scroll-discreet:hover::-webkit-scrollbar-thumb,
-  .scroll-discreet:focus-within::-webkit-scrollbar-thumb {
-    background-color: oklch(from var(--foreground) l c h / 18%);
-    transition-delay: 0ms;
-  }
-  .scroll-discreet::-webkit-scrollbar-thumb:hover {
-    background-color: oklch(from var(--foreground) l c h / 32%);
-    transition-delay: 0ms;
   }
 }

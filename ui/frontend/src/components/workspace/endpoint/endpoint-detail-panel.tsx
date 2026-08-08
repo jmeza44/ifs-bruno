@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { JsonTree } from '@/components/workspace/endpoint/json-tree';
 import { shouldCollapsePathKeys } from '@/lib/endpoint-path';
 import { methodTextStyle } from '@/lib/http-method-styles';
 import type { EndpointDetail, EndpointDetailParameter, EndpointDetailResponse } from '@/lib/types';
@@ -73,9 +74,7 @@ function SchemaDetails({ schema }: { schema: unknown }) {
       <summary className="cursor-pointer px-2 py-1 text-xs text-muted-foreground select-none group-open:border-b group-open:border-border">
         Schema
       </summary>
-      <pre className="scroll-discreet overflow-x-auto p-2 font-mono text-xs leading-relaxed">
-        {JSON.stringify(schema, null, 2)}
-      </pre>
+      <JsonTree data={schema} />
     </details>
   );
 }

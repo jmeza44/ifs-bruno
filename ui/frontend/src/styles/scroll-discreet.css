@@ -1,0 +1,39 @@
+/* Discreet scrollbar utility: invisible at rest, fades in on hover, fades out
+   with a short delay on leave. Kept out of the shadcn-managed @layer utilities
+   block in index.css so a `shadcn add <theme-url>` re-run can't drop it. */
+@layer utilities {
+  .scroll-discreet {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease 400ms;
+  }
+  .scroll-discreet:hover,
+  .scroll-discreet:focus-within {
+    scrollbar-color: oklch(from var(--foreground) l c h / 20%) transparent;
+    transition-delay: 0ms;
+  }
+
+  .scroll-discreet::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-discreet::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-discreet::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 200ms ease 400ms;
+  }
+  .scroll-discreet:hover::-webkit-scrollbar-thumb,
+  .scroll-discreet:focus-within::-webkit-scrollbar-thumb {
+    background-color: oklch(from var(--foreground) l c h / 18%);
+    transition-delay: 0ms;
+  }
+  .scroll-discreet::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(from var(--foreground) l c h / 32%);
+    transition-delay: 0ms;
+  }
+}
