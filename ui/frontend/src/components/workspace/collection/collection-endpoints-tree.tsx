@@ -17,6 +17,7 @@ export type CollectionFolder = {
 
 export type CollectionEndpointsTreeProps = {
   folders: CollectionFolder[];
+  hasActiveCollection?: boolean;
 };
 
 /** Shared across the scroll container, each folder's <ul>, and each <li> row via subgrid,
@@ -69,7 +70,10 @@ function FolderRow({
   );
 }
 
-export function CollectionEndpointsTree({ folders }: CollectionEndpointsTreeProps) {
+export function CollectionEndpointsTree({
+  folders,
+  hasActiveCollection = false,
+}: CollectionEndpointsTreeProps) {
   const allFolderNames = useMemo(() => folders.map((folder) => folder.name), [folders]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(() => new Set(allFolderNames));
 
@@ -86,7 +90,9 @@ export function CollectionEndpointsTree({ folders }: CollectionEndpointsTreeProp
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 rounded-none border border-border bg-card p-4 text-center text-xs text-muted-foreground">
         <FolderIcon size={20} />
-        <span>No endpoints in this collection yet</span>
+        <span>
+          {hasActiveCollection ? 'No endpoints in this collection yet' : 'No collection selected'}
+        </span>
       </div>
     );
   }

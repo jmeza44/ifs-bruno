@@ -15,6 +15,8 @@ export type EndpointVirtualizedListProps = {
   activeId?: string;
   onToggleSelected: (id: string) => void;
   onViewDetail: (entry: EndpointListEntry) => void;
+  hasUnfilteredEntries?: boolean;
+  onClearFilters?: () => void;
 };
 
 const ENDPOINT_ROW_ESTIMATED_HEIGHT = 30;
@@ -27,6 +29,8 @@ export function EndpointVirtualizedList({
   activeId,
   onToggleSelected,
   onViewDetail,
+  hasUnfilteredEntries = false,
+  onClearFilters,
 }: EndpointVirtualizedListProps) {
   const scrollElementRef = useRef<HTMLDivElement | null>(null);
   const virtualizer = useVirtualizer({
@@ -76,8 +80,23 @@ export function EndpointVirtualizedList({
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
-        No endpoints match.
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-xs text-muted-foreground">
+        {hasUnfilteredEntries ? (
+          <>
+            <span>No endpoints match your filters.</span>
+            {onClearFilters && (
+              <button
+                type="button"
+                className="text-foreground underline underline-offset-2 hover:no-underline"
+                onClick={onClearFilters}
+              >
+                Clear filters
+              </button>
+            )}
+          </>
+        ) : (
+          <span>No endpoints available yet.</span>
+        )}
       </div>
     );
   }

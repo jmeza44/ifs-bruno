@@ -54,6 +54,12 @@ export function EndpointListPanel({
     return sortByRelevance(matched, search);
   }, [entries, search, activeMethods, activeTiers]);
 
+  function handleClearFilters() {
+    setSearch('');
+    setActiveMethods(new Set(HTTP_METHODS));
+    setActiveTiers(new Set(ENDPOINT_TIERS));
+  }
+
   return (
     <div className="flex h-full flex-col gap-1 overflow-y-hidden rounded-none border border-border bg-card">
       <EndpointListFilters
@@ -74,6 +80,8 @@ export function EndpointListPanel({
         activeId={activeId}
         onToggleSelected={onToggleSelected}
         onViewDetail={onViewDetail}
+        hasUnfilteredEntries={entries.length > 0}
+        onClearFilters={handleClearFilters}
       />
 
       {/* footer: counters + save action */}

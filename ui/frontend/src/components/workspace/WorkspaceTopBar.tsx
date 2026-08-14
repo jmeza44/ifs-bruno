@@ -16,6 +16,7 @@ export type WorkspaceTopBarProps = {
   availableCollections: CollectionEntry[];
   activeProfile: ProfileOption | null;
   availableProfiles: ProfileOption[];
+  profileTriggerRef?: React.Ref<HTMLButtonElement>;
   loadedSpec: LoadedSpec | null;
   onLoadSpec: (file: File) => void;
   newCollectionOpen: boolean;
@@ -31,6 +32,7 @@ export function WorkspaceTopBar({
   availableCollections,
   activeProfile,
   availableProfiles,
+  profileTriggerRef,
   loadedSpec,
   onLoadSpec,
   newCollectionOpen,
@@ -68,6 +70,7 @@ export function WorkspaceTopBar({
       </span>
       <div className="flex gap-2">
         <ProfileSelector
+          ref={profileTriggerRef}
           active={activeProfile}
           available={availableProfiles}
           onSelect={workspaceActions.selectProfile}

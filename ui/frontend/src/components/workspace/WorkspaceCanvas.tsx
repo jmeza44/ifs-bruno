@@ -4,7 +4,14 @@ import { CollectionEndpointsTree } from '@/components/workspace/collection/colle
 import { EndpointListPanel } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { EndpointDetailPanel } from '@/components/workspace/endpoint/endpoint-detail-panel';
 import { ProjectionSearchPanel } from '@/components/workspace/projection/projection-search-panel';
-import type { CollectionEntry, CollectionFolder, EndpointDetail, IfsProjection } from '@/lib/types';
+import { WelcomeEmptyState } from '@/components/workspace/welcome-empty-state';
+import type {
+  CollectionEntry,
+  CollectionFolder,
+  EndpointDetail,
+  IfsProjection,
+  LoadedSpec,
+} from '@/lib/types';
 import type { CollectionDetails } from '@/components/workspace/collection/collection-details-panel';
 import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { workspaceActions } from '@/lib/workspace-store';
@@ -12,9 +19,16 @@ import { DotsSixVerticalIcon } from '@phosphor-icons/react';
 
 export type WorkspaceCanvasProps = {
   activeCollection: CollectionEntry | null;
+  availableCollections: CollectionEntry[];
   collectionDetails: CollectionDetails | null;
   folders: CollectionFolder[];
   activeProfileName: string | null;
+  hasProfiles: boolean;
+  onAddProfile: () => void;
+  onFocusProfileSelector: () => void;
+  loadedSpec: LoadedSpec | null;
+  onLoadSpec: (file: File) => void;
+  onCreateCollection: () => void;
   isSearchingProjection: boolean;
   searchedProjection: IfsProjection | null;
   onSelectSearchedProjection: (projection: IfsProjection | null) => void;
@@ -44,9 +58,16 @@ function ResizableHandle() {
 
 export function WorkspaceCanvas({
   activeCollection,
+  availableCollections,
   collectionDetails,
   folders,
   activeProfileName,
+  hasProfiles,
+  onAddProfile,
+  onFocusProfileSelector,
+  loadedSpec,
+  onLoadSpec,
+  onCreateCollection,
   isSearchingProjection,
   searchedProjection,
   onSelectSearchedProjection,
@@ -63,6 +84,21 @@ export function WorkspaceCanvas({
   onSave,
   isSaving,
 }: WorkspaceCanvasProps) {
+  if (!activeCollection && !loadedSpec && !activeProfileName) {
+    return (
+      <div className="min-h-0 flex-1 p-2">
+        <WelcomeEmptyState
+          hasProfiles={hasProfiles}
+          onAddProfile={onAddProfile}
+          onFocusProfileSelector={onFocusProfileSelector}
+          hasCollections={availableCollections.length > 0}
+          onLoadSpec={onLoadSpec}
+          onCreateCollection={onCreateCollection}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-0 flex-1 p-2 relative">
       <Group className="gap-x-2">
@@ -115,7 +151,10 @@ export function WorkspaceCanvas({
               <CollectionDetailsPanel collection={activeCollection} details={collectionDetails} />
             </div>
             <div className="flex-2 overflow-hidden">
-              <CollectionEndpointsTree folders={folders} />
+              <CollectionEndpointsTree
+                folders={folders}
+                hasActiveCollection={activeCollection != null}
+              />
             </div>
           </div>
         </Panel>

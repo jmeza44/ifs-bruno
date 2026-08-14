@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { WorkspaceTopBar } from '@/components/workspace/WorkspaceTopBar';
 import { WorkspaceCanvas } from '@/components/workspace/WorkspaceCanvas';
 import { ConfirmationDialog } from '@/components/workspace/confirmation-dialog';
@@ -22,6 +22,7 @@ export function WorkspaceLayoutSkeleton() {
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchedProjection, setSearchedProjection] = useState<IfsProjection | null>(null);
+  const profileTriggerRef = useRef<HTMLButtonElement>(null);
 
   const activeCollectionPath = collection.active?.path;
   const activeProfile = source.type === 'profile' ? source.profile : null;
@@ -68,6 +69,7 @@ export function WorkspaceLayoutSkeleton() {
         availableCollections={collection.available}
         activeProfile={activeProfile}
         availableProfiles={profiles.available}
+        profileTriggerRef={profileTriggerRef}
         loadedSpec={loadedSpec}
         onLoadSpec={loadLocalSpec}
         newCollectionOpen={newCollectionOpen}
@@ -79,9 +81,23 @@ export function WorkspaceLayoutSkeleton() {
       />
       <WorkspaceCanvas
         activeCollection={collection.active}
+        availableCollections={collection.available}
         collectionDetails={details}
         folders={folders}
         activeProfileName={activeProfile?.name ?? null}
+        hasProfiles={profiles.available.length > 0}
+        onAddProfile={() => setNewProfileOpen(true)}
+        onFocusProfileSelector={() => {
+          const trigger = profileTriggerRef.current;
+          if (!trigger) return;
+          trigger.focus();
+          trigger.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+          );
+        }}
+        loadedSpec={loadedSpec}
+        onLoadSpec={loadLocalSpec}
+        onCreateCollection={() => setNewCollectionOpen(true)}
         isSearchingProjection={isSearchingProjection}
         searchedProjection={searchedProjection}
         onSelectSearchedProjection={setSearchedProjection}
