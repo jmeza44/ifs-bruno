@@ -5,42 +5,25 @@ import { EndpointListPanel } from '@/components/workspace/endpoint/endpoint-list
 import { EndpointDetailPanel } from '@/components/workspace/endpoint/endpoint-detail-panel';
 import { ProjectionSearchPanel } from '@/components/workspace/projection/projection-search-panel';
 import { WelcomeEmptyState } from '@/components/workspace/welcome-empty-state';
-import type {
-  CollectionEntry,
-  CollectionFolder,
-  EndpointDetail,
-  IfsProjection,
-  LoadedSpec,
-} from '@/lib/types';
+import type { CollectionFolder, IfsProjection } from '@/lib/types';
 import type { CollectionDetails } from '@/components/workspace/collection/collection-details-panel';
 import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
-import { workspaceActions } from '@/lib/workspace-store';
+import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
 import { DotsSixVerticalIcon } from '@phosphor-icons/react';
 
 export type WorkspaceCanvasProps = {
-  activeCollection: CollectionEntry | null;
-  availableCollections: CollectionEntry[];
   collectionDetails: CollectionDetails | null;
   folders: CollectionFolder[];
-  activeProfileName: string | null;
-  hasProfiles: boolean;
   onAddProfile: () => void;
   onFocusProfileSelector: () => void;
-  loadedSpec: LoadedSpec | null;
   onLoadSpec: (file: File) => void;
   onCreateCollection: () => void;
-  isSearchingProjection: boolean;
   searchedProjection: IfsProjection | null;
   onSelectSearchedProjection: (projection: IfsProjection | null) => void;
   projections: IfsProjection[];
   isLoadingProjections: boolean;
   onContinueProjection: (projection: IfsProjection) => void;
   isLoadingProjection: boolean;
-  availableEndpoints: EndpointListEntry[];
-  selectedToAdd: Set<string>;
-  alreadyInCollection: Set<string>;
-  activeEndpointId: string | null;
-  activeEndpointDetail: EndpointDetail | null;
   onViewDetail: (entry: EndpointListEntry) => void;
   onSave: () => void;
   isSaving: boolean;
@@ -57,41 +40,38 @@ function ResizableHandle() {
 }
 
 export function WorkspaceCanvas({
-  activeCollection,
-  availableCollections,
   collectionDetails,
   folders,
-  activeProfileName,
-  hasProfiles,
   onAddProfile,
   onFocusProfileSelector,
-  loadedSpec,
   onLoadSpec,
   onCreateCollection,
-  isSearchingProjection,
   searchedProjection,
   onSelectSearchedProjection,
   projections,
   isLoadingProjections,
   onContinueProjection,
   isLoadingProjection,
-  availableEndpoints,
-  selectedToAdd,
-  alreadyInCollection,
-  activeEndpointId,
-  activeEndpointDetail,
   onViewDetail,
   onSave,
   isSaving,
 }: WorkspaceCanvasProps) {
+  const activeCollection = useWorkspaceStore((state) => state.collection.active);
+  const source = useWorkspaceStore((state) => state.source);
+  const endpoints = useWorkspaceStore((state) => state.endpoints);
+
+  const activeProfileName = source.type === 'profile' ? source.profile.name : null;
+  const loadedSpec = source.type === 'spec' ? source.spec : null;
+  const isSearchingProjection = source.type === 'profile' && source.projection.state === 'searching';
+  const { available: availableEndpoints, selectedToAdd, alreadyInCollection, activeEndpointId, detail: activeEndpointDetail } =
+    endpoints;
+
   if (!activeCollection && !loadedSpec && !activeProfileName) {
     return (
       <div className="min-h-0 flex-1 p-2">
         <WelcomeEmptyState
-          hasProfiles={hasProfiles}
           onAddProfile={onAddProfile}
           onFocusProfileSelector={onFocusProfileSelector}
-          hasCollections={availableCollections.length > 0}
           onLoadSpec={onLoadSpec}
           onCreateCollection={onCreateCollection}
         />

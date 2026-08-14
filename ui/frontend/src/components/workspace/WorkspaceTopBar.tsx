@@ -8,16 +8,11 @@ import { NewCollectionDialog } from '@/components/workspace/collection/new-colle
 import { SpecLoader } from '@/components/workspace/spec-loader';
 import { Button } from '@/components/ui/button';
 import { GearIcon } from '@phosphor-icons/react';
-import type { CollectionEntry, LoadedSpec } from '@/lib/types';
-import { workspaceActions } from '@/lib/workspace-store';
+import type { CollectionEntry } from '@/lib/types';
+import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
 
 export type WorkspaceTopBarProps = {
-  activeCollection: CollectionEntry | null;
-  availableCollections: CollectionEntry[];
-  activeProfile: ProfileOption | null;
-  availableProfiles: ProfileOption[];
   profileTriggerRef?: React.Ref<HTMLButtonElement>;
-  loadedSpec: LoadedSpec | null;
   onLoadSpec: (file: File) => void;
   newCollectionOpen: boolean;
   onNewCollectionOpenChange: (open: boolean) => void;
@@ -28,12 +23,7 @@ export type WorkspaceTopBarProps = {
 };
 
 export function WorkspaceTopBar({
-  activeCollection,
-  availableCollections,
-  activeProfile,
-  availableProfiles,
   profileTriggerRef,
-  loadedSpec,
   onLoadSpec,
   newCollectionOpen,
   onNewCollectionOpenChange,
@@ -42,6 +32,13 @@ export function WorkspaceTopBar({
   onSettingsOpen,
   onDeleteProfile,
 }: WorkspaceTopBarProps) {
+  const activeCollection = useWorkspaceStore((state) => state.collection.active);
+  const availableCollections = useWorkspaceStore((state) => state.collection.available);
+  const availableProfiles = useWorkspaceStore((state) => state.profiles.available);
+  const source = useWorkspaceStore((state) => state.source);
+  const activeProfile = source.type === 'profile' ? source.profile : null;
+  const loadedSpec = source.type === 'spec' ? source.spec : null;
+
   return (
     <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-card p-2">
       <CollectionSelector
@@ -65,7 +62,7 @@ export function WorkspaceTopBar({
           workspaceActions.createCollection(entry);
         }}
       />
-      <span className="text-sm font-semibold tracking-wide text-muted-foreground">
+      <span className="text-sm font-heading font-semibold tracking-wide text-muted-foreground">
         {activeCollection?.format === 'postman' ? 'IFS Postman' : 'IFS Bruno'}
       </span>
       <div className="flex gap-2">

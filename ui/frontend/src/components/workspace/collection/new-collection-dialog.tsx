@@ -94,7 +94,8 @@ export function NewCollectionDialog({ open, onOpenChange, onCreated }: NewCollec
           <DialogHeader>
             <DialogTitle>New collection</DialogTitle>
             <DialogDescription>
-              Creates a local collection folder and stores the connection profile for it.
+              Creates the collection with what it needs to authenticate against IFS Cloud so you
+              can start adding requests. You'll need to set the Client Secret manually.
             </DialogDescription>
           </DialogHeader>
 

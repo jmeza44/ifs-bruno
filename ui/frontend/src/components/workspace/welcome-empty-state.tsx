@@ -7,12 +7,11 @@ import {
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useWorkspaceStore } from '@/lib/workspace-store';
 
 export type WelcomeEmptyStateProps = {
-  hasProfiles: boolean;
   onAddProfile: () => void;
   onFocusProfileSelector: () => void;
-  hasCollections: boolean;
   onLoadSpec: (file: File) => void;
   onCreateCollection: () => void;
 };
@@ -34,7 +33,7 @@ function PointerArrow({ direction, label }: PointerArrowProps) {
     >
       <span
         className={cn(
-          'absolute -bottom-10 w-64 text-lg font-semibold italic',
+          'absolute -bottom-10 w-64 text-lg font-semibold font-heading italic',
           isLeft ? 'left-24 text-left' : 'right-24 text-right',
         )}
       >
@@ -68,14 +67,14 @@ function PointerArrow({ direction, label }: PointerArrowProps) {
 }
 
 export function WelcomeEmptyState({
-  hasProfiles,
   onAddProfile,
   onFocusProfileSelector,
-  hasCollections,
   onLoadSpec,
   onCreateCollection,
 }: WelcomeEmptyStateProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasProfiles = useWorkspaceStore((state) => state.profiles.available.length > 0);
+  const hasCollections = useWorkspaceStore((state) => state.collection.available.length > 0);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -99,7 +98,7 @@ export function WelcomeEmptyState({
       />
 
       <div className="max-w-md space-y-2">
-        <h2 className="text-xl font-semibold">Welcome to IFS Bruno</h2>
+        <h2 className="text-xl font-semibold font-heading">Welcome to IFS Bruno</h2>
         <p className="text-sm text-muted-foreground">
           Explore and classify IFS Cloud REST API endpoints, then save the ones you need into a
           Bruno or Postman collection.

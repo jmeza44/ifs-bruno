@@ -100,8 +100,9 @@ export function NewProfileDialog({ open, onOpenChange, onCreated }: NewProfileDi
           <DialogHeader>
             <DialogTitle>New profile</DialogTitle>
             <DialogDescription>
-              Credentials are stored locally in ~/.ifs-bruno/config.json and never leave this
-              machine.
+              A profile connects to an IFS Cloud environment so you can search and explore its
+              projections and endpoints. Credentials are stored locally in
+              ~/.ifs-bruno/config.json and never leave this machine.
             </DialogDescription>
           </DialogHeader>
 

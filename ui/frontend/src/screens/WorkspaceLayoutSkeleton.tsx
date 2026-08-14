@@ -13,7 +13,6 @@ import type { ProfileOption } from '@/components/workspace/profile/profile-selec
 
 export function WorkspaceLayoutSkeleton() {
   const collection = useWorkspaceStore((state) => state.collection);
-  const profiles = useWorkspaceStore((state) => state.profiles);
   const source = useWorkspaceStore((state) => state.source);
   const endpoints = useWorkspaceStore((state) => state.endpoints);
   const pendingConfirmation = useWorkspaceStore((state) => state.ui.pendingConfirmation);
@@ -26,7 +25,6 @@ export function WorkspaceLayoutSkeleton() {
 
   const activeCollectionPath = collection.active?.path;
   const activeProfile = source.type === 'profile' ? source.profile : null;
-  const loadedSpec = source.type === 'spec' ? source.spec : null;
   const isSearchingProjection =
     source.type === 'profile' && source.projection.state === 'searching';
   const resolvedProjection =
@@ -65,12 +63,7 @@ export function WorkspaceLayoutSkeleton() {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden">
       <WorkspaceTopBar
-        activeCollection={collection.active}
-        availableCollections={collection.available}
-        activeProfile={activeProfile}
-        availableProfiles={profiles.available}
         profileTriggerRef={profileTriggerRef}
-        loadedSpec={loadedSpec}
         onLoadSpec={loadLocalSpec}
         newCollectionOpen={newCollectionOpen}
         onNewCollectionOpenChange={setNewCollectionOpen}
@@ -80,12 +73,8 @@ export function WorkspaceLayoutSkeleton() {
         onDeleteProfile={handleDeleteProfile}
       />
       <WorkspaceCanvas
-        activeCollection={collection.active}
-        availableCollections={collection.available}
         collectionDetails={details}
         folders={folders}
-        activeProfileName={activeProfile?.name ?? null}
-        hasProfiles={profiles.available.length > 0}
         onAddProfile={() => setNewProfileOpen(true)}
         onFocusProfileSelector={() => {
           const trigger = profileTriggerRef.current;
@@ -95,21 +84,14 @@ export function WorkspaceLayoutSkeleton() {
             new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
           );
         }}
-        loadedSpec={loadedSpec}
         onLoadSpec={loadLocalSpec}
         onCreateCollection={() => setNewCollectionOpen(true)}
-        isSearchingProjection={isSearchingProjection}
         searchedProjection={searchedProjection}
         onSelectSearchedProjection={setSearchedProjection}
         projections={projections}
         isLoadingProjections={isLoadingProjections}
         onContinueProjection={loadProjection}
         isLoadingProjection={isLoadingProjection}
-        availableEndpoints={endpoints.available}
-        selectedToAdd={endpoints.selectedToAdd}
-        alreadyInCollection={endpoints.alreadyInCollection}
-        activeEndpointId={endpoints.activeEndpointId}
-        activeEndpointDetail={endpoints.detail}
         onViewDetail={viewEndpointDetail}
         onSave={handleSave}
         isSaving={isSaving}
