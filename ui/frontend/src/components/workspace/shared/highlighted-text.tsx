@@ -14,7 +14,7 @@ export function HighlightedText({ text, searchTerm, className, title }: Highligh
     <span className={className} title={title}>
       {segments.map((segment, index) =>
         segment.matched ? (
-          <span key={index} className={cn('text-amber-600 dark:text-amber-400')}>
+          <span key={index} className={cn('text-primary')}>
             {segment.text}
           </span>
         ) : (
