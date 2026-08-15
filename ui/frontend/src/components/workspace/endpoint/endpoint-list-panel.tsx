@@ -2,13 +2,11 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EndpointListFilters } from '@/components/workspace/endpoint/endpoint-list-filters';
 import { EndpointVirtualizedList } from '@/components/workspace/endpoint/endpoint-virtualized-list';
-import {
-  ENDPOINT_TIERS,
-  HTTP_METHODS,
-  sortByRelevance,
-  type HttpMethod,
-} from '@/lib/endpoint-search';
+import { ENDPOINT_TIERS, HTTP_METHODS, sortByTier, type HttpMethod } from '@/lib/endpoint-search';
+import { fuzzyMatch } from '@/lib/fuzzy-search';
 import type { EndpointListEntry, EndpointTier } from '@/lib/types';
+
+export type ScoredEndpointEntry = EndpointListEntry & { matchRanges?: [number, number][] };
 
 export type { EndpointListEntry };
 
@@ -40,18 +38,37 @@ export function EndpointListPanel({
   const [activeTiers, setActiveTiers] = useState<Set<EndpointTier>>(new Set(ENDPOINT_TIERS));
 
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    const matched = entries.filter((entry) => {
+    const term = search.trim();
+    const byFilters = entries.filter((entry) => {
       if (!activeMethods.has(entry.method.toUpperCase() as HttpMethod)) return false;
       if (!activeTiers.has(entry.tier)) return false;
-      if (!term) return true;
-      return (
-        entry.path.toLowerCase().includes(term) ||
-        (entry.summary ?? '').toLowerCase().includes(term) ||
-        (entry.operationId ?? '').toLowerCase().includes(term)
-      );
+      return true;
     });
-    return sortByRelevance(matched, search);
+
+    if (!term) return sortByTier(byFilters) as ScoredEndpointEntry[];
+
+    const termLower = term.toLowerCase();
+    const fuzzyMatched: { entry: ScoredEndpointEntry; score: number }[] = [];
+    const fallbackMatched: ScoredEndpointEntry[] = [];
+
+    for (const entry of byFilters) {
+      const match = fuzzyMatch(term, entry.path);
+      if (match) {
+        fuzzyMatched.push({ entry: { ...entry, matchRanges: match.ranges }, score: match.score });
+        continue;
+      }
+      if (
+        (entry.summary ?? '').toLowerCase().includes(termLower) ||
+        (entry.operationId ?? '').toLowerCase().includes(termLower)
+      ) {
+        fallbackMatched.push(entry);
+      }
+    }
+
+    fuzzyMatched.sort((a, b) => b.score - a.score);
+    fallbackMatched.sort((a, b) => a.path.localeCompare(b.path));
+
+    return [...fuzzyMatched.map((m) => m.entry), ...fallbackMatched];
   }, [entries, search, activeMethods, activeTiers]);
 
   function handleClearFilters() {

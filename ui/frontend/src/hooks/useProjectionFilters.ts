@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { distinctSorted, sortByRelevance } from '@/lib/projection-search';
+import { distinctSorted, rankProjections } from '@/lib/projection-search';
 import type { IfsProjection } from '@/lib/types';
 
 export const ALL_VALUES = '__all__';
@@ -34,7 +34,7 @@ export function useProjectionFilters(projections: IfsProjection[]) {
   );
 
   const rankedProjections = useMemo(
-    () => sortByRelevance(filteredProjections, searchTerm),
+    () => rankProjections(filteredProjections, searchTerm),
     [filteredProjections, searchTerm],
   );
 

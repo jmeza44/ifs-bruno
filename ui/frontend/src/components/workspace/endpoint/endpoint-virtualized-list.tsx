@@ -5,10 +5,11 @@ import {
   EndpointListRow,
 } from '@/components/workspace/endpoint/endpoint-list-row';
 import { cn } from '@/lib/utils';
+import type { ScoredEndpointEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import type { EndpointListEntry } from '@/lib/types';
 
 export type EndpointVirtualizedListProps = {
-  entries: EndpointListEntry[];
+  entries: ScoredEndpointEntry[];
   searchTerm: string;
   selected: Set<string>;
   alreadyInCollection?: Set<string>;

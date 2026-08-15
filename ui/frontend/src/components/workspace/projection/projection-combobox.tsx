@@ -11,10 +11,11 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
+import type { ProjectionRanking } from '@/lib/projection-search';
 import type { IfsProjection } from '@/lib/types';
 
 export type ProjectionComboboxProps = {
-  items: IfsProjection[];
+  items: ProjectionRanking;
   selected: IfsProjection | null;
   onSelect: (projection: IfsProjection | null) => void;
   searchTerm: string;
@@ -22,14 +23,20 @@ export type ProjectionComboboxProps = {
   isLoading?: boolean;
 };
 
-function ProjectionItemContent({ item, searchTerm }: { item: IfsProjection; searchTerm: string }) {
+function ProjectionItemContent({
+  item,
+  ranges,
+}: {
+  item: IfsProjection;
+  ranges?: [number, number][];
+}) {
   return (
-    // TODO: On Hover the HighlightedText does not highlight the text.
     <span className="flex flex-col gap-0.5">
       <span className="flex items-center gap-1.5">
         <HighlightedText
           text={item.ProjectionName}
-          searchTerm={searchTerm}
+          searchTerm=""
+          ranges={ranges}
           className="font-mono text-xs"
         />
         {item.Component && (
@@ -59,7 +66,11 @@ function ProjectionResultCount() {
 
 const PROJECTION_ITEM_ESTIMATED_HEIGHT = 52;
 
-function VirtualizedProjectionList({ searchTerm }: { searchTerm: string }) {
+function VirtualizedProjectionList({
+  rangesByName,
+}: {
+  rangesByName: Map<string, [number, number][]>;
+}) {
   const filteredItems = ComboboxNamespace.useFilteredItems<IfsProjection>();
   const scrollElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -116,7 +127,7 @@ function VirtualizedProjectionList({ searchTerm }: { searchTerm: string }) {
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
-              <ProjectionItemContent item={item} searchTerm={searchTerm} />
+              <ProjectionItemContent item={item} ranges={rangesByName.get(item.ProjectionName)} />
             </ComboboxItem>
           );
         })}
@@ -135,7 +146,8 @@ export function ProjectionCombobox({
 }: ProjectionComboboxProps) {
   return (
     <Combobox
-      items={items}
+      items={items.items}
+      filteredItems={items.items}
       itemToStringLabel={(item: IfsProjection) => item.ProjectionName}
       virtualized
       value={selected}
@@ -152,7 +164,7 @@ export function ProjectionCombobox({
           <ComboboxContent side="bottom" sideOffset={2}>
             <ComboboxEmpty>No projections match the current filters</ComboboxEmpty>
             <ComboboxList className="max-h-none overflow-visible p-0">
-              <VirtualizedProjectionList searchTerm={searchTerm} />
+              <VirtualizedProjectionList rangesByName={items.rangesByName} />
             </ComboboxList>
           </ComboboxContent>
         </ComboboxInput>

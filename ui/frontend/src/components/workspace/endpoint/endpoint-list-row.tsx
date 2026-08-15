@@ -3,14 +3,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { HighlightedText } from '@/components/workspace/shared/highlighted-text';
 import { MethodLabel } from '@/components/workspace/shared/method-label';
 import { basePathSegment, countPathKeys, shouldCollapsePathKeys } from '@/lib/endpoint-path';
-import type { EndpointListEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import type { ScoredEndpointEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
+import type { EndpointListEntry } from '@/lib/types';
 
 /** Shared by the scroll container (defines the columns) and each row (inherits via subgrid). */
 export const ENDPOINT_ROW_GRID_COLUMNS = 'grid-cols-[auto_auto_1fr]';
 
 export type EndpointListRowProps = {
-  entry: EndpointListEntry;
+  entry: ScoredEndpointEntry;
   searchTerm: string;
   isSelected: boolean;
   isLocked: boolean;
@@ -67,6 +68,7 @@ export function EndpointListRow({
         <HighlightedText
           text={entry.path}
           searchTerm={searchTerm}
+          ranges={entry.matchRanges}
           title={entry.path}
           className="min-w-0 break-all"
         />

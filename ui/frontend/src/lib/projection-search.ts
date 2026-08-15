@@ -1,3 +1,4 @@
+import { fuzzyMatch } from '@/lib/fuzzy-search';
 import type { IfsProjection } from '@/lib/types';
 
 export function distinctSorted(values: (string | null)[]): string[] {
@@ -6,25 +7,26 @@ export function distinctSorted(values: (string | null)[]): string[] {
   );
 }
 
-const RANK_EXACT = 0;
-const RANK_STARTS_WITH = 1;
-const RANK_CONTAINS = 2;
+export type ProjectionRanking = {
+  items: IfsProjection[];
+  /** Fuzzy match ranges per projection, keyed by ProjectionName (absent = no active search). */
+  rangesByName: Map<string, [number, number][]>;
+};
 
-function rankProjectionMatch(name: string, term: string): number {
-  const lowerName = name.toLowerCase();
-  if (lowerName === term) return RANK_EXACT;
-  if (lowerName.startsWith(term)) return RANK_STARTS_WITH;
-  return RANK_CONTAINS;
-}
+export function rankProjections(items: IfsProjection[], searchTerm: string): ProjectionRanking {
+  const term = searchTerm.trim();
+  const rangesByName = new Map<string, [number, number][]>();
+  if (!term) return { items, rangesByName };
 
-export function sortByRelevance(items: IfsProjection[], searchTerm: string): IfsProjection[] {
-  const term = searchTerm.trim().toLowerCase();
-  if (!term) return items;
+  const scored: { projection: IfsProjection; ranges: [number, number][]; score: number }[] = [];
+  for (const projection of items) {
+    const match = fuzzyMatch(term, projection.ProjectionName);
+    if (match) scored.push({ projection, ranges: match.ranges, score: match.score });
+  }
+  scored.sort((a, b) => b.score - a.score);
 
-  return [...items].sort((a, b) => {
-    const rankDiff =
-      rankProjectionMatch(a.ProjectionName, term) - rankProjectionMatch(b.ProjectionName, term);
-    if (rankDiff !== 0) return rankDiff;
-    return a.ProjectionName.localeCompare(b.ProjectionName);
-  });
+  for (const { projection, ranges } of scored) {
+    rangesByName.set(projection.ProjectionName, ranges);
+  }
+  return { items: scored.map((s) => s.projection), rangesByName };
 }
