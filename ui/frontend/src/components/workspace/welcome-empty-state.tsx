@@ -1,19 +1,21 @@
 import { useRef } from 'react';
 import {
-  CaretDownIcon,
+  CircleNotchIcon,
   FolderPlusIcon,
   UploadSimpleIcon,
   UserCircleIcon,
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { cn } from '@/lib/utils';
 import { useWorkspaceStore } from '@/lib/workspace-store';
 
 export type WelcomeEmptyStateProps = {
   onAddProfile: () => void;
-  onFocusProfileSelector: () => void;
   onLoadSpec: (file: File) => void;
   onCreateCollection: () => void;
+  /** True while the initial profiles/collections lists are still being fetched. */
+  isLoading: boolean;
 };
 
 type PointerArrowProps = {
@@ -68,18 +70,29 @@ function PointerArrow({ direction, label }: PointerArrowProps) {
 
 export function WelcomeEmptyState({
   onAddProfile,
-  onFocusProfileSelector,
   onLoadSpec,
   onCreateCollection,
+  isLoading,
 }: WelcomeEmptyStateProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasProfiles = useWorkspaceStore((state) => state.profiles.available.length > 0);
   const hasCollections = useWorkspaceStore((state) => state.collection.available.length > 0);
+  const showLoading = useDelayedLoading(isLoading);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) onLoadSpec(file);
     event.target.value = '';
+  }
+
+  if (isLoading || showLoading) {
+    return (
+      <div className="flex h-full flex-1 items-center justify-center rounded-none border border-border bg-card p-8">
+        {showLoading && (
+          <CircleNotchIcon size={20} className="animate-spin text-muted-foreground" />
+        )}
+      </div>
+    );
   }
 
   return (
@@ -111,17 +124,11 @@ export function WelcomeEmptyState({
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-6">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            1. Endpoint source
-          </span>
-          {hasProfiles ? (
-            <Button onClick={onFocusProfileSelector}>
-              <UserCircleIcon size={16} />
-              Select a profile…
-              <CaretDownIcon size={14} />
-            </Button>
-          ) : (
+        {!hasProfiles && (
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              1. Endpoint source
+            </span>
             <div className="flex items-center gap-2">
               <Button onClick={onAddProfile}>
                 <UserCircleIcon size={16} />
@@ -132,8 +139,8 @@ export function WelcomeEmptyState({
                 Load spec JSON…
               </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {!hasCollections && (
           <div className="flex flex-col items-center gap-2">

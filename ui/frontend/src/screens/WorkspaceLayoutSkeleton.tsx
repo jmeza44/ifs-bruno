@@ -32,8 +32,8 @@ export function WorkspaceLayoutSkeleton() {
       ? source.projection.projection
       : null;
 
-  const { folders, details } = useCollections(activeCollectionPath);
-  const { deleteProfile } = useProfiles();
+  const { folders, details, isLoadingCollections } = useCollections(activeCollectionPath);
+  const { deleteProfile, isLoadingProfiles } = useProfiles();
   const {
     projections,
     isLoadingProjections,
@@ -76,16 +76,9 @@ export function WorkspaceLayoutSkeleton() {
         collectionDetails={details}
         folders={folders}
         onAddProfile={() => setNewProfileOpen(true)}
-        onFocusProfileSelector={() => {
-          const trigger = profileTriggerRef.current;
-          if (!trigger) return;
-          trigger.focus();
-          trigger.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
-          );
-        }}
         onLoadSpec={loadLocalSpec}
         onCreateCollection={() => setNewCollectionOpen(true)}
+        isLoadingWorkspaceLists={isLoadingCollections || isLoadingProfiles}
         searchedProjection={searchedProjection}
         onSelectSearchedProjection={setSearchedProjection}
         projections={projections}

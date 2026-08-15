@@ -33,7 +33,7 @@ export function HintField({
           {label}
           {required && (
             <span className="text-destructive">
-              <sup>*</sup>
+              <sup className="text-red-600 dark:text-red-400">*</sup>
             </span>
           )}
         </span>

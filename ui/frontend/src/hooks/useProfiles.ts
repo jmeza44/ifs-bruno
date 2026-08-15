@@ -35,5 +35,6 @@ export function useProfiles() {
 
   return {
     deleteProfile: deleteMutation.mutate,
+    isLoadingProfiles: profilesQuery.isLoading,
   };
 }

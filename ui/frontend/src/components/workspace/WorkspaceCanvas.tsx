@@ -15,9 +15,9 @@ export type WorkspaceCanvasProps = {
   collectionDetails: CollectionDetails | null;
   folders: CollectionFolder[];
   onAddProfile: () => void;
-  onFocusProfileSelector: () => void;
   onLoadSpec: (file: File) => void;
   onCreateCollection: () => void;
+  isLoadingWorkspaceLists: boolean;
   searchedProjection: IfsProjection | null;
   onSelectSearchedProjection: (projection: IfsProjection | null) => void;
   projections: IfsProjection[];
@@ -43,9 +43,9 @@ export function WorkspaceCanvas({
   collectionDetails,
   folders,
   onAddProfile,
-  onFocusProfileSelector,
   onLoadSpec,
   onCreateCollection,
+  isLoadingWorkspaceLists,
   searchedProjection,
   onSelectSearchedProjection,
   projections,
@@ -71,9 +71,9 @@ export function WorkspaceCanvas({
       <div className="min-h-0 flex-1 p-2">
         <WelcomeEmptyState
           onAddProfile={onAddProfile}
-          onFocusProfileSelector={onFocusProfileSelector}
           onLoadSpec={onLoadSpec}
           onCreateCollection={onCreateCollection}
+          isLoading={isLoadingWorkspaceLists}
         />
       </div>
     );

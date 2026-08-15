@@ -74,7 +74,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <InputGroupAddon>~/</InputGroupAddon>
                 <InputGroupInput
                   id="collections-base-path"
-                  placeholder="Documents/Collections"
+                  placeholder="Documents"
                   value={basePath}
                   onChange={(e) => setBasePath(e.target.value)}
                 />

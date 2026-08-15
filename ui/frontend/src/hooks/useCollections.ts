@@ -47,5 +47,6 @@ export function useCollections(activeCollectionPath: string | undefined) {
   return {
     folders: endpointsQuery.data?.folders ?? [],
     details: detailsQuery.data ?? null,
+    isLoadingCollections: collectionsQuery.isLoading,
   };
 }
