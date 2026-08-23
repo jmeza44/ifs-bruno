@@ -1,4 +1,5 @@
 import type {
+  CollectionDetails,
   CollectionEntry,
   CollectionFolder,
   EndpointDetail,
@@ -82,12 +83,6 @@ export function fetchCollectionEndpoints(
 ): Promise<{ folders: CollectionFolder[] }> {
   const qs = new URLSearchParams({ path: collectionPath }).toString();
   return request(`/collections/endpoints?${qs}`);
-}
-
-export interface CollectionDetails {
-  realm: string;
-  clientId: string;
-  keycloakBasePath: string;
 }
 
 export function fetchCollectionDetails(collectionPath: string): Promise<CollectionDetails> {

@@ -98,7 +98,14 @@ export function postmanReadDetails(collectionPath: string): CollectionDetails | 
   const name = readCollectionName(collectionPath);
   const env = readEnvironmentValues(collectionPath);
   if (!name || !env['baseHost']) return null;
-  return { name, baseHost: env['baseHost'], format: 'postman' };
+  return {
+    name,
+    baseHost: env['baseHost'],
+    realm: env['realm'] ?? null,
+    clientId: env['clientId'] ?? null,
+    keycloakBasePath: env['keycloakBasePath'] ?? null,
+    format: 'postman',
+  };
 }
 
 export function postmanReadName(collectionPath: string): string | null {

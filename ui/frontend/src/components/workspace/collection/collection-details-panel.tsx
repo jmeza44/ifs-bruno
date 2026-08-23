@@ -1,11 +1,5 @@
 import { FolderIcon } from '@phosphor-icons/react';
-import type { CollectionEntry } from '@/lib/types';
-
-export type CollectionDetails = {
-  realm: string;
-  clientId: string;
-  keycloakBasePath: string;
-};
+import type { CollectionDetails, CollectionEntry } from '@/lib/types';
 
 export type CollectionDetailsPanelProps = {
   collection: CollectionEntry | null;
@@ -63,9 +57,9 @@ export function CollectionDetailsPanel({ collection, details }: CollectionDetail
 
       <Section title="Connection">
         <Row label="Base host" value={collection.baseHost ?? '—'} />
-        <Row label="Realm" value={details.realm} />
-        <Row label="Client ID" value={details.clientId} />
-        <Row label="Keycloak path" value={details.keycloakBasePath} />
+        <Row label="Realm" value={details.realm ?? '—'} />
+        <Row label="Client ID" value={details.clientId ?? '—'} />
+        <Row label="Keycloak path" value={details.keycloakBasePath ?? '—'} />
       </Section>
     </div>
   );

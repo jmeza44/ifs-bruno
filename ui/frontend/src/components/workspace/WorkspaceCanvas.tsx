@@ -5,8 +5,7 @@ import { EndpointListPanel } from '@/components/workspace/endpoint/endpoint-list
 import { EndpointDetailPanel } from '@/components/workspace/endpoint/endpoint-detail-panel';
 import { ProjectionSearchPanel } from '@/components/workspace/projection/projection-search-panel';
 import { WelcomeEmptyState } from '@/components/workspace/welcome-empty-state';
-import type { CollectionFolder, IfsProjection } from '@/lib/types';
-import type { CollectionDetails } from '@/components/workspace/collection/collection-details-panel';
+import type { CollectionDetails, CollectionFolder, IfsProjection } from '@/lib/types';
 import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { useWorkspaceStore, workspaceActions } from '@/lib/workspace-store';
 import { DotsSixVerticalIcon } from '@phosphor-icons/react';

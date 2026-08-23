@@ -14,6 +14,15 @@ export interface CollectionEntry {
   format: 'bruno' | 'postman';
 }
 
+export interface CollectionDetails {
+  name: string;
+  baseHost: string;
+  realm: string | null;
+  clientId: string | null;
+  keycloakBasePath: string | null;
+  format: 'bruno' | 'postman';
+}
+
 export interface IfsProjection {
   ProjectionName: string;
   Name: string | null;

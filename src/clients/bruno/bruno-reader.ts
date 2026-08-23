@@ -55,9 +55,17 @@ export function brunoReadDetails(collectionPath: string): CollectionDetails | nu
   try {
     const absPath = path.resolve(collectionPath);
     const name = brunoReadName(absPath);
-    const baseHost = brunoReadBaseHost(absPath);
+    const env = brunoReadEnvironmentValues(absPath);
+    const baseHost = env['baseHost'];
     if (!name || !baseHost) return null;
-    return { name, baseHost, format: 'bruno' };
+    return {
+      name,
+      baseHost,
+      realm: env['realm'] ?? null,
+      clientId: env['clientId'] ?? null,
+      keycloakBasePath: env['keycloakBasePath'] ?? null,
+      format: 'bruno',
+    };
   } catch {
     return null;
   }
@@ -76,17 +84,25 @@ export function brunoReadName(collectionPath: string): string | null {
   }
 }
 
-export function brunoReadBaseHost(collectionPath: string): string | null {
+function brunoReadEnvironmentValues(collectionPath: string): Record<string, string> {
   try {
     const envPath = path.join(path.resolve(collectionPath), 'environments', 'default.yml');
     const raw = fs.readFileSync(envPath, 'utf-8');
     const doc = yaml.load(raw) as
       | { variables?: Array<{ name?: string; value?: string }> }
       | undefined;
-    return doc?.variables?.find((v) => v.name === 'baseHost')?.value ?? null;
+    const result: Record<string, string> = {};
+    for (const v of doc?.variables ?? []) {
+      if (v.name && v.value !== undefined) result[v.name] = v.value;
+    }
+    return result;
   } catch {
-    return null;
+    return {};
   }
+}
+
+export function brunoReadBaseHost(collectionPath: string): string | null {
+  return brunoReadEnvironmentValues(collectionPath)['baseHost'] ?? null;
 }
 
 export function brunoCountEndpoints(collectionPath: string): number {
