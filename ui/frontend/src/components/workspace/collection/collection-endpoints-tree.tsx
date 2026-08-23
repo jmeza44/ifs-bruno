@@ -52,7 +52,7 @@ function FolderRow({
       </button>
 
       {open && (
-        <ul className="col-span-full ml-5 grid grid-cols-subgrid space-y-0.5 border-l border-border pl-2">
+        <ul className="col-span-full ml-3 grid grid-cols-subgrid space-y-0.5 border-l border-border pl-2">
           {folder.endpoints.map((endpoint) => (
             <li
               key={endpoint.operationId ?? endpoint.name}
