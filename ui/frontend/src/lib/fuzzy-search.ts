@@ -65,6 +65,16 @@ function splitSegments(s: string): Segment[] {
 }
 
 /**
+ * Strips characters that can never appear inside a target segment (splitSegments drops
+ * them as boundaries), so the query is compared against target segments in the same
+ * alphabet — e.g. a leading "/" or key-predicate punctuation like "(", "'", "{" would
+ * otherwise never match anything and fail the whole query.
+ */
+function sanitizeQuery(query: string): string {
+  return query.replace(/[^a-zA-Z0-9]/g, '');
+}
+
+/**
  * Indices in `query` where the user's own casing marks a new chunk. Only active when
  * the query has at least one internal uppercase letter (a deliberate camelCase hint) —
  * plain lowercase or plain UPPERCASE queries get no hint and fall back to free-form
@@ -90,14 +100,15 @@ const NEG_INF = Number.NEGATIVE_INFINITY;
 export function fuzzyMatch(query: string, target: string): FuzzyMatch | null {
   if (!query) return { score: 0, ranges: [] };
 
-  const q = query.toLowerCase();
+  const cleanQuery = sanitizeQuery(query);
+  const q = cleanQuery.toLowerCase();
   const segments = splitSegments(target);
   const segTexts = segments.map((s) => s.text.toLowerCase());
   const n = q.length;
   const m = segments.length;
   if (n === 0 || m === 0) return null;
 
-  const hintStarts = queryChunkStarts(query);
+  const hintStarts = queryChunkStarts(cleanQuery);
 
   // best[qi][si]: best score matching query[0:qi] using segments[0:si]
   const best: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(NEG_INF));
