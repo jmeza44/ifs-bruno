@@ -122,7 +122,7 @@ export function CollectionEndpointsTree({
 
       <div
         className={cn(
-          'scroll-discreet grid flex-1 gap-y-0.5 overflow-y-auto p-2 pt-0',
+          'scroll-discreet grid flex-1 content-start gap-y-0.5 overflow-y-auto p-2 pt-0',
           ENDPOINT_TREE_GRID_COLUMNS,
         )}
       >
