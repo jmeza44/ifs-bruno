@@ -5,9 +5,12 @@ import type { CollectionFolder, IfsProjection, SpecResult } from '@/lib/types';
 import type { EndpointListEntry } from '@/components/workspace/endpoint/endpoint-list-panel';
 import { workspaceActions } from '@/lib/workspace-store';
 
-function toEndpointListEntries(entries: SpecResult['entries']): EndpointListEntry[] {
+function toEndpointListEntries(
+  entries: SpecResult['entries'],
+  projectionName: string,
+): EndpointListEntry[] {
   return entries.map((entry) => ({
-    id: `${entry.method.toUpperCase()}:${entry.path}`,
+    id: `${projectionName}:${entry.method.toUpperCase()}:${entry.path}`,
     path: entry.path,
     method: entry.method.toUpperCase(),
     summary: entry.summary,
@@ -27,7 +30,7 @@ function buildAlreadyInCollectionKeys(folders: CollectionFolder[]): Set<string> 
   for (const folder of folders) {
     for (const endpoint of folder.endpoints) {
       if (endpoint.path === null) continue;
-      keys.add(`${endpoint.method}:${endpoint.path}`);
+      keys.add(`${folder.name}:${endpoint.method}:${endpoint.path}`);
     }
   }
   return keys;
@@ -51,7 +54,7 @@ export function useProjection(
       return { projection, spec };
     },
     onSuccess: ({ projection, spec }) => {
-      const endpoints = toEndpointListEntries(spec.entries);
+      const endpoints = toEndpointListEntries(spec.entries, projection.ProjectionName);
       const alreadyInCollection = buildAlreadyInCollectionKeys(folders);
       workspaceActions.selectProjection(projection, endpoints, alreadyInCollection);
     },
@@ -64,7 +67,7 @@ export function useProjection(
       return { file, spec };
     },
     onSuccess: ({ file, spec }) => {
-      const endpoints = toEndpointListEntries(spec.entries);
+      const endpoints = toEndpointListEntries(spec.entries, spec.specTitle);
       const projection: IfsProjection = {
         ProjectionName: spec.specTitle,
         Name: spec.specTitle,
