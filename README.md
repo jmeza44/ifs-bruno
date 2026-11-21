@@ -66,17 +66,17 @@ If you want to browse and import endpoints directly from a live IFS instance, sa
 ifs-bruno profile add my-env --host https://your-env.ifs.cloud --realm your-realm --client-id IFS_postman
 ```
 
-| Flag                     | Description                                       |
-| ------------------------ | -------------------------------------------------- |
-| `--host`                 | IFS Cloud base URL, e.g. `https://acme.ifs.cloud` |
-| `--realm`                | Keycloak realm name                                |
-| `--client-id`            | OAuth2 client ID, e.g. `IFS_postman`               |
-| `--client-secret`        | OAuth2 client secret                               |
-| `--keycloak-base-path`   | Keycloak base path (defaults to `/auth`)           |
+| Flag                   | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `--host`               | IFS Cloud base URL, e.g. `https://acme.ifs.cloud` |
+| `--realm`              | Keycloak realm name                               |
+| `--client-id`          | OAuth2 client ID, e.g. `IFS_postman`              |
+| `--client-secret`      | OAuth2 client secret                              |
+| `--keycloak-base-path` | Keycloak base path (defaults to `/auth`)          |
 
 Omit the flags to be prompted interactively instead.
 
-Profiles are stored at `~/.ifs-bruno/config.json`. You can manage them with:
+Profiles are stored at `~/.ifs-bruno/config.json`. Client secrets are encrypted at rest using AES-256-GCM with a machine-bound key (`~/.ifs-bruno/.machine-key`). You can manage them with:
 
 ```bash
 ifs-bruno profile list
@@ -91,7 +91,7 @@ Nothing to run manually — the collection's auth is configured as native OAuth2
 
 ### 4. Import endpoints
 
-Parse an IFS OpenAPI spec and pick which endpoints to add to the collection. This opens an interactive terminal UI to search projections/endpoints and select the ones you want.
+Parse an IFS OpenAPI spec and pick which endpoints to add to the collection. This opens an interactive terminal UI (built with Ink 7 and React 19) to search projections/endpoints and select the ones you want.
 
 **From a local spec file:**
 
@@ -117,14 +117,23 @@ If `--collection` is omitted, the TUI shows a list of previously used collection
 
 Re-running `add` on an already-imported endpoint **updates it in place** instead of creating a duplicate.
 
+## Architecture
+
+The system decouples OpenAPI spec ingestion from collection generation:
+
+- **`src/core/`**: OpenAPI parser, recursive `$ref` resolution, token caching via `TokenProvider`, and the `CanonicalRequest` Intermediate Representation (IR).
+- **`src/clients/`**: Format-specific drivers implementing the `CollectionClient` interface (`src/clients/bruno` and `src/clients/postman`).
+- **`src/tui/`**: Interactive CLI experiences rendered with Ink 7 and React 19.
+- **`ui/`**: Web application featuring a Bun API server (`ui/server/`) and a React/Tailwind SPA (`ui/frontend/`).
+
 ## Useful commands
 
-| Command          | Description                                  |
-| ---------------- | --------------------------------------------- |
+| Command              | Description                                      |
+| -------------------- | ------------------------------------------------ |
 | `pnpm dev -- <args>` | Run the CLI from source, e.g. `pnpm dev -- init` |
-| `pnpm build`     | Build the CLI to `dist/`                     |
-| `pnpm typecheck` | Type-check without emitting files            |
-| `pnpm format`    | Format the codebase with Prettier            |
+| `pnpm build`         | Build the CLI to `dist/`                         |
+| `pnpm typecheck`     | Type-check without emitting files                |
+| `pnpm format`        | Format the codebase with Prettier                |
 
 ## Contributing
 

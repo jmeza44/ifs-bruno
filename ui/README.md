@@ -34,31 +34,32 @@ The frontend has no data of its own — every screen calls `/api/*`, which is se
 
 ## API endpoints
 
-| Method | Route                        | Description                                                  |
-| ------ | ----------------------------- | ------------------------------------------------------------ |
-| GET    | `/api/health`                 | Healthcheck                                                  |
-| GET    | `/api/profiles`                | List saved profiles                                          |
-| POST   | `/api/profiles`                | Create/update a profile (`?overwrite=true`)                  |
-| POST   | `/api/profiles/test`           | Test a connection without saving it                          |
-| DELETE | `/api/profiles/:name`          | Delete a profile                                              |
-| GET    | `/api/collections`             | List previously used collections (Bruno and Postman)          |
-| GET    | `/api/collections/endpoints`   | List folders/endpoints already in a collection                |
-| GET    | `/api/collections/details`     | Get details of a collection                                   |
-| POST   | `/api/collections/select`      | Mark an existing collection as used                            |
-| POST   | `/api/collections/init`        | Create a new collection (`format: 'bruno' \| 'postman'`)      |
-| POST   | `/api/projections`             | List IFS projections available to a profile                   |
-| POST   | `/api/spec/remote`             | Load an OpenAPI spec from a live IFS instance                 |
-| POST   | `/api/spec/local`               | Load an OpenAPI spec from a local file                         |
-| POST   | `/api/spec/entry`               | Get details of one endpoint from the last loaded spec          |
-| POST   | `/api/write`                    | Write the selected requests (Bruno or Postman, per collection) |
-| GET    | `/api/preferences`              | Read preferences (e.g. `collectionsBasePath`)                  |
-| PATCH  | `/api/preferences`              | Update preferences                                              |
+| Method | Route                        | Description                                                    |
+| ------ | ---------------------------- | -------------------------------------------------------------- |
+| GET    | `/api/health`                | Healthcheck                                                    |
+| GET    | `/api/profiles`              | List saved profiles                                            |
+| POST   | `/api/profiles`              | Create/update a profile (`?overwrite=true`)                    |
+| POST   | `/api/profiles/test`         | Test a connection without saving it                            |
+| DELETE | `/api/profiles/:name`        | Delete a profile                                               |
+| GET    | `/api/collections`           | List previously used collections (Bruno and Postman)           |
+| GET    | `/api/collections/endpoints` | List folders/endpoints already in a collection                 |
+| GET    | `/api/collections/details`   | Get details of a collection                                    |
+| POST   | `/api/collections/select`    | Mark an existing collection as used                            |
+| POST   | `/api/collections/init`      | Create a new collection (`format: 'bruno' \| 'postman'`)       |
+| POST   | `/api/projections`           | List IFS projections available to a profile                    |
+| POST   | `/api/spec/remote`           | Load an OpenAPI spec from a live IFS instance                  |
+| POST   | `/api/spec/local`            | Load an OpenAPI spec from a local file                         |
+| POST   | `/api/spec/upload`           | Upload and parse an OpenAPI spec directly from file content    |
+| POST   | `/api/spec/entry`            | Get details of one endpoint from the last loaded spec          |
+| POST   | `/api/write`                 | Write the selected requests (Bruno or Postman, per collection) |
+| GET    | `/api/preferences`           | Read preferences (e.g. `collectionsBasePath`)                  |
+| PATCH  | `/api/preferences`           | Update preferences                                             |
 
 ## Useful commands
 
-| Command      | Description                                                        |
-| ------------ | -------------------------------------------------------------------- |
-| `pnpm dev`   | Start the backend server                                            |
+| Command      | Description                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`   | Start the backend server                                                                 |
 | `pnpm build` | Build the frontend, then compile a standalone `ifs-bruno-ui` executable (see `build.ts`) |
 
 ## Contributing
